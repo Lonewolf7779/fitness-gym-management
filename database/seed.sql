@@ -16,13 +16,21 @@ TRUNCATE TABLE `members`;
 TRUNCATE TABLE `users`;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 1. Insert Initial Admin, Trainer, and Member Users (Password: Admin@123 / Member@123 / Trainer@123)
--- Hashes generated via password_hash('...', PASSWORD_DEFAULT)
+-- 1. Insert Initial Admin, Trainer, Active Member, Inactive Member, and Suspended Member Users
+-- Credentials for Testing Phase 2.1 Authentication:
+-- Admin:     admin@ironcore.com   / Admin@123
+-- Trainer:   marcus@ironcore.com  / Trainer@123
+-- Member:    alex@gmail.com       / Member@123
+-- Suspended: suspended@gmail.com  / Member@123
+-- Inactive:  inactive@gmail.com   / Member@123
+
 INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `status`) VALUES
-(1, 'System Administrator', 'admin@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'admin', 'active'),
-(2, 'Marcus Vance', 'marcus@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'trainer', 'active'),
-(3, 'Elena Rostova', 'elena@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'trainer', 'active'),
-(4, 'Alex Rivera', 'alex@gmail.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'member', 'active');
+(1, 'System Administrator', 'admin@ironcore.com', '$2y$10$PSDVDniqt5886aTezjeli.6VGpJ2oJBEFhpcfCFXhEtzq/4B4CR3y', 'admin', 'active'),
+(2, 'Marcus Vance', 'marcus@ironcore.com', '$2y$10$6dhZuld0ArcZFHJGWSAfzuh67GpAaRxGU2abaB5LPwoZz.3GLmwZO', 'trainer', 'active'),
+(3, 'Elena Rostova', 'elena@ironcore.com', '$2y$10$6dhZuld0ArcZFHJGWSAfzuh67GpAaRxGU2abaB5LPwoZz.3GLmwZO', 'trainer', 'active'),
+(4, 'Alex Rivera', 'alex@gmail.com', '$2y$10$5BS7zio7lT.L4hLK/bhfEunJ7iIaup8g/gTPBoKMnedgLztKUmWIK', 'member', 'active'),
+(5, 'David Black', 'suspended@gmail.com', '$2y$10$5BS7zio7lT.L4hLK/bhfEunJ7iIaup8g/gTPBoKMnedgLztKUmWIK', 'member', 'suspended'),
+(6, 'Sarah Connor', 'inactive@gmail.com', '$2y$10$5BS7zio7lT.L4hLK/bhfEunJ7iIaup8g/gTPBoKMnedgLztKUmWIK', 'member', 'inactive');
 
 -- 2. Insert Profiles
 INSERT INTO `trainers` (`id`, `user_id`, `specialization`, `experience_years`, `bio`, `hourly_rate`) VALUES

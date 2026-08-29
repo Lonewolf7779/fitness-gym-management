@@ -7,6 +7,12 @@ require_once __DIR__ . '/../../helpers/security.php';
 
 $pageTitle = $pageTitle ?? 'IRONCORE | Fitness & Gym Management System';
 $metaDesc  = $metaDesc ?? 'Manage your gym. Manage your members. Track fitness. Grow your business with IRONCORE Fitness & Gym Management System.';
+$isLoggedIn = !empty($_SESSION['user_id']);
+$userRole   = $_SESSION['role'] ?? 'member';
+
+$portalUrl = '/member/index.php';
+if ($userRole === 'admin') $portalUrl = '/admin/index.php';
+if ($userRole === 'trainer') $portalUrl = '/trainer/index.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,8 +50,13 @@ $metaDesc  = $metaDesc ?? 'Manage your gym. Manage your members. Track fitness. 
       </nav>
 
       <div class="nav-actions">
-        <a href="/login.php" class="btn btn-secondary">Login</a>
-        <a href="/register.php" class="btn btn-primary">Join Gym</a>
+        <?php if ($isLoggedIn): ?>
+          <a href="<?= $portalUrl ?>" class="btn btn-secondary">Dashboard</a>
+          <a href="/logout.php" class="btn btn-primary">Logout</a>
+        <?php else: ?>
+          <a href="/login.php" class="btn btn-secondary">Login</a>
+          <a href="/register.php" class="btn btn-primary">Join Gym</a>
+        <?php endif; ?>
       </div>
 
       <button class="mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false">

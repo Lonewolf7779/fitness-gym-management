@@ -32,7 +32,7 @@ AuthMiddleware::handle();
       <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--color-border);">
         <div style="font-size: 0.9rem; font-weight: 700;"><?= e($_SESSION['full_name'] ?? 'Member') ?></div>
         <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem;"><?= e($_SESSION['email'] ?? '') ?></div>
-        <a href="/login.php" class="btn btn-secondary btn-block" style="padding: 0.5rem 1rem; font-size: 0.8rem;">LOGOUT</a>
+        <a href="/logout.php" class="btn btn-secondary btn-block" style="padding: 0.5rem 1rem; font-size: 0.8rem;">LOGOUT</a>
       </div>
     </aside>
 
