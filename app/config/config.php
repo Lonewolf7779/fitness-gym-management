@@ -44,6 +44,7 @@ define('APP_NAME', getenv('APP_NAME') ?: 'IRONCORE Fitness');
 define('APP_ENV', getenv('APP_ENV') ?: 'local');
 define('APP_DEBUG', filter_var(getenv('APP_DEBUG') ?: true, FILTER_VALIDATE_BOOLEAN));
 define('APP_URL', getenv('APP_URL') ?: 'http://localhost:8000');
+define('AUTH_MODE', getenv('AUTH_MODE') ?: 'database');
 
 // Error Handling Configuration
 if (APP_DEBUG) {
