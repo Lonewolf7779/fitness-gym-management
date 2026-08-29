@@ -1,0 +1,55 @@
+-- IRONCORE Seed Data
+USE `ironcore_gym`;
+
+-- Disable foreign key checks for clean seed
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE `progress_logs`;
+TRUNCATE TABLE `payments`;
+TRUNCATE TABLE `workout_plan_exercises`;
+TRUNCATE TABLE `workout_plans`;
+TRUNCATE TABLE `exercise_catalog`;
+TRUNCATE TABLE `attendance`;
+TRUNCATE TABLE `subscriptions`;
+TRUNCATE TABLE `membership_plans`;
+TRUNCATE TABLE `trainers`;
+TRUNCATE TABLE `members`;
+TRUNCATE TABLE `users`;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- 1. Insert Initial Admin, Trainer, and Member Users (Password: Admin@123 / Member@123 / Trainer@123)
+-- Hashes generated via password_hash('...', PASSWORD_DEFAULT)
+INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `status`) VALUES
+(1, 'System Administrator', 'admin@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'admin', 'active'),
+(2, 'Marcus Vance', 'marcus@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'trainer', 'active'),
+(3, 'Elena Rostova', 'elena@ironcore.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'trainer', 'active'),
+(4, 'Alex Rivera', 'alex@gmail.com', '$2y$10$eW4O81c.BvLwF.mD6W5FHeq2jY4z55.eZgR4sLh5mF11dE44sLg2C', 'member', 'active');
+
+-- 2. Insert Profiles
+INSERT INTO `trainers` (`id`, `user_id`, `specialization`, `experience_years`, `bio`, `hourly_rate`) VALUES
+(1, 2, 'Strength & Hypertrophy', 8, 'Senior strength coach specializing in Olympic lifting and hypertrophy programming.', 1500.00),
+(2, 3, 'Functional Conditioning & Rehab', 6, 'Certified athletic trainer focused on mobility, fat loss, and core stability.', 1200.00);
+
+INSERT INTO `members` (`id`, `user_id`, `phone`, `emergency_contact`, `gender`, `dob`, `address`, `join_date`) VALUES
+(1, 4, '+91 9876543210', 'Maria Rivera (+91 9876543211)', 'male', '1998-05-14', 'B-402 Horizon Towers, Downtown', '2026-01-15');
+
+-- 3. Membership Plans
+INSERT INTO `membership_plans` (`id`, `title`, `tag`, `price`, `billing_cycle`, `duration_days`, `description`, `features`, `is_recommended`, `status`) VALUES
+(1, 'STARTER', 'Essential Access', 999.00, 'monthly', 30, 'Perfect for self-motivated fitness enthusiasts needing basic facility access.', '["Full Gym Floor Access", "Digital Attendance Tracking", "Member Dashboard", "Locker Room Access"]', 0, 'active'),
+(2, 'PRO', 'Most Popular', 1999.00, 'monthly', 30, 'Comprehensive package with guided workout programs and trainer support.', '["Everything in Starter", "Personalized Workout Plans", "Trainer Assistance", "Progress & Metrics Tracking", "Group Fitness Classes"]', 1, 'active'),
+(3, 'ELITE', 'VIP Experience', 2999.00, 'monthly', 30, 'All-inclusive premium experience with dedicated 1-on-1 personal training.', '["Everything in Pro", "1-on-1 Personal Trainer", "Priority Session Booking", "Nutritional Consultation", "Complimentary Recovery Drinks"]', 0, 'active');
+
+-- 4. Initial Active Subscription
+INSERT INTO `subscriptions` (`id`, `member_id`, `plan_id`, `start_date`, `end_date`, `auto_renew`, `status`) VALUES
+(1, 1, 2, '2026-08-01', '2026-08-31', 1, 'active');
+
+-- 5. Exercise Catalog Seed Data
+INSERT INTO `exercise_catalog` (`id`, `name`, `category`, `muscle_group`, `equipment`, `instructions`) VALUES
+(1, 'Barbell Back Squat', 'Strength', 'Quadriceps, Glutes', 'Barbell, Rack', 'Keep chest elevated, break at hips and knees, squat below parallel.'),
+(2, 'Incline Dumbbell Bench Press', 'Strength', 'Chest, Anterior Deltoids', 'Dumbbells, Bench', 'Set bench at 30 degrees, press dumbbells overhead in controlled arc.'),
+(3, 'Conventional Deadlift', 'Strength', 'Posterior Chain, Back', 'Barbell, Plates', 'Hinge at hips, maintain flat spine, pull bar tight to shins.'),
+(4, 'Pull-Ups', 'Bodyweight', 'Lats, Biceps', 'Pull-Up Bar', 'Full extension at bottom, pull chin over bar engaging latissimus dorsi.'),
+(5, 'Dumbbell Walking Lunges', 'Conditioning', 'Quads, Glutes', 'Dumbbells', 'Step forward with controlled gait, knee lightly touching ground.');
+
+-- 6. Initial Payment Log
+INSERT INTO `payments` (`id`, `subscription_id`, `member_id`, `amount`, `payment_method`, `transaction_id`, `status`) VALUES
+(1, 1, 1, 1999.00, 'UPI', 'TXN_20260801_99841', 'paid');
