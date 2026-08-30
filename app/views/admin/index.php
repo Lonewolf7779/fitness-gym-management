@@ -68,37 +68,37 @@ $stats = [
           </a>
         </li>
         <li>
-          <a href="#trainers" class="nav-item-link">
+          <a href="/admin/trainers.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
             <span>Trainers</span>
           </a>
         </li>
         <li>
-          <a href="#memberships" class="nav-item-link">
+          <a href="/admin/memberships.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             <span>Memberships</span>
           </a>
         </li>
         <li>
-          <a href="#attendance" class="nav-item-link">
+          <a href="/admin/attendance.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/></svg>
             <span>Attendance</span>
           </a>
         </li>
         <li>
-          <a href="#payments" class="nav-item-link">
+          <a href="/admin/payments.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             <span>Payments</span>
           </a>
         </li>
         <li>
-          <a href="#workouts" class="nav-item-link">
+          <a href="/admin/workouts.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
             <span>Workouts</span>
           </a>
         </li>
         <li>
-          <a href="#reports" class="nav-item-link">
+          <a href="/admin/reports.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <span>Reports</span>
           </a>
@@ -114,7 +114,7 @@ $stats = [
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <a href="#settings" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
+          <a href="/admin/settings.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
           <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
         </div>
       </div>
@@ -184,8 +184,8 @@ $stats = [
                 <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($adminName) ?></div>
                 <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($adminEmail) ?></div>
               </div>
-              <a href="#profile" class="dropdown-item">My Profile</a>
-              <a href="#settings" class="dropdown-item">System Settings</a>
+              <a href="/admin/members.php" class="dropdown-item">My Members</a>
+              <a href="/admin/settings.php" class="dropdown-item">System Settings</a>
               <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
             </div>
           </div>
@@ -197,22 +197,22 @@ $stats = [
 
         <!-- G. QUICK ACTIONS STRIP -->
         <div class="quick-actions-strip">
-          <button class="action-chip">
+          <a href="/admin/members.php?action=add" class="action-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Member
-          </button>
-          <button class="action-chip">
+          </a>
+          <a href="/admin/trainers.php" class="action-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Trainer
-          </button>
-          <button class="action-chip">
+          </a>
+          <a href="/admin/memberships.php" class="action-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             Create Membership
-          </button>
-          <button class="action-chip">
+          </a>
+          <a href="/admin/payments.php" class="action-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Record Payment
-          </button>
+          </a>
         </div>
 
         <!-- C. KPI / SUMMARY AREA -->

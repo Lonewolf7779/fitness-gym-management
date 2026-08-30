@@ -1,7 +1,7 @@
 <?php
 /**
  * IRONCORE Admin Member Management View Template
- * Section: Phase 2A Admin Member Management UI
+ * Section: Phase 2A Admin Member Management UI & Action Audit
  */
 
 require_once __DIR__ . '/../../config/config.php';
@@ -23,8 +23,8 @@ $membersList = [
         'phone'      => '+91 9876543210',
         'avatar'     => 'AR',
         'plan'       => 'Pro Plan',
-        'joined'     => '12 Aug 2026',
-        'expiry'     => '28 Sep 2026',
+        'joined'     => '2026-08-12',
+        'expiry'     => '2026-09-28',
         'status'     => 'active'
     ],
     [
@@ -34,8 +34,8 @@ $membersList = [
         'phone'      => '+91 9876543211',
         'avatar'     => 'DC',
         'plan'       => 'Starter Plan',
-        'joined'     => '05 Jul 2026',
-        'expiry'     => '05 Sep 2026',
+        'joined'     => '2026-07-05',
+        'expiry'     => '2026-09-05',
         'status'     => 'active'
     ],
     [
@@ -45,8 +45,8 @@ $membersList = [
         'phone'      => '+91 9876543212',
         'avatar'     => 'SM',
         'plan'       => 'Elite Plan',
-        'joined'     => '18 Jun 2026',
-        'expiry'     => '18 Sep 2026',
+        'joined'     => '2026-06-18',
+        'expiry'     => '2026-09-18',
         'status'     => 'active'
     ],
     [
@@ -56,8 +56,8 @@ $membersList = [
         'phone'      => '+91 9876543213',
         'avatar'     => 'RB',
         'plan'       => 'Pro Plan',
-        'joined'     => '02 May 2026',
-        'expiry'     => '02 Sep 2026',
+        'joined'     => '2026-05-02',
+        'expiry'     => '2026-09-02',
         'status'     => 'expired'
     ],
     [
@@ -67,8 +67,8 @@ $membersList = [
         'phone'      => '+91 9876543214',
         'avatar'     => 'ER',
         'plan'       => 'Elite Plan',
-        'joined'     => '10 Jan 2026',
-        'expiry'     => '10 Jan 2027',
+        'joined'     => '2026-01-10',
+        'expiry'     => '2027-01-10',
         'status'     => 'active'
     ],
     [
@@ -78,8 +78,8 @@ $membersList = [
         'phone'      => '+91 9876543215',
         'avatar'     => 'SC',
         'plan'       => 'Starter Plan',
-        'joined'     => '22 Aug 2026',
-        'expiry'     => '22 Sep 2026',
+        'joined'     => '2026-08-22',
+        'expiry'     => '2026-09-22',
         'status'     => 'inactive'
     ],
     [
@@ -89,8 +89,8 @@ $membersList = [
         'phone'      => '+91 9876543216',
         'avatar'     => 'DB',
         'plan'       => 'Starter Plan',
-        'joined'     => '01 Mar 2026',
-        'expiry'     => '01 Apr 2026',
+        'joined'     => '2026-03-01',
+        'expiry'     => '2026-04-01',
         'status'     => 'suspended'
     ],
     [
@@ -100,8 +100,8 @@ $membersList = [
         'phone'      => '+91 9876543217',
         'avatar'     => 'VV',
         'plan'       => 'Pro Plan',
-        'joined'     => '31 Jul 2026',
-        'expiry'     => '31 Aug 2026',
+        'joined'     => '2026-07-31',
+        'expiry'     => '2026-08-31',
         'status'     => 'expired'
     ],
     [
@@ -111,8 +111,8 @@ $membersList = [
         'phone'      => '+91 9876543218',
         'avatar'     => 'AS',
         'plan'       => 'Elite Plan',
-        'joined'     => '30 Jul 2026',
-        'expiry'     => '30 Aug 2026',
+        'joined'     => '2026-07-30',
+        'expiry'     => '2026-08-30',
         'status'     => 'expired'
     ],
     [
@@ -122,8 +122,8 @@ $membersList = [
         'phone'      => '+91 9876543219',
         'avatar'     => 'RK',
         'plan'       => 'Starter Plan',
-        'joined'     => '02 Aug 2026',
-        'expiry'     => '02 Sep 2026',
+        'joined'     => '2026-08-02',
+        'expiry'     => '2026-09-02',
         'status'     => 'active'
     ],
     [
@@ -133,8 +133,8 @@ $membersList = [
         'phone'      => '+91 9876543220',
         'avatar'     => 'PS',
         'plan'       => 'Pro Plan',
-        'joined'     => '03 Aug 2026',
-        'expiry'     => '03 Sep 2026',
+        'joined'     => '2026-08-03',
+        'expiry'     => '2026-09-03',
         'status'     => 'active'
     ],
     [
@@ -144,8 +144,8 @@ $membersList = [
         'phone'      => '+91 9876543221',
         'avatar'     => 'MV',
         'plan'       => 'Elite Plan',
-        'joined'     => '15 Jan 2026',
-        'expiry'     => '15 Jan 2027',
+        'joined'     => '2026-01-15',
+        'expiry'     => '2027-01-15',
         'status'     => 'active'
     ]
 ];
@@ -196,37 +196,37 @@ $membersList = [
           </a>
         </li>
         <li>
-          <a href="#trainers" class="nav-item-link">
+          <a href="/admin/trainers.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
             <span>Trainers</span>
           </a>
         </li>
         <li>
-          <a href="#memberships" class="nav-item-link">
+          <a href="/admin/memberships.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             <span>Memberships</span>
           </a>
         </li>
         <li>
-          <a href="#attendance" class="nav-item-link">
+          <a href="/admin/attendance.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/></svg>
             <span>Attendance</span>
           </a>
         </li>
         <li>
-          <a href="#payments" class="nav-item-link">
+          <a href="/admin/payments.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             <span>Payments</span>
           </a>
         </li>
         <li>
-          <a href="#workouts" class="nav-item-link">
+          <a href="/admin/workouts.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
             <span>Workouts</span>
           </a>
         </li>
         <li>
-          <a href="#reports" class="nav-item-link">
+          <a href="/admin/reports.php" class="nav-item-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <span>Reports</span>
           </a>
@@ -242,7 +242,7 @@ $membersList = [
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <a href="#settings" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
+          <a href="/admin/settings.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
           <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
         </div>
       </div>
@@ -303,6 +303,7 @@ $membersList = [
                 <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($adminName) ?></div>
                 <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($adminEmail) ?></div>
               </div>
+              <a href="/admin/settings.php" class="dropdown-item">System Settings</a>
               <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
             </div>
           </div>
@@ -405,32 +406,30 @@ $membersList = [
               </thead>
               <tbody id="members-table-body">
                 <?php foreach ($membersList as $m): ?>
-                  <tr data-name="<?= strtolower(e($m['name'])) ?>" 
+                  <tr id="member-row-<?= $m['id'] ?>"
+                      data-id="<?= $m['id'] ?>"
+                      data-name="<?= strtolower(e($m['name'])) ?>" 
                       data-email="<?= strtolower(e($m['email'])) ?>" 
                       data-phone="<?= strtolower(e($m['phone'])) ?>"
                       data-status="<?= strtolower(e($m['status'])) ?>"
                       data-plan="<?= strtolower(e($m['plan'])) ?>">
                     <td>
                       <div class="member-cell">
-                        <div class="member-avatar"><?= e($m['avatar']) ?></div>
+                        <div class="member-avatar" id="row-avatar-<?= $m['id'] ?>"><?= e($m['avatar']) ?></div>
                         <div>
-                          <div class="member-info-name"><?= e($m['name']) ?></div>
-                          <div class="member-info-email"><?= e($m['email']) ?></div>
+                          <div class="member-info-name" id="row-name-<?= $m['id'] ?>"><?= e($m['name']) ?></div>
+                          <div class="member-info-email" id="row-email-<?= $m['id'] ?>"><?= e($m['email']) ?></div>
                         </div>
                       </div>
                     </td>
-                    <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);"><?= e($m['phone']) ?></span></td>
+                    <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);" id="row-phone-<?= $m['id'] ?>"><?= e($m['phone']) ?></span></td>
                     <td>
-                      <?php if (strpos(strtolower($m['plan']), 'pro') !== false): ?>
-                        <span style="font-weight: 700; color: var(--color-accent);"><?= e(strtoupper($m['plan'])) ?></span>
-                      <?php elseif (strpos(strtolower($m['plan']), 'elite') !== false): ?>
-                        <span style="font-weight: 700; color: #FFF;"><?= e(strtoupper($m['plan'])) ?></span>
-                      <?php else: ?>
-                        <span style="font-weight: 600; color: var(--color-text-muted);"><?= e(strtoupper($m['plan'])) ?></span>
-                      <?php endif; ?>
+                      <span id="row-plan-<?= $m['id'] ?>" style="font-weight: 700; color: <?= strpos(strtolower($m['plan']), 'pro') !== false ? 'var(--color-accent)' : (strpos(strtolower($m['plan']), 'elite') !== false ? '#FFF' : 'var(--color-text-muted)') ?>;">
+                        <?= e(strtoupper($m['plan'])) ?>
+                      </span>
                     </td>
-                    <td><span style="font-size: 0.8rem; color: var(--color-text-muted);"><?= e($m['joined']) ?></span></td>
-                    <td><span style="font-size: 0.8rem; color: var(--color-text-muted);"><?= e($m['expiry']) ?></span></td>
+                    <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-joined-<?= $m['id'] ?>"><?= e($m['joined']) ?></span></td>
+                    <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-expiry-<?= $m['id'] ?>"><?= e($m['expiry']) ?></span></td>
                     <td>
                       <?php
                         $statusClass = 'active';
@@ -438,18 +437,25 @@ $membersList = [
                         elseif ($m['status'] === 'inactive') $statusClass = 'inactive';
                         elseif ($m['status'] === 'suspended') $statusClass = 'suspended';
                       ?>
-                      <span class="status-pill <?= $statusClass ?>">
+                      <span class="status-pill <?= $statusClass ?>" id="row-status-pill-<?= $m['id'] ?>">
                         <span class="status-dot-sm"></span> <?= e(ucfirst($m['status'])) ?>
                       </span>
                     </td>
                     <td style="text-align: right;">
                       <div class="table-actions" style="justify-content: flex-end;">
-                        <button class="btn-action-sm view-member-btn" data-id="<?= $m['id'] ?>" data-name="<?= e($m['name']) ?>" data-email="<?= e($m['email']) ?>" data-phone="<?= e($m['phone']) ?>" data-plan="<?= e($m['plan']) ?>" data-status="<?= e($m['status']) ?>" data-joined="<?= e($m['joined']) ?>" data-expiry="<?= e($m['expiry']) ?>">View</button>
-                        <button class="btn-action-sm edit-member-btn" data-id="<?= $m['id'] ?>" data-name="<?= e($m['name']) ?>" data-email="<?= e($m['email']) ?>" data-phone="<?= e($m['phone']) ?>" data-plan="<?= e($m['plan']) ?>" data-status="<?= e($m['status']) ?>">Edit</button>
+                        <button type="button" class="btn-action-sm view-member-btn" data-id="<?= $m['id'] ?>" data-name="<?= e($m['name']) ?>" data-email="<?= e($m['email']) ?>" data-phone="<?= e($m['phone']) ?>" data-plan="<?= e($m['plan']) ?>" data-status="<?= e($m['status']) ?>" data-joined="<?= e($m['joined']) ?>" data-expiry="<?= e($m['expiry']) ?>">View</button>
+                        <button type="button" class="btn-action-sm edit-member-btn" data-id="<?= $m['id'] ?>" data-name="<?= e($m['name']) ?>" data-email="<?= e($m['email']) ?>" data-phone="<?= e($m['phone']) ?>" data-plan="<?= e($m['plan']) ?>" data-status="<?= e($m['status']) ?>" data-joined="<?= e($m['joined']) ?>" data-expiry="<?= e($m['expiry']) ?>">Edit</button>
                       </div>
                     </td>
                   </tr>
                 <?php endforeach; ?>
+                <tr id="no-members-row" style="display: none;">
+                  <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.5rem; opacity: 0.5;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <div style="font-weight: 700; font-size: 1rem; color: #FFF;">No members found</div>
+                    <div style="font-size: 0.8rem;">Try adjusting your search query or filter selections.</div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -466,38 +472,40 @@ $membersList = [
     <div class="modal-card">
       <div class="modal-header">
         <h3>+ ADD NEW GYM MEMBER</h3>
-        <button class="modal-close-btn" id="close-add-modal-btn" aria-label="Close modal">
+        <button type="button" class="modal-close-btn" id="close-add-modal-btn" aria-label="Close modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
-      <form id="add-member-form">
+      <form id="add-member-form" novalidate>
         <div class="modal-body">
+          <div id="add-form-error" class="alert alert-danger" style="display: none;"></div>
+
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="new-first-name" class="form-label">First Name</label>
+              <label for="new-first-name" class="form-label">First Name *</label>
               <input type="text" id="new-first-name" class="form-control" placeholder="e.g. Rahul" required>
             </div>
             <div class="form-group">
-              <label for="new-last-name" class="form-label">Last Name</label>
+              <label for="new-last-name" class="form-label">Last Name *</label>
               <input type="text" id="new-last-name" class="form-control" placeholder="e.g. Verma" required>
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="new-email" class="form-label">Email Address</label>
+              <label for="new-email" class="form-label">Email Address *</label>
               <input type="email" id="new-email" class="form-control" placeholder="rahul@example.com" required>
             </div>
             <div class="form-group">
-              <label for="new-phone" class="form-label">Phone Number</label>
+              <label for="new-phone" class="form-label">Phone Number *</label>
               <input type="tel" id="new-phone" class="form-control" placeholder="+91 9876543210" required>
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="new-plan" class="form-label">Membership Plan</label>
+              <label for="new-plan" class="form-label">Membership Plan *</label>
               <select id="new-plan" class="form-control">
                 <option value="Starter Plan">Starter Plan (₹999/mo)</option>
                 <option value="Pro Plan" selected>Pro Plan (₹1,999/mo)</option>
@@ -516,11 +524,11 @@ $membersList = [
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="new-start-date" class="form-label">Start Date</label>
+              <label for="new-start-date" class="form-label">Start Date *</label>
               <input type="date" id="new-start-date" class="form-control" value="<?= date('Y-m-d') ?>" required>
             </div>
             <div class="form-group">
-              <label for="new-status" class="form-label">Account Status</label>
+              <label for="new-status" class="form-label">Account Status *</label>
               <select id="new-status" class="form-control">
                 <option value="active" selected>Active</option>
                 <option value="inactive">Inactive</option>
@@ -532,61 +540,140 @@ $membersList = [
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="cancel-add-modal-btn">Cancel</button>
-          <button type="submit" class="btn btn-primary">SAVE MEMBER</button>
+          <button type="submit" class="btn btn-primary" id="save-add-modal-btn">+ ADD MEMBER</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ==========================================================================
-       VIEW / EDIT MEMBER DETAIL MODAL (UI ONLY)
+       EDIT MEMBER MODAL (UI ONLY)
        ========================================================================== -->
-  <div class="modal-overlay" id="member-detail-modal">
+  <div class="modal-overlay" id="member-edit-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="detail-modal-title">MEMBER PROFILE</h3>
-        <button class="modal-close-btn" id="close-detail-modal-btn" aria-label="Close modal">
+        <h3>EDIT MEMBER DETAILS</h3>
+        <button type="button" class="modal-close-btn" id="close-edit-modal-btn" aria-label="Close modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="edit-member-form" novalidate>
+        <input type="hidden" id="edit-member-id">
+        <div class="modal-body">
+          <div id="edit-form-error" class="alert alert-danger" style="display: none;"></div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="edit-full-name" class="form-label">Full Name *</label>
+              <input type="text" id="edit-full-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-email" class="form-label">Email Address *</label>
+              <input type="email" id="edit-email" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="edit-phone" class="form-label">Phone Number *</label>
+              <input type="tel" id="edit-phone" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-plan" class="form-label">Membership Plan *</label>
+              <select id="edit-plan" class="form-control">
+                <option value="Starter Plan">Starter Plan</option>
+                <option value="Pro Plan">Pro Plan</option>
+                <option value="Elite Plan">Elite Plan</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="edit-joined" class="form-label">Joined Date</label>
+              <input type="date" id="edit-joined" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="edit-expiry" class="form-label">Expiry Date</label>
+              <input type="date" id="edit-expiry" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-status" class="form-label">Account Status *</label>
+            <select id="edit-status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-edit-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">SAVE CHANGES</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       VIEW MEMBER DETAIL MODAL (UI ONLY)
+       ========================================================================== -->
+  <div class="modal-overlay" id="member-view-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>MEMBER PROFILE</h3>
+        <button type="button" class="modal-close-btn" id="close-view-modal-btn" aria-label="Close modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
       <div class="modal-body">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-border);">
-          <div class="avatar-circle" id="detail-avatar" style="width: 54px; height: 54px; font-size: 1.3rem;">AR</div>
+          <div class="avatar-circle" id="view-avatar" style="width: 54px; height: 54px; font-size: 1.3rem;">AR</div>
           <div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: #FFF;" id="detail-name">Alex Rivera</div>
-            <div style="font-size: 0.85rem; color: var(--color-text-muted);" id="detail-email">alex@gmail.com</div>
-            <div style="margin-top: 0.35rem;"><span class="status-pill active" id="detail-status-pill"><span class="status-dot-sm"></span> Active</span></div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #FFF;" id="view-name">Alex Rivera</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted);" id="view-email">alex@gmail.com</div>
+            <div style="margin-top: 0.35rem;"><span class="status-pill active" id="view-status-pill"><span class="status-dot-sm"></span> Active</span></div>
           </div>
         </div>
 
         <div class="form-grid-2" style="margin-bottom: 1rem;">
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Phone Number</div>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #FFF;" id="detail-phone">+91 9876543210</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #FFF;" id="view-phone">+91 9876543210</div>
           </div>
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Membership Plan</div>
-            <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-accent);" id="detail-plan">Pro Plan</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-accent);" id="view-plan">Pro Plan</div>
           </div>
         </div>
 
         <div class="form-grid-2">
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Joined Date</div>
-            <div style="font-size: 0.9rem; color: var(--color-text-main);" id="detail-joined">12 Aug 2026</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-main);" id="view-joined">12 Aug 2026</div>
           </div>
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Subscription Expiry</div>
-            <div style="font-size: 0.9rem; color: var(--color-text-main);" id="detail-expiry">28 Sep 2026</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-main);" id="view-expiry">28 Sep 2026</div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="close-detail-footer-btn">Close</button>
+        <button type="button" class="btn btn-secondary" id="close-view-footer-btn">Close</button>
       </div>
     </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+  <div id="dashboard-toast" style="position: fixed; bottom: 2rem; right: 2rem; background: var(--color-surface); border: 1px solid var(--color-accent); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; font-size: 0.875rem; font-weight: 700; color: #FFF; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: none; z-index: 1000; align-items: center; gap: 0.75rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toast-message">Changes saved successfully!</span>
   </div>
 
   <!-- Scripts -->

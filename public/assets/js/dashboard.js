@@ -156,18 +156,37 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdminSVGChart('revenue');
   }
 
+  // Toast Notification Helper
+  const showToast = (message) => {
+    const toast = document.getElementById('dashboard-toast');
+    const toastMsg = document.getElementById('toast-message');
+    if (!toast || !toastMsg) return;
+
+    toastMsg.textContent = message;
+    toast.style.display = 'flex';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3500);
+  };
+
+  // Helper validation
+  const validateEmailFormat = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   // =========================================================================
-  // 5. MEMBER MANAGEMENT CLIENT-SIDE SEARCH, FILTERING, & MODALS
+  // 5. MEMBER MANAGEMENT SEARCH, FILTERING, & MODALS
   // =========================================================================
   const memberSearchInput = document.getElementById('member-search-input');
   const statusFilterSelect = document.getElementById('status-filter');
   const planFilterSelect = document.getElementById('plan-filter');
   const tableBody = document.getElementById('members-table-body');
   const countIndicator = document.getElementById('member-count-indicator');
+  const noMembersRow = document.getElementById('no-members-row');
 
   const filterMembersTable = () => {
     if (!tableBody) return;
-    const rows = tableBody.querySelectorAll('tr');
+    const rows = tableBody.querySelectorAll('tr:not(#no-members-row)');
     const query = (memberSearchInput?.value || '').toLowerCase().trim();
     const selectedStatus = (statusFilterSelect?.value || 'all').toLowerCase();
     const selectedPlan = (planFilterSelect?.value || 'all').toLowerCase();
@@ -194,6 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    if (noMembersRow) {
+      noMembersRow.style.display = (visibleCount === 0) ? '' : 'none';
+    }
+
     if (countIndicator) {
       countIndicator.textContent = `Showing ${visibleCount} of ${totalCount} members`;
     }
@@ -203,40 +226,86 @@ document.addEventListener('DOMContentLoaded', () => {
   statusFilterSelect?.addEventListener('change', filterMembersTable);
   planFilterSelect?.addEventListener('change', filterMembersTable);
 
-  // Modals Management
+  // Modals Elements
   const addModal = document.getElementById('add-member-modal');
-  const detailModal = document.getElementById('member-detail-modal');
+  const viewModal = document.getElementById('member-view-modal');
+  const editModal = document.getElementById('member-edit-modal');
+  
   const openAddBtn = document.getElementById('open-add-modal-btn');
   const closeAddBtn = document.getElementById('close-add-modal-btn');
   const cancelAddBtn = document.getElementById('cancel-add-modal-btn');
   const addMemberForm = document.getElementById('add-member-form');
+  const addFormError = document.getElementById('add-form-error');
+
+  const closeViewBtn = document.getElementById('close-view-modal-btn');
+  const closeViewFooterBtn = document.getElementById('close-view-footer-btn');
+
+  const closeEditBtn = document.getElementById('close-edit-modal-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-modal-btn');
+  const editMemberForm = document.getElementById('edit-member-form');
+  const editFormError = document.getElementById('edit-form-error');
 
   const closeAllModals = () => {
     addModal?.classList.remove('show');
-    detailModal?.classList.remove('show');
+    viewModal?.classList.remove('show');
+    editModal?.classList.remove('show');
+    if (addFormError) addFormError.style.display = 'none';
+    if (editFormError) editFormError.style.display = 'none';
   };
 
   openAddBtn?.addEventListener('click', () => {
     addModal?.classList.add('show');
   });
 
+  // Check URL parameters for ?action=add
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('action') === 'add' && addModal) {
+    addModal.classList.add('show');
+  }
+
   closeAddBtn?.addEventListener('click', closeAllModals);
   cancelAddBtn?.addEventListener('click', closeAllModals);
+  closeViewBtn?.addEventListener('click', closeAllModals);
+  closeViewFooterBtn?.addEventListener('click', closeAllModals);
+  closeEditBtn?.addEventListener('click', closeAllModals);
+  cancelEditBtn?.addEventListener('click', closeAllModals);
 
-  // Dynamic Add Member Form Submit Handler (UI ONLY)
+  // Add Member Form Submission Handler
   addMemberForm?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const firstName = document.getElementById('new-first-name')?.value || 'New';
-    const lastName = document.getElementById('new-last-name')?.value || 'Member';
-    const email = document.getElementById('new-email')?.value || 'new@example.com';
-    const phone = document.getElementById('new-phone')?.value || '+91 9876543299';
+    const firstName = document.getElementById('new-first-name')?.value.trim();
+    const lastName = document.getElementById('new-last-name')?.value.trim();
+    const email = document.getElementById('new-email')?.value.trim();
+    const phone = document.getElementById('new-phone')?.value.trim();
     const plan = document.getElementById('new-plan')?.value || 'Pro Plan';
     const status = document.getElementById('new-status')?.value || 'active';
+    const startDate = document.getElementById('new-start-date')?.value || new Date().toISOString().split('T')[0];
+
+    // Validation
+    if (!firstName || !lastName || !email || !phone) {
+      if (addFormError) {
+        addFormError.textContent = 'Please complete all required fields.';
+        addFormError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (!validateEmailFormat(email)) {
+      if (addFormError) {
+        addFormError.textContent = 'Please enter a valid email address format.';
+        addFormError.style.display = 'block';
+      }
+      return;
+    }
+
     const fullName = `${firstName} ${lastName}`;
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    const newId = Date.now();
 
     if (tableBody) {
       const tr = document.createElement('tr');
+      tr.id = `member-row-${newId}`;
+      tr.setAttribute('data-id', newId);
       tr.setAttribute('data-name', fullName.toLowerCase());
       tr.setAttribute('data-email', email.toLowerCase());
       tr.setAttribute('data-phone', phone.toLowerCase());
@@ -246,79 +315,192 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td>
           <div class="member-cell">
-            <div class="member-avatar">${initials}</div>
+            <div class="member-avatar" id="row-avatar-${newId}">${initials}</div>
             <div>
-              <div class="member-info-name">${fullName}</div>
-              <div class="member-info-email">${email}</div>
+              <div class="member-info-name" id="row-name-${newId}">${fullName}</div>
+              <div class="member-info-email" id="row-email-${newId}">${email}</div>
             </div>
           </div>
         </td>
-        <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);">${phone}</span></td>
-        <td><span style="font-weight: 700; color: var(--color-accent);">${plan.toUpperCase()}</span></td>
-        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);">Today</span></td>
-        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);">30 Days</span></td>
+        <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);" id="row-phone-${newId}">${phone}</span></td>
+        <td><span id="row-plan-${newId}" style="font-weight: 700; color: var(--color-accent);">${plan.toUpperCase()}</span></td>
+        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-joined-${newId}">${startDate}</span></td>
+        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-expiry-${newId}">30 Days</span></td>
         <td>
-          <span class="status-pill ${status}">
+          <span class="status-pill ${status}" id="row-status-pill-${newId}">
             <span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
         </td>
         <td style="text-align: right;">
           <div class="table-actions" style="justify-content: flex-end;">
-            <button class="btn-action-sm view-member-btn" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="Today" data-expiry="30 Days">View</button>
-            <button class="btn-action-sm edit-member-btn" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}">Edit</button>
+            <button type="button" class="btn-action-sm view-member-btn" data-id="${newId}" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="${startDate}" data-expiry="30 Days">View</button>
+            <button type="button" class="btn-action-sm edit-member-btn" data-id="${newId}" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="${startDate}" data-expiry="30 Days">Edit</button>
           </div>
         </td>
       `;
       tableBody.insertBefore(tr, tableBody.firstChild);
       filterMembersTable();
 
-      // Update Top Summary Count Indicators
+      // Update KPI Statistics Counters
       const totalCountElem = document.getElementById('stat-total-count');
       if (totalCountElem) {
         totalCountElem.textContent = parseInt(totalCountElem.textContent || '248') + 1;
+      }
+      if (status === 'active') {
+        const activeCountElem = document.getElementById('stat-active-count');
+        if (activeCountElem) {
+          activeCountElem.textContent = parseInt(activeCountElem.textContent || '213') + 1;
+        }
       }
     }
 
     addMemberForm.reset();
     closeAllModals();
+    showToast(`Member ${fullName} added successfully!`);
   });
 
-  // View / Edit Modal Listener Attachment
+  // Edit Member Form Submission Handler
+  editMemberForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const memberId = document.getElementById('edit-member-id')?.value;
+    const fullName = document.getElementById('edit-full-name')?.value.trim();
+    const email = document.getElementById('edit-email')?.value.trim();
+    const phone = document.getElementById('edit-phone')?.value.trim();
+    const plan = document.getElementById('edit-plan')?.value;
+    const status = document.getElementById('edit-status')?.value;
+    const joined = document.getElementById('edit-joined')?.value;
+    const expiry = document.getElementById('edit-expiry')?.value;
+
+    if (!fullName || !email || !phone) {
+      if (editFormError) {
+        editFormError.textContent = 'Please fill out all required fields.';
+        editFormError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (!validateEmailFormat(email)) {
+      if (editFormError) {
+        editFormError.textContent = 'Please enter a valid email address.';
+        editFormError.style.display = 'block';
+      }
+      return;
+    }
+
+    // Update target DOM row
+    const targetRow = document.getElementById(`member-row-${memberId}`);
+    if (targetRow) {
+      targetRow.setAttribute('data-name', fullName.toLowerCase());
+      targetRow.setAttribute('data-email', email.toLowerCase());
+      targetRow.setAttribute('data-phone', phone.toLowerCase());
+      targetRow.setAttribute('data-status', status.toLowerCase());
+      targetRow.setAttribute('data-plan', plan.toLowerCase());
+
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+      const avatarElem = document.getElementById(`row-avatar-${memberId}`);
+      if (avatarElem) avatarElem.textContent = initials;
+
+      const nameElem = document.getElementById(`row-name-${memberId}`);
+      if (nameElem) nameElem.textContent = fullName;
+
+      const emailElem = document.getElementById(`row-email-${memberId}`);
+      if (emailElem) emailElem.textContent = email;
+
+      const phoneElem = document.getElementById(`row-phone-${memberId}`);
+      if (phoneElem) phoneElem.textContent = phone;
+
+      const planElem = document.getElementById(`row-plan-${memberId}`);
+      if (planElem) {
+        planElem.textContent = plan.toUpperCase();
+        planElem.style.color = plan.toLowerCase().includes('pro') ? 'var(--color-accent)' : (plan.toLowerCase().includes('elite') ? '#FFF' : 'var(--color-text-muted)');
+      }
+
+      const joinedElem = document.getElementById(`row-joined-${memberId}`);
+      if (joinedElem && joined) joinedElem.textContent = joined;
+
+      const expiryElem = document.getElementById(`row-expiry-${memberId}`);
+      if (expiryElem && expiry) expiryElem.textContent = expiry;
+
+      const pillElem = document.getElementById(`row-status-pill-${memberId}`);
+      if (pillElem) {
+        pillElem.className = `status-pill ${status}`;
+        pillElem.innerHTML = `<span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+      }
+
+      // Update button data attributes
+      const viewBtn = targetRow.querySelector('.view-member-btn');
+      const editBtn = targetRow.querySelector('.edit-member-btn');
+      [viewBtn, editBtn].forEach(btn => {
+        if (btn) {
+          btn.setAttribute('data-name', fullName);
+          btn.setAttribute('data-email', email);
+          btn.setAttribute('data-phone', phone);
+          btn.setAttribute('data-plan', plan);
+          btn.setAttribute('data-status', status);
+          if (joined) btn.setAttribute('data-joined', joined);
+          if (expiry) btn.setAttribute('data-expiry', expiry);
+        }
+      });
+    }
+
+    filterMembersTable();
+    closeAllModals();
+    showToast(`Updated details for ${fullName}.`);
+  });
+
+  // View / Edit Modal Listener Delegation
   document.addEventListener('click', (e) => {
     const viewBtn = e.target.closest('.view-member-btn');
     const editBtn = e.target.closest('.edit-member-btn');
     
-    if (viewBtn || editBtn) {
-      const btn = viewBtn || editBtn;
-      const name = btn.getAttribute('data-name') || 'Alex Rivera';
-      const email = btn.getAttribute('data-email') || 'alex@gmail.com';
-      const phone = btn.getAttribute('data-phone') || '+91 9876543210';
-      const plan = btn.getAttribute('data-plan') || 'Pro Plan';
-      const status = btn.getAttribute('data-status') || 'active';
-      const joined = btn.getAttribute('data-joined') || '12 Aug 2026';
-      const expiry = btn.getAttribute('data-expiry') || '28 Sep 2026';
-
+    if (viewBtn) {
+      const name = viewBtn.getAttribute('data-name') || '';
+      const email = viewBtn.getAttribute('data-email') || '';
+      const phone = viewBtn.getAttribute('data-phone') || '';
+      const plan = viewBtn.getAttribute('data-plan') || '';
+      const status = viewBtn.getAttribute('data-status') || '';
+      const joined = viewBtn.getAttribute('data-joined') || '';
+      const expiry = viewBtn.getAttribute('data-expiry') || '';
       const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-      document.getElementById('detail-modal-title').textContent = viewBtn ? 'MEMBER PROFILE' : 'EDIT MEMBER DETAILS';
-      document.getElementById('detail-avatar').textContent = initials;
-      document.getElementById('detail-name').textContent = name;
-      document.getElementById('detail-email').textContent = email;
-      document.getElementById('detail-phone').textContent = phone;
-      document.getElementById('detail-plan').textContent = plan;
-      document.getElementById('detail-joined').textContent = joined;
-      document.getElementById('detail-expiry').textContent = expiry;
+      document.getElementById('view-avatar').textContent = initials;
+      document.getElementById('view-name').textContent = name;
+      document.getElementById('view-email').textContent = email;
+      document.getElementById('view-phone').textContent = phone;
+      document.getElementById('view-plan').textContent = plan;
+      document.getElementById('view-joined').textContent = joined;
+      document.getElementById('view-expiry').textContent = expiry;
 
-      const pill = document.getElementById('detail-status-pill');
+      const pill = document.getElementById('view-status-pill');
       if (pill) {
         pill.className = `status-pill ${status}`;
         pill.innerHTML = `<span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}`;
       }
 
-      detailModal?.classList.add('show');
+      viewModal?.classList.add('show');
+    }
+
+    if (editBtn) {
+      const id = editBtn.getAttribute('data-id') || '';
+      const name = editBtn.getAttribute('data-name') || '';
+      const email = editBtn.getAttribute('data-email') || '';
+      const phone = editBtn.getAttribute('data-phone') || '';
+      const plan = editBtn.getAttribute('data-plan') || '';
+      const status = editBtn.getAttribute('data-status') || '';
+      const joined = editBtn.getAttribute('data-joined') || '';
+      const expiry = editBtn.getAttribute('data-expiry') || '';
+
+      document.getElementById('edit-member-id').value = id;
+      document.getElementById('edit-full-name').value = name;
+      document.getElementById('edit-email').value = email;
+      document.getElementById('edit-phone').value = phone;
+      document.getElementById('edit-plan').value = plan;
+      document.getElementById('edit-status').value = status.toLowerCase();
+      if (joined) document.getElementById('edit-joined').value = joined;
+      if (expiry) document.getElementById('edit-expiry').value = expiry;
+
+      editModal?.classList.add('show');
     }
   });
-
-  document.getElementById('close-detail-modal-btn')?.addEventListener('click', closeAllModals);
-  document.getElementById('close-detail-footer-btn')?.addEventListener('click', closeAllModals);
 });
