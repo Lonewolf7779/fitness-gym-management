@@ -1,6 +1,6 @@
 /**
  * IRONCORE Admin & Member Interactivity Script
- * Handles Mobile Sidebar, Global Search, Shortcuts, SVG Charts, & Member Table Filtering/Modals
+ * Handles Mobile Sidebar, Global Search (Modules + Members), Shortcuts, SVG Charts, & Member Table Filtering/Modals
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 4. Global Admin Dashboard Search & Navigation
+  // 4. Global Admin Dashboard Search (Modules & Member Entities)
   // =========================================================================
   let adminSearchResults = document.getElementById('admin-search-results');
   if (!adminSearchResults && adminSearchInput) {
@@ -95,13 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
     adminSearchInput.parentElement?.appendChild(adminSearchResults);
   }
 
-  const adminNavItems = [
+  // Category 1: Admin Navigation / Modules
+  const adminNavModules = [
     {
       title: 'Members',
       subtitle: 'Member Management & athletes list',
       url: '/admin/members.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-      keywords: ['member', 'members', 'athlete', 'athletes', 'user', 'users', 'client', 'clients', 'profile', 'alex', 'daniel', 'sophia', 'marcus']
+      keywords: ['member', 'members', 'athlete', 'athletes', 'user', 'users', 'directory', 'membership management']
     },
     {
       title: 'Add Member',
@@ -122,54 +123,71 @@ document.addEventListener('DOMContentLoaded', () => {
       subtitle: 'Trainer Management & staff roster',
       url: '/admin/trainers.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>',
-      keywords: ['trainer', 'trainers', 'coach', 'coaches', 'staff', 'instructor', 'marcus vance', 'elena rostova']
+      keywords: ['trainer', 'trainers', 'coach', 'coaches', 'staff', 'instructor', 'trainer management']
     },
     {
       title: 'Memberships',
       subtitle: 'Membership Management & pricing plans',
       url: '/admin/memberships.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
-      keywords: ['membership', 'memberships', 'plan', 'plans', 'starter', 'pro', 'elite', 'pricing', 'subscription', 'subscriptions']
+      keywords: ['membership', 'memberships', 'plan', 'plans', 'pricing', 'subscription', 'subscriptions']
     },
     {
       title: 'Attendance',
       subtitle: 'Attendance tracking & check-in logs',
       url: '/admin/attendance.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
-      keywords: ['attendance', 'checkin', 'check-in', 'check in', 'logs', 'qr', 'scanner', 'presence', 'visits']
+      keywords: ['attendance', 'attendance tracking', 'checkin', 'check-in', 'check in', 'logs', 'qr', 'scanner', 'presence']
     },
     {
       title: 'Payments',
       subtitle: 'Payment Management & billing invoices',
       url: '/admin/payments.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
-      keywords: ['payment', 'payments', 'billing', 'invoice', 'invoices', 'receipt', 'receipts', 'upi', 'cash', 'transaction', 'transactions']
+      keywords: ['payment', 'payments', 'payment management', 'billing', 'invoice', 'invoices', 'receipt', 'upi', 'cash', 'transaction']
     },
     {
       title: 'Workouts',
       subtitle: 'Workout Management & routine library',
       url: '/admin/workouts.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>',
-      keywords: ['workout', 'workouts', 'routine', 'routines', 'exercise', 'exercises', 'programs', 'training']
+      keywords: ['workout', 'workouts', 'workout management', 'routine', 'routines', 'exercise', 'exercises', 'programs']
     },
     {
       title: 'Reports',
       subtitle: 'Reports & business analytics',
       url: '/admin/reports.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
-      keywords: ['report', 'reports', 'analytics', 'statistics', 'charts', 'revenue report', 'retention']
+      keywords: ['report', 'reports', 'reports & analytics', 'analytics', 'statistics', 'charts', 'retention']
     },
     {
       title: 'Settings',
       subtitle: 'System settings & gym configuration',
       url: '/admin/settings.php',
       icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
-      keywords: ['setting', 'settings', 'config', 'configuration', 'system', 'profile', 'admin settings']
+      keywords: ['setting', 'settings', 'config', 'configuration', 'system settings', 'profile']
     }
   ];
 
+  // Category 2: Unified Existing Temporary Member Entities
+  const adminMemberEntities = [
+    { id: 1, name: 'Alex Rivera', email: 'alex@gmail.com', phone: '+91 9876543210', avatar: 'AR', plan: 'Pro Plan', status: 'Active' },
+    { id: 2, name: 'Daniel Carter', email: 'daniel@gmail.com', phone: '+91 9876543211', avatar: 'DC', plan: 'Starter Plan', status: 'Active' },
+    { id: 3, name: 'Sophia Miller', email: 'sophia@gmail.com', phone: '+91 9876543212', avatar: 'SM', plan: 'Elite Plan', status: 'Active' },
+    { id: 4, name: 'Ryan Brooks', email: 'ryan@gmail.com', phone: '+91 9876543213', avatar: 'RB', plan: 'Pro Plan', status: 'Expired' },
+    { id: 5, name: 'Elena Rostova', email: 'elena@ironcore.com', phone: '+91 9876543214', avatar: 'ER', plan: 'Elite Plan', status: 'Active' },
+    { id: 6, name: 'Sarah Connor', email: 'sarah@gmail.com', phone: '+91 9876543215', avatar: 'SC', plan: 'Starter Plan', status: 'Inactive' },
+    { id: 7, name: 'David Black', email: 'david@gmail.com', phone: '+91 9876543216', avatar: 'DB', plan: 'Starter Plan', status: 'Expired' },
+    { id: 8, name: 'Michael Chang', email: 'michael@gmail.com', phone: '+91 9876543222', avatar: 'MC', plan: 'Pro Plan', status: 'Active' },
+    { id: 9, name: 'Viktor Vance', email: 'viktor@gmail.com', phone: '+91 9876543217', avatar: 'VV', plan: 'Pro Plan', status: 'Expired' },
+    { id: 10, name: 'Anita Sharma', email: 'anita@gmail.com', phone: '+91 9876543218', avatar: 'AS', plan: 'Elite Plan', status: 'Expired' },
+    { id: 11, name: 'Rahul Kapoor', email: 'kapoor@gmail.com', phone: '+91 9876543219', avatar: 'RK', plan: 'Starter Plan', status: 'Active' },
+    { id: 12, name: 'Priya Singh', email: 'priya@gmail.com', phone: '+91 9876543220', avatar: 'PS', plan: 'Pro Plan', status: 'Active' },
+    { id: 13, name: 'Marcus Vance', email: 'marcus@ironcore.com', phone: '+91 9876543221', avatar: 'MV', plan: 'Elite Plan', status: 'Active' }
+  ];
+
   const escapeHtml = (str) => {
-    return str.replace(/[&<>'"]/g, tag => ({
+    return (str || '').replace(/[&<>'"]/g, tag => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
@@ -192,29 +210,73 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const matches = adminNavItems.filter(item => {
+    // 1. Search Member Entities
+    const cleanDigits = cleanQuery.replace(/[^0-9]/g, '');
+    const matchedMembers = adminMemberEntities.filter(m => {
+      const nameMatch = m.name.toLowerCase().includes(cleanQuery);
+      const emailMatch = m.email.toLowerCase().includes(cleanQuery);
+      const planMatch = m.plan.toLowerCase().includes(cleanQuery);
+      const statusMatch = m.status.toLowerCase().includes(cleanQuery);
+      const mCleanPhone = m.phone.replace(/[^0-9]/g, '');
+      const phoneMatch = m.phone.includes(cleanQuery) || (cleanDigits.length >= 3 && mCleanPhone.includes(cleanDigits));
+      return nameMatch || emailMatch || planMatch || statusMatch || phoneMatch;
+    });
+
+    // 2. Search Navigation Modules
+    const matchedModules = adminNavModules.filter(item => {
       const titleMatch = item.title.toLowerCase().includes(cleanQuery);
       const subMatch = item.subtitle.toLowerCase().includes(cleanQuery);
       const keywordMatch = item.keywords.some(k => k.toLowerCase().includes(cleanQuery));
       return titleMatch || subMatch || keywordMatch;
     });
 
-    if (matches.length > 0) {
-      adminSearchResults.innerHTML = matches.map(item => `
-        <a href="${item.url}" class="search-result-item">
-          <div class="search-result-icon">${item.icon}</div>
-          <div class="search-result-info">
-            <div class="search-result-title">${escapeHtml(item.title)}</div>
-            <div class="search-result-desc">${escapeHtml(item.subtitle)}</div>
-          </div>
-        </a>
-      `).join('');
+    const totalMatches = matchedMembers.length + matchedModules.length;
+
+    if (totalMatches > 0) {
+      let html = '';
+
+      // Render Member Matches First if query matches member entities
+      if (matchedMembers.length > 0) {
+        html += `<div class="search-section-header">MEMBERS (${matchedMembers.length})</div>`;
+        html += matchedMembers.map(m => `
+          <a href="/admin/members.php?search=${encodeURIComponent(m.name)}" class="search-result-item">
+            <div class="search-result-avatar">${escapeHtml(m.avatar)}</div>
+            <div class="search-result-info">
+              <div class="search-result-title">
+                <span>${escapeHtml(m.name)}</span>
+                <span class="search-result-tag member-tag">MEMBER</span>
+              </div>
+              <div class="search-result-desc">
+                ${escapeHtml(m.email)} · ${escapeHtml(m.plan)} · <span class="status-pill-mini ${m.status.toLowerCase()}">${escapeHtml(m.status)}</span>
+              </div>
+            </div>
+          </a>
+        `).join('');
+      }
+
+      // Render Navigation Module Matches
+      if (matchedModules.length > 0) {
+        html += `<div class="search-section-header">MODULES (${matchedModules.length})</div>`;
+        html += matchedModules.map(mod => `
+          <a href="${mod.url}" class="search-result-item">
+            <div class="search-result-icon">${mod.icon}</div>
+            <div class="search-result-info">
+              <div class="search-result-title">
+                <span>${escapeHtml(mod.title)}</span>
+                <span class="search-result-tag module-tag">MODULE</span>
+              </div>
+              <div class="search-result-desc">${escapeHtml(mod.subtitle)}</div>
+            </div>
+          </a>
+        `).join('');
+      }
+
+      adminSearchResults.innerHTML = html;
       adminSearchResults.classList.add('show');
     } else {
       adminSearchResults.innerHTML = `
         <div class="search-no-results">
-          <div>No results found for "<strong>${escapeHtml(query)}</strong>"</div>
-          <div style="font-size: 0.75rem; margin-top: 0.25rem;">Try searching for Members, Trainers, Payments, or Reports</div>
+          No results found for "<strong>${escapeHtml(query)}</strong>".
         </div>
       `;
       adminSearchResults.classList.add('show');
@@ -380,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeCountElem) activeCountElem.textContent = active;
   };
 
-  // Live Multi-Criteria Search & Filter Evaluator
+  // Live Multi-Criteria Search & Filter Evaluator for Member Management
   const filterMembersTable = () => {
     if (!tableBody) return;
     const rows = tableBody.querySelectorAll('tr:not(#no-members-row)');
@@ -460,8 +522,12 @@ document.addEventListener('DOMContentLoaded', () => {
     addModal?.classList.add('show');
   });
 
-  // Check URL parameters for ?action=add
+  // Check URL parameters for ?search=... or ?action=add
   const urlParams = new URLSearchParams(window.location.search);
+  const urlSearch = urlParams.get('search');
+  if (urlSearch && memberSearchInput) {
+    memberSearchInput.value = urlSearch;
+  }
   if (urlParams.get('action') === 'add' && addModal) {
     addModal.classList.add('show');
   }
@@ -755,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial Count Sync
+  // Initial Count Sync & Query filtering
   updateKpiCounts();
   filterMembersTable();
 });

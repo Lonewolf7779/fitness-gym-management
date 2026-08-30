@@ -357,7 +357,8 @@
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 320px;
+  width: 380px;
+  max-width: 90vw;
   background-color: var(--color-surface-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -365,13 +366,24 @@
   display: none;
   z-index: 120;
   overflow: hidden;
-  max-height: 380px;
+  max-height: 420px;
   overflow-y: auto;
 }
 
 .header-search-results.show {
   display: block;
   animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-section-header {
+  padding: 0.45rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .search-result-item {
@@ -401,8 +413,8 @@
 }
 
 .search-result-icon {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   background-color: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -418,6 +430,21 @@
   height: 16px;
 }
 
+.search-result-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .search-result-info {
   flex: 1;
   min-width: 0;
@@ -428,9 +455,31 @@
   font-weight: 700;
   color: var(--color-text-main);
   transition: color var(--transition-fast);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.search-result-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.search-result-tag.member-tag {
+  background: rgba(48, 209, 88, 0.12);
+  color: #30D158;
+  border: 1px solid rgba(48, 209, 88, 0.3);
+}
+
+.search-result-tag.module-tag {
+  background: rgba(232, 255, 0, 0.12);
+  color: var(--color-accent);
+  border: 1px solid rgba(232, 255, 0, 0.3);
 }
 
 .search-result-desc {
@@ -442,11 +491,23 @@
   margin-top: 0.15rem;
 }
 
+.status-pill-mini {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-pill-mini.active { color: #30D158; }
+.status-pill-mini.expired { color: #FF453A; }
+.status-pill-mini.inactive { color: #FFD60A; }
+.status-pill-mini.suspended { color: #FF453A; }
+
 .search-no-results {
-  padding: 1.25rem 1rem;
+  padding: 1.5rem 1rem;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 0.825rem;
+  font-size: 0.85rem;
 }
 
 /* Header Icon Buttons & Badges */
