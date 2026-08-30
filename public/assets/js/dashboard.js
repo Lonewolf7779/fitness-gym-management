@@ -1,6 +1,6 @@
 /**
  * IRONCORE Admin & Member Interactivity Script
- * Handles Mobile Sidebar, Search Shortcuts, SVG Charts, & Client-side Member Filtering/Modals
+ * Handles Mobile Sidebar, Global Search, Shortcuts, SVG Charts, & Member Table Filtering/Modals
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,15 +29,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 2. Keyboard Shortcuts (Ctrl+K for search, Escape to close overlays)
   // =========================================================================
-  const searchInput = document.getElementById('member-search-input') || document.getElementById('admin-search-input');
+  const adminSearchInput = document.getElementById('admin-search-input');
+  const memberSearchInput = document.getElementById('member-search-input');
+  const primarySearchInput = adminSearchInput || memberSearchInput;
+
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      searchInput?.focus();
+      primarySearchInput?.focus();
+      if (adminSearchInput && adminSearchInput.value.trim() !== '') {
+        renderAdminSearchResults(adminSearchInput.value.trim());
+      }
     }
     if (e.key === 'Escape') {
       closeSidebar();
       closeAllDropdowns();
+      closeAdminSearchResults();
       closeAllModals();
     }
   });
@@ -59,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation();
     const isShown = notifDropdown?.classList.contains('show');
     closeAllDropdowns();
+    closeAdminSearchResults();
     if (!isShown) notifDropdown?.classList.add('show');
   });
 
@@ -66,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation();
     const isShown = profileDropdown?.classList.contains('show');
     closeAllDropdowns();
+    closeAdminSearchResults();
     if (!isShown) profileDropdown?.classList.add('show');
   });
 
@@ -76,7 +85,160 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 4. SVG Revenue & Attendance Chart (Dashboard Home)
+  // 4. Global Admin Dashboard Search & Navigation
+  // =========================================================================
+  let adminSearchResults = document.getElementById('admin-search-results');
+  if (!adminSearchResults && adminSearchInput) {
+    adminSearchResults = document.createElement('div');
+    adminSearchResults.id = 'admin-search-results';
+    adminSearchResults.className = 'header-search-results';
+    adminSearchInput.parentElement?.appendChild(adminSearchResults);
+  }
+
+  const adminNavItems = [
+    {
+      title: 'Members',
+      subtitle: 'Member Management & athletes list',
+      url: '/admin/members.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      keywords: ['member', 'members', 'athlete', 'athletes', 'user', 'users', 'client', 'clients', 'profile', 'alex', 'daniel', 'sophia', 'marcus']
+    },
+    {
+      title: 'Add Member',
+      subtitle: 'Register new athlete & membership',
+      url: '/admin/members.php?action=add',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      keywords: ['add member', 'new member', 'create member', 'register member', 'enroll']
+    },
+    {
+      title: 'Dashboard',
+      subtitle: 'Operational control center & metrics',
+      url: '/admin/index.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+      keywords: ['dashboard', 'home', 'overview', 'metrics', 'kpi', 'revenue', 'control center']
+    },
+    {
+      title: 'Trainers',
+      subtitle: 'Trainer Management & staff roster',
+      url: '/admin/trainers.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>',
+      keywords: ['trainer', 'trainers', 'coach', 'coaches', 'staff', 'instructor', 'marcus vance', 'elena rostova']
+    },
+    {
+      title: 'Memberships',
+      subtitle: 'Membership Management & pricing plans',
+      url: '/admin/memberships.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+      keywords: ['membership', 'memberships', 'plan', 'plans', 'starter', 'pro', 'elite', 'pricing', 'subscription', 'subscriptions']
+    },
+    {
+      title: 'Attendance',
+      subtitle: 'Attendance tracking & check-in logs',
+      url: '/admin/attendance.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+      keywords: ['attendance', 'checkin', 'check-in', 'check in', 'logs', 'qr', 'scanner', 'presence', 'visits']
+    },
+    {
+      title: 'Payments',
+      subtitle: 'Payment Management & billing invoices',
+      url: '/admin/payments.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+      keywords: ['payment', 'payments', 'billing', 'invoice', 'invoices', 'receipt', 'receipts', 'upi', 'cash', 'transaction', 'transactions']
+    },
+    {
+      title: 'Workouts',
+      subtitle: 'Workout Management & routine library',
+      url: '/admin/workouts.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>',
+      keywords: ['workout', 'workouts', 'routine', 'routines', 'exercise', 'exercises', 'programs', 'training']
+    },
+    {
+      title: 'Reports',
+      subtitle: 'Reports & business analytics',
+      url: '/admin/reports.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+      keywords: ['report', 'reports', 'analytics', 'statistics', 'charts', 'revenue report', 'retention']
+    },
+    {
+      title: 'Settings',
+      subtitle: 'System settings & gym configuration',
+      url: '/admin/settings.php',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      keywords: ['setting', 'settings', 'config', 'configuration', 'system', 'profile', 'admin settings']
+    }
+  ];
+
+  const escapeHtml = (str) => {
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag));
+  };
+
+  const closeAdminSearchResults = () => {
+    adminSearchResults?.classList.remove('show');
+  };
+
+  const renderAdminSearchResults = (query) => {
+    if (!adminSearchResults) return;
+    const cleanQuery = query.toLowerCase().trim();
+
+    if (!cleanQuery) {
+      closeAdminSearchResults();
+      adminSearchResults.innerHTML = '';
+      return;
+    }
+
+    const matches = adminNavItems.filter(item => {
+      const titleMatch = item.title.toLowerCase().includes(cleanQuery);
+      const subMatch = item.subtitle.toLowerCase().includes(cleanQuery);
+      const keywordMatch = item.keywords.some(k => k.toLowerCase().includes(cleanQuery));
+      return titleMatch || subMatch || keywordMatch;
+    });
+
+    if (matches.length > 0) {
+      adminSearchResults.innerHTML = matches.map(item => `
+        <a href="${item.url}" class="search-result-item">
+          <div class="search-result-icon">${item.icon}</div>
+          <div class="search-result-info">
+            <div class="search-result-title">${escapeHtml(item.title)}</div>
+            <div class="search-result-desc">${escapeHtml(item.subtitle)}</div>
+          </div>
+        </a>
+      `).join('');
+      adminSearchResults.classList.add('show');
+    } else {
+      adminSearchResults.innerHTML = `
+        <div class="search-no-results">
+          <div>No results found for "<strong>${escapeHtml(query)}</strong>"</div>
+          <div style="font-size: 0.75rem; margin-top: 0.25rem;">Try searching for Members, Trainers, Payments, or Reports</div>
+        </div>
+      `;
+      adminSearchResults.classList.add('show');
+    }
+  };
+
+  adminSearchInput?.addEventListener('input', (e) => {
+    renderAdminSearchResults(e.target.value);
+  });
+
+  adminSearchInput?.addEventListener('focus', (e) => {
+    if (e.target.value.trim() !== '') {
+      renderAdminSearchResults(e.target.value);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.header-search')) {
+      closeAdminSearchResults();
+    }
+  });
+
+  // =========================================================================
+  // 5. SVG Revenue & Attendance Chart (Dashboard Home)
   // =========================================================================
   const chartContainer = document.getElementById('admin-chart-svg');
   const switchBtns = document.querySelectorAll('.switch-btn');
@@ -165,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 5. Toast Notification Helper
+  // 6. Toast Notification Helper
   // =========================================================================
   let toastTimer = null;
   const showToast = (message) => {
@@ -188,9 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // =========================================================================
-  // 6. MEMBER MANAGEMENT: SEARCH, FILTERING, MODALS & LIVE CRUD
+  // 7. MEMBER MANAGEMENT: SEARCH, FILTERING, MODALS & LIVE CRUD
   // =========================================================================
-  const memberSearchInput = document.getElementById('member-search-input');
   const statusFilterSelect = document.getElementById('status-filter');
   const planFilterSelect = document.getElementById('plan-filter');
   const tableBody = document.getElementById('members-table-body');
@@ -263,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Attach search & filter event listeners
+  // Attach search & filter event listeners for Member Management page
   memberSearchInput?.addEventListener('input', filterMembersTable);
   statusFilterSelect?.addEventListener('change', filterMembersTable);
   planFilterSelect?.addEventListener('change', filterMembersTable);
@@ -321,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 7. Add Member Form Submission Handler
+  // 8. Add Member Form Submission Handler
   // =========================================================================
   addMemberForm?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -411,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 8. Edit Member Form Submission Handler
+  // 9. Edit Member Form Submission Handler
   // =========================================================================
   editMemberForm?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -511,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 9. Delegated Click Listener for View & Edit Actions
+  // 10. Delegated Click Listener for View & Edit Actions
   // =========================================================================
   document.addEventListener('click', (e) => {
     const viewBtn = e.target.closest('.view-member-btn');

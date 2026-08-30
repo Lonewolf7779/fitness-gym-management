@@ -142,8 +142,9 @@ $stats = [
           <!-- Search Input Affordance -->
           <div class="header-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="admin-search-input" placeholder="Search members, trainers..." aria-label="Global Admin Search">
+            <input type="text" id="admin-search-input" placeholder="Search members, trainers..." aria-label="Global Admin Search" autocomplete="off">
             <span class="search-kbd">⌘K</span>
+            <div class="header-search-results" id="admin-search-results"></div>
           </div>
 
           <!-- Notification Icon Dropdown -->
