@@ -1,6 +1,6 @@
 /**
- * IRONCORE Admin Dashboard Interactivity Script
- * Handles Mobile Sidebar, Notification Panels, Search Shortcuts, & SVG Charts
+ * IRONCORE Admin & Member Interactivity Script
+ * Handles Mobile Sidebar, Search Shortcuts, SVG Charts, & Client-side Member Filtering/Modals
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebarOverlay?.addEventListener('click', closeSidebar);
 
   // 2. Keyboard Shortcut (Ctrl + K or Cmd + K) for Quick Search Focus
-  const searchInput = document.getElementById('admin-search-input');
+  const searchInput = document.getElementById('admin-search-input') || document.getElementById('member-search-input');
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') {
       closeSidebar();
       closeAllDropdowns();
+      closeAllModals();
     }
   });
 
@@ -124,18 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <stop offset="100%" stop-color="${data.color}" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
-        <!-- Y-Axis Grid Lines -->
         <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="#292929" stroke-dasharray="4" />
         <line x1="${padding}" y1="${padding + chartH / 2}" x2="${width - padding}" y2="${padding + chartH / 2}" stroke="#292929" stroke-dasharray="4" />
         <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#292929" />
 
-        <!-- Fill Gradient -->
         <path d="${areaD}" fill="url(#adminChartGlow)" />
-
-        <!-- Smooth Path Line -->
         <path d="${pathD}" fill="none" stroke="${data.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
 
-        <!-- Data Circles & Tooltip Labels -->
         ${points.map(p => `
           <g class="chart-point-group">
             <circle cx="${p.x}" cy="${p.y}" r="5" fill="${data.color}" stroke="#0B0B0B" stroke-width="2.5" />
@@ -147,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   };
 
-  // Chart Switcher Buttons Listener
   switchBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       switchBtns.forEach(b => b.classList.remove('active'));
@@ -157,8 +152,173 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Initial Chart Render
   if (chartContainer) {
     renderAdminSVGChart('revenue');
   }
+
+  // =========================================================================
+  // 5. MEMBER MANAGEMENT CLIENT-SIDE SEARCH, FILTERING, & MODALS
+  // =========================================================================
+  const memberSearchInput = document.getElementById('member-search-input');
+  const statusFilterSelect = document.getElementById('status-filter');
+  const planFilterSelect = document.getElementById('plan-filter');
+  const tableBody = document.getElementById('members-table-body');
+  const countIndicator = document.getElementById('member-count-indicator');
+
+  const filterMembersTable = () => {
+    if (!tableBody) return;
+    const rows = tableBody.querySelectorAll('tr');
+    const query = (memberSearchInput?.value || '').toLowerCase().trim();
+    const selectedStatus = (statusFilterSelect?.value || 'all').toLowerCase();
+    const selectedPlan = (planFilterSelect?.value || 'all').toLowerCase();
+
+    let visibleCount = 0;
+    const totalCount = rows.length;
+
+    rows.forEach(row => {
+      const name = row.getAttribute('data-name') || '';
+      const email = row.getAttribute('data-email') || '';
+      const phone = row.getAttribute('data-phone') || '';
+      const status = row.getAttribute('data-status') || '';
+      const plan = row.getAttribute('data-plan') || '';
+
+      const matchesQuery = !query || name.includes(query) || email.includes(query) || phone.includes(query);
+      const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
+      const matchesPlan = selectedPlan === 'all' || plan.includes(selectedPlan);
+
+      if (matchesQuery && matchesStatus && matchesPlan) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (countIndicator) {
+      countIndicator.textContent = `Showing ${visibleCount} of ${totalCount} members`;
+    }
+  };
+
+  memberSearchInput?.addEventListener('input', filterMembersTable);
+  statusFilterSelect?.addEventListener('change', filterMembersTable);
+  planFilterSelect?.addEventListener('change', filterMembersTable);
+
+  // Modals Management
+  const addModal = document.getElementById('add-member-modal');
+  const detailModal = document.getElementById('member-detail-modal');
+  const openAddBtn = document.getElementById('open-add-modal-btn');
+  const closeAddBtn = document.getElementById('close-add-modal-btn');
+  const cancelAddBtn = document.getElementById('cancel-add-modal-btn');
+  const addMemberForm = document.getElementById('add-member-form');
+
+  const closeAllModals = () => {
+    addModal?.classList.remove('show');
+    detailModal?.classList.remove('show');
+  };
+
+  openAddBtn?.addEventListener('click', () => {
+    addModal?.classList.add('show');
+  });
+
+  closeAddBtn?.addEventListener('click', closeAllModals);
+  cancelAddBtn?.addEventListener('click', closeAllModals);
+
+  // Dynamic Add Member Form Submit Handler (UI ONLY)
+  addMemberForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const firstName = document.getElementById('new-first-name')?.value || 'New';
+    const lastName = document.getElementById('new-last-name')?.value || 'Member';
+    const email = document.getElementById('new-email')?.value || 'new@example.com';
+    const phone = document.getElementById('new-phone')?.value || '+91 9876543299';
+    const plan = document.getElementById('new-plan')?.value || 'Pro Plan';
+    const status = document.getElementById('new-status')?.value || 'active';
+    const fullName = `${firstName} ${lastName}`;
+    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
+    if (tableBody) {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-name', fullName.toLowerCase());
+      tr.setAttribute('data-email', email.toLowerCase());
+      tr.setAttribute('data-phone', phone.toLowerCase());
+      tr.setAttribute('data-status', status.toLowerCase());
+      tr.setAttribute('data-plan', plan.toLowerCase());
+
+      tr.innerHTML = `
+        <td>
+          <div class="member-cell">
+            <div class="member-avatar">${initials}</div>
+            <div>
+              <div class="member-info-name">${fullName}</div>
+              <div class="member-info-email">${email}</div>
+            </div>
+          </div>
+        </td>
+        <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);">${phone}</span></td>
+        <td><span style="font-weight: 700; color: var(--color-accent);">${plan.toUpperCase()}</span></td>
+        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);">Today</span></td>
+        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);">30 Days</span></td>
+        <td>
+          <span class="status-pill ${status}">
+            <span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}
+          </span>
+        </td>
+        <td style="text-align: right;">
+          <div class="table-actions" style="justify-content: flex-end;">
+            <button class="btn-action-sm view-member-btn" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="Today" data-expiry="30 Days">View</button>
+            <button class="btn-action-sm edit-member-btn" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}">Edit</button>
+          </div>
+        </td>
+      `;
+      tableBody.insertBefore(tr, tableBody.firstChild);
+      filterMembersTable();
+
+      // Update Top Summary Count Indicators
+      const totalCountElem = document.getElementById('stat-total-count');
+      if (totalCountElem) {
+        totalCountElem.textContent = parseInt(totalCountElem.textContent || '248') + 1;
+      }
+    }
+
+    addMemberForm.reset();
+    closeAllModals();
+  });
+
+  // View / Edit Modal Listener Attachment
+  document.addEventListener('click', (e) => {
+    const viewBtn = e.target.closest('.view-member-btn');
+    const editBtn = e.target.closest('.edit-member-btn');
+    
+    if (viewBtn || editBtn) {
+      const btn = viewBtn || editBtn;
+      const name = btn.getAttribute('data-name') || 'Alex Rivera';
+      const email = btn.getAttribute('data-email') || 'alex@gmail.com';
+      const phone = btn.getAttribute('data-phone') || '+91 9876543210';
+      const plan = btn.getAttribute('data-plan') || 'Pro Plan';
+      const status = btn.getAttribute('data-status') || 'active';
+      const joined = btn.getAttribute('data-joined') || '12 Aug 2026';
+      const expiry = btn.getAttribute('data-expiry') || '28 Sep 2026';
+
+      const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+      document.getElementById('detail-modal-title').textContent = viewBtn ? 'MEMBER PROFILE' : 'EDIT MEMBER DETAILS';
+      document.getElementById('detail-avatar').textContent = initials;
+      document.getElementById('detail-name').textContent = name;
+      document.getElementById('detail-email').textContent = email;
+      document.getElementById('detail-phone').textContent = phone;
+      document.getElementById('detail-plan').textContent = plan;
+      document.getElementById('detail-joined').textContent = joined;
+      document.getElementById('detail-expiry').textContent = expiry;
+
+      const pill = document.getElementById('detail-status-pill');
+      if (pill) {
+        pill.className = `status-pill ${status}`;
+        pill.innerHTML = `<span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+      }
+
+      detailModal?.classList.add('show');
+    }
+  });
+
+  document.getElementById('close-detail-modal-btn')?.addEventListener('click', closeAllModals);
+  document.getElementById('close-detail-footer-btn')?.addEventListener('click', closeAllModals);
 });
