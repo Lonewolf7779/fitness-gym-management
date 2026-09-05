@@ -1,20 +1,20 @@
 -- IRONCORE Seed Data
 USE `ironcore_gym`;
 
--- Disable foreign key checks for clean seed
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE `progress_logs`;
-TRUNCATE TABLE `payments`;
-TRUNCATE TABLE `workout_plan_exercises`;
-TRUNCATE TABLE `workout_plans`;
-TRUNCATE TABLE `exercise_catalog`;
-TRUNCATE TABLE `attendance`;
-TRUNCATE TABLE `subscriptions`;
-TRUNCATE TABLE `membership_plans`;
-TRUNCATE TABLE `trainers`;
-TRUNCATE TABLE `members`;
-TRUNCATE TABLE `users`;
-SET FOREIGN_KEY_CHECKS = 1;
+-- Clear existing data in dependency order.
+-- DELETE is used instead of TRUNCATE because MariaDB rejects TRUNCATE
+-- on a table referenced by a foreign key, even when FK checks are disabled.
+DELETE FROM `progress_logs`;
+DELETE FROM `payments`;
+DELETE FROM `workout_plan_exercises`;
+DELETE FROM `workout_plans`;
+DELETE FROM `exercise_catalog`;
+DELETE FROM `attendance`;
+DELETE FROM `subscriptions`;
+DELETE FROM `membership_plans`;
+DELETE FROM `trainers`;
+DELETE FROM `members`;
+DELETE FROM `users`;
 
 -- 1. Insert Initial Admin, Trainer, Active Member, Inactive Member, and Suspended Member Users
 -- Credentials for Testing Phase 2.1 Authentication:
