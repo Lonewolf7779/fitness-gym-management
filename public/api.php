@@ -7,14 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 if (session_status() === PHP_SESSION_NONE) session_start();
 try {
   AuthMiddleware::handle();
-  // The API currently serves administrative management operations only.
-  // Keep existing authenticated behavior intact, but prevent trainer/member sessions
-  // from invoking admin write/read endpoints.
-  if (($_SESSION['role'] ?? '') !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success'=>false,'message'=>'Administrator privileges required.']);
-    exit;
-  }
+  if (($_SESSION['role'] ?? '') !== 'admin') { http_response_code(403); echo json_encode(['success'=>false,'message'=>'Administrator privileges required.']); exit; }
   $svc=new GymManagementService(); $action=$_GET['action']??'';
   if ($_SERVER['REQUEST_METHOD']==='GET') {
     switch($action){
@@ -30,7 +23,7 @@ try {
     } exit;
   }
   if ($_SERVER['REQUEST_METHOD']!=='POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Method not allowed']); exit; }
-  if (!verifyCsrfToken($_POST['csrf_token']??'')) { http_response_code(419); echo json_encode(['success'=>false,'message'=>'Invalid CSRF token']); exit; }
+  if (!validateCsrfToken($_POST['csrf_token']??'')) { http_response_code(419); echo json_encode(['success'=>false,'message'=>'Invalid CSRF token']); exit; }
   switch($action){
     case 'create_member': $id=$svc->createMember($_POST); break;
     case 'update_member': $svc->updateMember((int)$_POST['id'],$_POST); $id=(int)$_POST['id']; break;
@@ -39,7 +32,7 @@ try {
     case 'toggle_plan': $svc->togglePlan((int)$_POST['id']); $id=(int)$_POST['id']; break;
     case 'create_trainer': $id=$svc->createTrainer($_POST); break;
     case 'update_trainer': $svc->updateTrainer((int)$_POST['id'],$_POST); $id=(int)$_POST['id']; break;
-    case 'check_in': $svc->checkIn((int)$_POST['member_id'],$_POST['status']??'present'); $id=1; break;
+    case 'check_in': $id=$svc->checkIn((int)$_POST['member_id'],$_POST['status']??'present'); break;
     case 'check_out': $svc->checkOut((int)$_POST['attendance_id']); $id=(int)$_POST['attendance_id']; break;
     case 'create_payment': $id=$svc->createPayment($_POST); break;
     case 'create_workout': $id=$svc->createWorkout($_POST); break;
