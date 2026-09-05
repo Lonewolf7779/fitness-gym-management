@@ -7,6 +7,14 @@ header('Content-Type: application/json; charset=utf-8');
 if (session_status() === PHP_SESSION_NONE) session_start();
 try {
   AuthMiddleware::handle();
+  // The API currently serves administrative management operations only.
+  // Keep existing authenticated behavior intact, but prevent trainer/member sessions
+  // from invoking admin write/read endpoints.
+  if (($_SESSION['role'] ?? '') !== 'admin') {
+    http_response_code(403);
+    echo json_encode(['success'=>false,'message'=>'Administrator privileges required.']);
+    exit;
+  }
   $svc=new GymManagementService(); $action=$_GET['action']??'';
   if ($_SERVER['REQUEST_METHOD']==='GET') {
     switch($action){
