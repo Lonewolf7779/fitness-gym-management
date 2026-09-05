@@ -2,6 +2,8 @@
 -- Run database/schema.sql, then database/seed.sql, then this file.
 USE `ironcore_gym`;
 
+UPDATE `subscriptions` SET `start_date`=DATE_SUB(CURDATE(),INTERVAL 5 DAY),`end_date`=DATE_ADD(CURDATE(),INTERVAL 25 DAY),`status`='active' WHERE `id`=1;
+
 INSERT INTO `workout_plans` (`id`,`member_id`,`trainer_id`,`title`,`goal`,`start_date`,`end_date`) VALUES
 (1,1,1,'Upper Body Strength','Build upper-body strength and hypertrophy',DATE_SUB(CURDATE(),INTERVAL 7 DAY),DATE_ADD(CURDATE(),INTERVAL 23 DAY));
 
