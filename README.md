@@ -1,138 +1,144 @@
-# IRONCORE — Fitness & Gym Management System
+# IRONCORE | Fitness & Gym Management System
 
-A commercial-grade, high-performance **Fitness & Gym Management Web Application** engineered with pure native **HTML5, CSS3, Vanilla JavaScript, PHP 8+**, and **MySQL**.
+IRONCORE is a full-stack gym management application built for a college project with a production-minded MVC structure. It uses **HTML5, CSS3, Vanilla JavaScript, PHP 8+, and MySQL** with PDO.
 
-Designed with a clean MVC-inspired architecture and modern dark athletic aesthetics, **IRONCORE** unifies gym operation management—memberships, check-ins, trainers, workout programming, payments, and progress analytics—into a unified platform.
+## What is implemented
 
----
+- Premium responsive public landing page
+- Registration and login with role-based authentication
+- Admin, Trainer, and Member portals
+- Admin member management backed by MySQL
+- Trainer management with create/edit/status controls
+- Membership plan management with create/edit/activation controls
+- Attendance check-in/check-out with duplicate protection
+- Payment recording with unique transaction IDs
+- Workout plan creation and exercise assignment
+- Reports and operational metrics
+- Live admin KPIs, recent members, expiry alerts, and revenue/attendance charts
+- Live trainer client/program metrics
+- Live member subscription, streak, attendance, and workout data
+- Member progress logging with validation
+- Member attendance history and self check-in/check-out
+- Persistent admin gym settings
+- PDO prepared statements, password hashing, CSRF protection, output escaping, session hardening, role guards, and server-side validation
+- Optional realistic demo dataset for immediate dashboard testing
 
-## 🚀 Key Features
+## Technology
 
-* **Public Landing Page**: Premium tech-driven aesthetic, scroll animations, numerical tickers, interactive SVG chart preview, pricing calculator.
-* **MVC PHP Architecture**: Separation of concerns between Controllers, Services, Models, Repositories, Helpers, and View Templates.
-* **Role-Based Portals**: Dedicated administrative control, trainer workspace, and member dashboard entry points.
-* **Security First**: Prepared PDO queries, BCRYPT password hashing, session hardening, output escaping (`e()`), and CSRF token protection.
-* **Zero External JS/CSS Framework Dependencies**: Built strictly with Vanilla JavaScript and CSS Custom Properties.
+| Layer | Technology |
+|---|---|
+| UI | HTML5, CSS3, Vanilla JavaScript ES6+ |
+| Backend | PHP 8+ |
+| Database | MySQL 5.7+/8.0 or MariaDB |
+| Database access | PDO prepared statements |
+| Local server | XAMPP Apache, WAMP/LAMP, or PHP built-in server |
 
----
+## Project structure
 
-## 🛠️ Technology Stack
-
-| Component | Technology |
-| :--- | :--- |
-| **Frontend UI** | HTML5, CSS3 (Custom Tokens & Flex/Grid), Vanilla JavaScript (ES6+) |
-| **Backend Core** | PHP 8.0+ (MVC Architecture) |
-| **Database** | MySQL 5.7+ / 8.0 / MariaDB (PDO Prepared Statements) |
-| **Server Engine** | Compatible with Apache (XAMPP/WAMP/LAMP) or PHP Built-in Server |
-
----
-
-## 📁 Directory Structure
-
-```
+```text
 fitness-gym-management/
-├── public/                     # Document root accessible to web server
-│   ├── index.php               # Public Landing Page
-│   ├── login.php               # Login Page
-│   ├── register.php            # Member Registration
-│   ├── admin/                  # Admin Portal
-│   ├── trainer/                # Trainer Portal
-│   ├── member/                 # Member Portal
-│   ├── assets/                 # Stylesheets, JS, Images, & Icons
-│   └── uploads/                # File uploads directory
-├── app/                        # Core Application Layer (Protected)
-│   ├── config/                 # App configuration & Database PDO Singleton
-│   ├── controllers/            # Request Handlers & HTTP Routers
-│   ├── models/                 # PDO Data Models & SQL Repositories
-│   ├── services/               # Business Logic Services
-│   ├── middleware/             # Role Guards & Auth Middleware
-│   ├── helpers/                # Security, Validation, & Response Utilities
-│   └── views/                  # UI Layouts & Component Views
+├── public/                    # Web document root
+│   ├── index.php
+│   ├── login.php
+│   ├── register.php
+│   ├── api.php
+│   ├── dashboard-data.php
+│   ├── dashboard-chart.php
+│   ├── member-data.php
+│   ├── admin/
+│   ├── trainer/
+│   ├── member/
+│   └── assets/
+├── app/
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── services/
+│   ├── middleware/
+│   ├── helpers/
+│   └── views/
 ├── database/
-│   ├── schema.sql              # MySQL DDL Tables Creation Script
-│   └── seed.sql                # Initial Seed Data
-├── storage/logs/               # Server & App Log files
-├── .env                        # Local Environment Config
-├── .gitignore
+│   ├── schema.sql
+│   ├── seed.sql
+│   └── demo-data.sql
+├── storage/logs/
+├── .env
 └── README.md
 ```
 
----
+## XAMPP setup
 
-## ⚙️ Local Setup Instructions
+1. Install XAMPP with **Apache + MySQL + phpMyAdmin**.
+2. Put the project in:
+   `C:\xampp\htdocs\fitness-gym-management`
+3. Start **Apache** and **MySQL** in the XAMPP Control Panel.
+4. Open phpMyAdmin at `http://localhost/phpmyadmin/`.
+5. Import `database/schema.sql`.
+6. Import `database/seed.sql`.
+7. Optionally import `database/demo-data.sql` for a populated first run.
+8. Copy `.env.example` to `.env` and keep the local database values:
 
-### Option 1: Quick Test via PHP Built-in Server (Recommended)
+```env
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost/fitness-gym-management/public
+AUTH_MODE=database
 
-1. Open PowerShell / Command Prompt and navigate to the project directory:
-   ```bash
-   cd C:\side_Project\fitness-gym-management
-   ```
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=ironcore_gym
+DB_USER=root
+DB_PASS=
+```
 
-2. Start the built-in development server pointing to the `public/` directory:
-   ```bash
-   php -S localhost:8000 -t public
-   ```
+9. Open:
+   `http://localhost/fitness-gym-management/public/`
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
+### PHP built-in server
 
----
+If Apache is not required, PHP can also serve the public directory directly:
 
-### Option 2: Setup via XAMPP / WAMP / LAMP
+```bash
+php -S localhost:8000 -t public
+```
 
-1. Copy or link the `fitness-gym-management` folder inside your XAMPP `htdocs` directory (e.g. `C:\xampp\htdocs\fitness-gym-management`).
-2. Point your virtual host or Apache document root to `C:\xampp\htdocs\fitness-gym-management\public`.
-3. Open `http://localhost/fitness-gym-management/public/index.php`.
+Then open `http://localhost:8000`.
 
----
+## Test accounts
 
-## 🗄️ Database Setup (MySQL)
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@ironcore.com | Admin@123 |
+| Trainer | marcus@ironcore.com | Trainer@123 |
+| Member | alex@gmail.com | Member@123 |
+| Suspended test | suspended@gmail.com | Member@123 |
+| Inactive test | inactive@gmail.com | Member@123 |
 
-1. Open phpMyAdmin or your MySQL client (e.g., MySQL Workbench, HeidiSQL).
-2. Create the target database:
-   ```sql
-   CREATE DATABASE ironcore_gym;
-   ```
-3. Import the relational schema DDL:
-   ```bash
-   mysql -u root -p ironcore_gym < database/schema.sql
-   ```
-4. Import seed data:
-   ```bash
-   mysql -u root -p ironcore_gym < database/seed.sql
-   ```
-5. Ensure your `.env` credentials match your local database:
-   ```env
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_NAME=ironcore_gym
-   DB_USER=root
-   DB_PASS=
-   ```
+The suspended and inactive accounts are intentionally rejected by the authentication flow.
 
----
+## Recommended first-run test
 
-## 🔑 Default Credentials (Seed Accounts)
+After importing the three SQL files:
 
-* **Admin Portal**: `admin@ironcore.com` | `Admin@123`
-* **Trainer Portal**: `marcus@ironcore.com` | `Trainer@123`
-* **Member Portal**: `alex@gmail.com` | `Member@123`
+1. Log in as Admin and verify live member, attendance, revenue, trainer, membership, payment, workout, and report data.
+2. Create a member and assign a plan.
+3. Create/edit a trainer.
+4. Create/edit a membership plan.
+5. Check a member in and out from Attendance.
+6. Record a payment and verify it appears in reports/dashboard revenue.
+7. Create a workout plan and assign exercises.
+8. Log in as the Trainer and confirm the assigned client appears.
+9. Log in as the Member and add a progress measurement.
+10. Check the member's attendance history and subscription data.
+11. Open Admin Settings and save gym configuration.
+12. Test suspended and inactive accounts to confirm access is blocked.
 
----
+## Production note
 
-## 🛣️ Development Roadmap
+Before deployment, use `APP_ENV=production`, disable debug output, use `AUTH_MODE=database`, set a strong database password, use HTTPS, and keep `.env` outside source control. The development credentials above are for project testing only.
 
-- [x] Phase 1: Architecture setup, MVC folder structure, design tokens system, and Landing Page implementation.
-- [ ] Phase 2: Complete CRUD logic for Admin Member management & Membership plan updates.
-- [ ] Phase 3: Trainer workout creator & exercise assignment interface.
-- [ ] Phase 4: QR-code attendance check-in module and Razorpay/UPI gateway integration.
-- [ ] Phase 5: Member progress graphs & transformation log tracking.
+## Status
 
----
+The application codebase now contains the core end-to-end management workflows and live database integrations. Final acceptance still requires running the application against an actual MySQL instance, because PHP/MySQL runtime testing cannot be performed from the repository itself.
 
-## 📄 License & Attribution
-
-Developed for college project submission and commercial expansion.  
-&copy; 2026 IRONCORE Fitness. All rights reserved.
+© 2026 IRONCORE Fitness
