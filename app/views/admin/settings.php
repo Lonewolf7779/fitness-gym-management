@@ -59,46 +59,12 @@ $adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
 </head>
 <body style="background-color: var(--color-bg);">
   <div class="dashboard-shell">
-    <div class="sidebar-overlay"></div>
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <a href="/index.php" class="brand-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
-          </svg>
-          <span>IRONCORE</span>
-        </a>
-        <span class="sidebar-badge">ADMINISTRATOR CONTROL</span>
-      </div>
-      <ul class="sidebar-nav">
-        <li><a href="/admin/index.php" class="nav-item-link">Dashboard</a></li>
-        <li><a href="/admin/members.php" class="nav-item-link">Members</a></li>
-        <li><a href="/admin/trainers.php" class="nav-item-link">Trainers</a></li>
-        <li><a href="/admin/memberships.php" class="nav-item-link">Memberships</a></li>
-        <li><a href="/admin/attendance.php" class="nav-item-link">Attendance</a></li>
-        <li><a href="/admin/payments.php" class="nav-item-link">Payments</a></li>
-        <li><a href="/admin/workouts.php" class="nav-item-link">Workouts</a></li>
-        <li><a href="/admin/reports.php" class="nav-item-link">Reports</a></li>
-      </ul>
-      <div class="sidebar-footer">
-        <div class="user-profile-badge">
-          <div class="avatar-circle"><?= e(strtoupper(substr($adminName, 0, 1))) ?></div>
-          <div class="user-info">
-            <div class="user-name"><?= e($adminName) ?></div>
-            <div class="user-role">Super Admin</div>
-          </div>
-        </div>
-        <a href="/logout.php" class="btn btn-primary" style="width: 100%; justify-content: center;">Logout</a>
-      </div>
-    </aside>
-
-    <div class="main-wrapper">
-      <header class="dashboard-header">
-        <div class="header-title-group">
-          <h1>SYSTEM SETTINGS</h1>
-          <p>Configure gym profile, operational defaults, and regional formatting</p>
-        </div>
-      </header>
+    <?php
+    $currentSection = 'settings';
+    $pageHeading    = 'SYSTEM SETTINGS';
+    $pageSubtitle   = 'Configure gym profile, operational defaults, and regional formatting';
+    require_once __DIR__ . '/../layouts/admin_nav.php';
+    ?>
 
       <main class="dashboard-body">
         <section class="panel-card" style="max-width: 900px; margin: 0 auto; padding: 2.25rem;">

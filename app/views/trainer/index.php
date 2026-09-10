@@ -47,84 +47,13 @@ $todaySchedule = $trainerData['today_schedule'];
 <body style="background-color: var(--color-bg);">
 
   <div class="dashboard-shell">
-    <div class="sidebar-overlay"></div>
-
-    <!-- ==========================================================================
-         SIDEBAR NAVIGATION
-         ========================================================================== -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <a href="/index.php" class="brand-logo" aria-label="IRONCORE Home">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
-          </svg>
-          <span>IRONCORE</span>
-        </a>
-        <span class="sidebar-badge">TRAINER PORTAL</span>
-      </div>
-
-      <ul class="sidebar-nav">
-        <li>
-          <a href="/trainer/index.php" class="nav-item-link active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>My Clients</span>
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-footer">
-        <div class="user-profile-badge">
-          <div class="avatar-circle"><?= strtoupper(substr($trainerName, 0, 1)) ?></div>
-          <div class="user-info">
-            <div class="user-name"><?= e($trainerName) ?></div>
-            <div class="user-role">Certified Coach</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ==========================================================================
-         MAIN CONTENT WRAPPER
-         ========================================================================== -->
-    <div class="main-wrapper">
-
-      <!-- TOP HEADER BAR -->
-      <header class="dashboard-header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <button class="admin-mobile-toggle" aria-label="Toggle navigation drawer">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-
-          <div class="header-title-group">
-            <h1>TRAINER ATHLETE HUB</h1>
-            <p>Live assigned athletes, weekly session metrics, & routine assignments</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <button class="btn btn-primary" id="open-workout-modal-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ ASSIGN WORKOUT</span>
-          </button>
-
-          <!-- Profile Dropdown -->
-          <div class="dropdown-menu-wrapper">
-            <button class="icon-btn" id="profile-btn" aria-label="User menu" style="padding: 0; overflow: hidden;">
-              <div class="avatar-circle" style="width: 100%; height: 100%; border-radius: 0; font-size: 0.85rem;"><?= strtoupper(substr($trainerName, 0, 1)) ?></div>
-            </button>
-            <div class="dropdown-panel" id="profile-dropdown" style="width: 220px;">
-              <div style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); margin-bottom: 0.5rem;">
-                <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($trainerName) ?></div>
-                <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($trainerEmail) ?></div>
-              </div>
-              <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
-            </div>
-          </div>
-        </div>
-      </header>
+    <?php
+    $currentSection    = 'dashboard';
+    $pageHeading       = 'TRAINER ATHLETE HUB';
+    $pageSubtitle      = 'Live assigned athletes, weekly session metrics, & routine assignments';
+    $extraHeaderAction = '<button class="btn btn-primary" id="open-workout-modal-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>+ ASSIGN WORKOUT</span></button>';
+    require_once __DIR__ . '/../layouts/trainer_nav.php';
+    ?>
 
       <!-- DASHBOARD BODY CONTENT -->
       <main class="dashboard-body">

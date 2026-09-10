@@ -533,12 +533,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const editMemberForm = document.getElementById('edit-member-form');
   const editFormError = document.getElementById('edit-form-error');
 
+  const resetPasswordModal = document.getElementById('reset-password-modal');
+  const closeResetBtn = document.getElementById('close-reset-modal-btn');
+  const cancelResetBtn = document.getElementById('cancel-reset-modal-btn');
+  const resetPasswordForm = document.getElementById('reset-password-form');
+  const resetFormError = document.getElementById('reset-form-error');
+
   const closeAllModals = () => {
     addModal?.classList.remove('show');
     viewModal?.classList.remove('show');
     editModal?.classList.remove('show');
+    resetPasswordModal?.classList.remove('show');
     if (addFormError) addFormError.style.display = 'none';
     if (editFormError) editFormError.style.display = 'none';
+    if (resetFormError) resetFormError.style.display = 'none';
   };
 
   openAddBtn?.addEventListener('click', () => {
@@ -562,6 +570,8 @@ document.addEventListener('DOMContentLoaded', () => {
   closeViewFooterBtn?.addEventListener('click', closeAllModals);
   closeEditBtn?.addEventListener('click', closeAllModals);
   cancelEditBtn?.addEventListener('click', closeAllModals);
+  closeResetBtn?.addEventListener('click', closeAllModals);
+  cancelResetBtn?.addEventListener('click', closeAllModals);
 
   // Close modals when clicking directly on overlay backdrop
   document.addEventListener('click', (e) => {
@@ -801,6 +811,95 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editEmergencyElem) editEmergencyElem.value = emergency;
 
       editModal?.classList.add('show');
+    }
+
+    // Reset Password Action
+    const resetBtn = e.target.closest('.reset-pwd-btn');
+    if (resetBtn) {
+      const userId = resetBtn.getAttribute('data-user-id') || '';
+      const name = resetBtn.getAttribute('data-name') || '';
+      const email = resetBtn.getAttribute('data-email') || '';
+
+      const resetUserIdElem = document.getElementById('reset-user-id');
+      const resetUserNameElem = document.getElementById('reset-user-name');
+      const resetUserEmailElem = document.getElementById('reset-user-email');
+      const resetNewPwdElem = document.getElementById('reset-new-password');
+
+      if (resetUserIdElem) resetUserIdElem.value = userId;
+      if (resetUserNameElem) resetUserNameElem.textContent = name;
+      if (resetUserEmailElem) resetUserEmailElem.textContent = email;
+      if (resetNewPwdElem) resetNewPwdElem.value = '';
+
+      resetPasswordModal?.classList.add('show');
+    }
+
+    // Delete Member Action
+    const deleteBtn = e.target.closest('.delete-member-btn');
+    if (deleteBtn) {
+      const id = deleteBtn.getAttribute('data-id') || '';
+      const name = deleteBtn.getAttribute('data-name') || '';
+      if (!confirm(`Are you sure you want to permanently remove athlete "${name}"?`)) return;
+
+      const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+      const formData = new FormData();
+      formData.append('csrf_token', csrfToken);
+      formData.append('id', id);
+
+      fetch('/api.php?action=delete_member', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || 'Operation complete.');
+        if (data.success) window.location.reload();
+      })
+      .catch(err => alert('Failed to delete member: ' + err.message));
+    }
+  });
+
+  // Reset Password Form Submit
+  resetPasswordForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userId = document.getElementById('reset-user-id')?.value;
+    const newPassword = document.getElementById('reset-new-password')?.value;
+    const csrfToken = resetPasswordForm.querySelector('input[name="csrf_token"]')?.value || '';
+
+    if (!newPassword || newPassword.length < 6) {
+      if (resetFormError) {
+        resetFormError.textContent = 'Password must be at least 6 characters long.';
+        resetFormError.style.display = 'block';
+      }
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('csrf_token', csrfToken);
+      formData.append('user_id', userId);
+      formData.append('new_password', newPassword);
+
+      const res = await fetch('/api.php?action=reset_password', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        if (resetFormError) {
+          resetFormError.textContent = data.message || 'Error updating password.';
+          resetFormError.style.display = 'block';
+        }
+        return;
+      }
+
+      showToast(`Password updated successfully.`);
+      closeAllModals();
+    } catch (err) {
+      if (resetFormError) {
+        resetFormError.textContent = 'Server connection error occurred.';
+        resetFormError.style.display = 'block';
+      }
     }
   });
 

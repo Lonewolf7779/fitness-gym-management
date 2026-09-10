@@ -39,120 +39,13 @@ $expiredCount = count(array_filter($allMembers, fn($m) => ($m['subscription_stat
 <body style="background-color: var(--color-bg);">
 
   <div class="dashboard-shell">
-    <div class="sidebar-overlay"></div>
-
-    <!-- ==========================================================================
-         A. SIDEBAR NAVIGATION
-         ========================================================================== -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <a href="/index.php" class="brand-logo" aria-label="IRONCORE Home">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
-          </svg>
-          <span>IRONCORE</span>
-        </a>
-        <span class="sidebar-badge">ADMINISTRATOR CONTROL</span>
-      </div>
-
-      <ul class="sidebar-nav">
-        <li>
-          <a href="/admin/index.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/members.php" class="nav-item-link active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>Members</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/trainers.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
-            <span>Trainers</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/memberships.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            <span>Memberships</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/attendance.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/></svg>
-            <span>Attendance</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/payments.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <span>Payments</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/workouts.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
-            <span>Workouts</span>
-          </a>
-        </li>
-        <li>
-          <a href="/admin/reports.php" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>Reports</span>
-          </a>
-        </li>
-      </ul>
-
-      <div class="sidebar-footer">
-        <div class="user-profile-badge">
-          <div class="avatar-circle"><?= strtoupper(substr($adminName, 0, 1)) ?></div>
-          <div class="user-info">
-            <div class="user-name"><?= e($adminName) ?></div>
-            <div class="user-role">Super Admin</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <a href="/admin/settings.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
-          <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ==========================================================================
-         MAIN CONTENT WRAPPER
-         ========================================================================== -->
-    <div class="main-wrapper">
-
-      <!-- TOP HEADER BAR -->
-      <header class="dashboard-header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <button class="admin-mobile-toggle" aria-label="Toggle navigation drawer">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-
-          <div class="header-title-group">
-            <h1>MEMBER DIRECTORY & MANAGEMENT</h1>
-            <p>Live athlete records, membership statuses, and subscription lifecycles</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <div class="header-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="admin-search-input" placeholder="Search members, trainers..." aria-label="Global Admin Search" autocomplete="off">
-            <span class="search-kbd">⌘K</span>
-            <div class="header-search-results" id="admin-search-results"></div>
-          </div>
-
-          <button class="btn btn-primary" id="open-add-modal-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ ADD MEMBER</span>
-          </button>
-        </div>
-      </header>
+    <?php
+    $currentSection = 'members';
+    $pageHeading    = 'MEMBER DIRECTORY & MANAGEMENT';
+    $pageSubtitle   = 'Live athlete records, membership statuses, and subscription lifecycles';
+    $extraHeaderAction = '<button class="btn btn-primary" id="open-add-modal-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>+ ADD MEMBER</span></button>';
+    require_once __DIR__ . '/../layouts/admin_nav.php';
+    ?>
 
       <!-- MAIN DASHBOARD CONTENT AREA -->
       <main class="dashboard-body">
@@ -279,7 +172,6 @@ $expiredCount = count(array_filter($allMembers, fn($m) => ($m['subscription_stat
                       </span>
                     </td>
                     <td style="text-align: right;">
-                      <div class="table-actions" style="justify-content: flex-end;">
                         <button type="button" class="btn-action-sm view-member-btn" 
                                 data-id="<?= (int)$m['id'] ?>" 
                                 data-name="<?= e($m['full_name']) ?>" 
@@ -307,6 +199,19 @@ $expiredCount = count(array_filter($allMembers, fn($m) => ($m['subscription_stat
                                 data-status="<?= e($status) ?>" 
                                 data-joined="<?= e($joinStr) ?>" 
                                 data-expiry="<?= e($expiryStr) ?>">Edit</button>
+
+                        <button type="button" class="btn-action-sm reset-pwd-btn" 
+                                data-user-id="<?= (int)$m['user_id'] ?>" 
+                                data-name="<?= e($m['full_name']) ?>" 
+                                data-email="<?= e($m['email']) ?>" 
+                                style="color: var(--color-warning); border-color: rgba(234,179,8,0.3);" 
+                                title="Reset Password">Key</button>
+
+                        <button type="button" class="btn-action-sm delete-member-btn" 
+                                data-id="<?= (int)$m['id'] ?>" 
+                                data-name="<?= e($m['full_name']) ?>" 
+                                style="color: var(--color-danger); border-color: rgba(239,68,68,0.3);" 
+                                title="Delete Member">Del</button>
                       </div>
                     </td>
                   </tr>
@@ -512,6 +417,36 @@ $expiredCount = count(array_filter($allMembers, fn($m) => ($m['subscription_stat
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="cancel-edit-modal-btn">Cancel</button>
           <button type="submit" class="btn btn-primary">SAVE CHANGES</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       RESET PASSWORD MODAL
+       ========================================================================= -->
+  <div class="modal-overlay" id="reset-password-modal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>RESET MEMBER PASSWORD</h3>
+        <button type="button" class="modal-close" id="close-reset-modal-btn">&times;</button>
+      </div>
+      <form id="reset-password-form">
+        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <input type="hidden" id="reset-user-id" name="user_id">
+        <div class="modal-body">
+          <div id="reset-form-error" class="status-pill danger" style="display: none; margin-bottom: 1rem; width: 100%; border-radius: 4px;"></div>
+          <p style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Enter a new password for <strong id="reset-user-name" style="color: #FFF;"></strong> (<span id="reset-user-email"></span>).
+          </p>
+          <div>
+            <label class="form-label">New Password *</label>
+            <input type="password" id="reset-new-password" name="new_password" class="form-control" required placeholder="Minimum 6 characters" minlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-reset-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">UPDATE PASSWORD</button>
         </div>
       </form>
     </div>

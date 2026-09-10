@@ -46,15 +46,24 @@ if ($userRole === 'trainer') $portalUrl = '/trainer/index.php';
           <li><a href="/index.php#features" class="nav-link">Features</a></li>
           <li><a href="/index.php#membership" class="nav-link">Membership</a></li>
           <li><a href="/index.php#about" class="nav-link">About</a></li>
+          <li class="mobile-only-nav-item">
+            <?php if ($isLoggedIn): ?>
+              <a href="<?= $portalUrl ?>" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;">Dashboard</a>
+              <a href="/logout.php" class="btn btn-primary" style="width: 100%; justify-content: center;">Sign Out</a>
+            <?php else: ?>
+              <a href="/login.php" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;">Sign In</a>
+              <a href="/register.php" class="btn btn-primary" style="width: 100%; justify-content: center;">Register Now</a>
+            <?php endif; ?>
+          </li>
         </ul>
       </nav>
 
       <div class="nav-actions">
         <?php if ($isLoggedIn): ?>
           <a href="<?= $portalUrl ?>" class="btn btn-secondary">Dashboard</a>
-          <a href="/logout.php" class="btn btn-primary">Logout</a>
+          <a href="/logout.php" class="btn btn-primary">Sign Out</a>
         <?php else: ?>
-          <a href="/login.php" class="btn btn-secondary">Login</a>
+          <a href="/login.php" class="btn btn-secondary">Sign In</a>
           <a href="/register.php" class="btn btn-primary">Join Gym</a>
         <?php endif; ?>
       </div>
@@ -65,4 +74,5 @@ if ($userRole === 'trainer') $portalUrl = '/trainer/index.php';
         <span></span>
       </button>
     </div>
+    <div class="nav-backdrop" id="nav-backdrop"></div>
   </header>

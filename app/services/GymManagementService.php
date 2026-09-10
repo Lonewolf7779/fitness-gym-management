@@ -363,6 +363,80 @@ class GymManagementService {
         }
     }
 
+    public function resetPassword(int $userId, string $newPassword): void {
+        if (strlen($newPassword) < 6) {
+            throw new InvalidArgumentException('Password must be at least 6 characters.');
+        }
+        $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("UPDATE users SET password_hash = :p WHERE id = :id");
+        $stmt->execute(['p' => $hash, 'id' => $userId]);
+    }
+
+    public function setUserStatus(int $userId, string $status): void {
+        $allowed = ['active', 'inactive', 'suspended'];
+        if (!in_array($status, $allowed, true)) {
+            throw new InvalidArgumentException('Invalid user status.');
+        }
+        $stmt = $this->db->prepare("UPDATE users SET status = :s WHERE id = :id");
+        $stmt->execute(['s' => $status, 'id' => $userId]);
+    }
+
+    public function deleteMember(int $memberId): void {
+        $stmt = $this->db->prepare("SELECT user_id FROM members WHERE id = :id");
+        $stmt->execute(['id' => $memberId]);
+        $userId = (int) $stmt->fetchColumn();
+
+        $this->db->beginTransaction();
+        try {
+            // Delete dependent records
+            $this->db->prepare("DELETE FROM progress_logs WHERE member_id = :id")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM attendance WHERE member_id = :id")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM payments WHERE member_id = :id")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM subscriptions WHERE member_id = :id")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM workout_plan_exercises WHERE plan_id IN (SELECT id FROM workout_plans WHERE member_id = :id)")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM workout_plans WHERE member_id = :id")->execute(['id' => $memberId]);
+            $this->db->prepare("DELETE FROM members WHERE id = :id")->execute(['id' => $memberId]);
+            if ($userId) {
+                $this->db->prepare("DELETE FROM users WHERE id = :id")->execute(['id' => $userId]);
+            }
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteTrainer(int $trainerId): void {
+        $stmt = $this->db->prepare("SELECT user_id FROM trainers WHERE id = :id");
+        $stmt->execute(['id' => $trainerId]);
+        $userId = (int) $stmt->fetchColumn();
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->prepare("UPDATE workout_plans SET trainer_id = NULL WHERE trainer_id = :id")->execute(['id' => $trainerId]);
+            $this->db->prepare("DELETE FROM trainers WHERE id = :id")->execute(['id' => $trainerId]);
+            if ($userId) {
+                $this->db->prepare("DELETE FROM users WHERE id = :id")->execute(['id' => $userId]);
+            }
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteWorkout(int $workoutId): void {
+        $this->db->beginTransaction();
+        try {
+            $this->db->prepare("DELETE FROM workout_plan_exercises WHERE plan_id = :id")->execute(['id' => $workoutId]);
+            $this->db->prepare("DELETE FROM workout_plans WHERE id = :id")->execute(['id' => $workoutId]);
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     // =========================================================================
     // 3. MEMBERSHIP PLANS
     // =========================================================================
@@ -590,13 +664,14 @@ class GymManagementService {
         ")->fetchAll();
 
         return [
-            'trainer'                   => $trainer,
-            'assigned_clients_count'    => $assignedCount,
-            'active_programs_count'     => $activePrograms,
-            'sessions_this_week'        => $sessionsThisWeek,
-            'clients_needing_attention' => $needingAttention,
-            'clients'                   => $clients,
-            'today_schedule'            => $todaySchedule
+            'trainer'                          => $trainer,
+            'assigned_clients_count'           => $assignedCount,
+            'active_programs_count'            => $activePrograms,
+            'sessions_this_week'               => $sessionsThisWeek,
+            'clients_needing_attention'        => $needingAttention,
+            'clients_needing_attention_count'  => $needingAttention,
+            'clients'                          => $clients,
+            'today_schedule'                   => $todaySchedule
         ];
     }
 
@@ -666,10 +741,6 @@ class GymManagementService {
         }
 
         // Attendance this week
-        $weeklyAttendanceCount = (int) $this->db->prepare("
-            SELECT COUNT(*) FROM attendance 
-            WHERE member_id = :mid AND YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)
-        ");
         $stmt = $this->db->prepare("
             SELECT COUNT(*) FROM attendance 
             WHERE member_id = :mid AND YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)

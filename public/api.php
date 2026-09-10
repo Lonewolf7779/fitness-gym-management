@@ -220,6 +220,41 @@ try {
             $id = $svc->memberAddProgress($userId, $_POST);
             break;
 
+        // Admin Credential & Entity Management
+        case 'reset_password':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $targetUserId = (int) ($_POST['user_id'] ?? 0);
+            $newPassword = $_POST['new_password'] ?? '';
+            $svc->resetPassword($targetUserId, $newPassword);
+            $id = $targetUserId;
+            break;
+
+        case 'set_user_status':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $targetUserId = (int) ($_POST['user_id'] ?? 0);
+            $newStatus = $_POST['status'] ?? 'active';
+            $svc->setUserStatus($targetUserId, $newStatus);
+            $id = $targetUserId;
+            break;
+
+        case 'delete_member':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $svc->deleteMember((int) $_POST['id']);
+            $id = (int) $_POST['id'];
+            break;
+
+        case 'delete_trainer':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $svc->deleteTrainer((int) $_POST['id']);
+            $id = (int) $_POST['id'];
+            break;
+
+        case 'delete_workout':
+            if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $svc->deleteWorkout((int) $_POST['id']);
+            $id = (int) $_POST['id'];
+            break;
+
         default:
             http_response_code(404);
             echo json_encode(['success' => false, 'message' => 'Unknown action.']);

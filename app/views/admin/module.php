@@ -56,60 +56,12 @@ $adminName = $_SESSION['full_name'] ?? 'System Admin';
 <body style="background-color: var(--color-bg);">
 
   <div class="dashboard-shell">
-    <div class="sidebar-overlay"></div>
-
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <a href="/index.php" class="brand-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
-          </svg>
-          <span>IRONCORE</span>
-        </a>
-        <span class="sidebar-badge">ADMINISTRATOR CONTROL</span>
-      </div>
-
-      <ul class="sidebar-nav">
-        <li><a href="/admin/index.php" class="nav-item-link">Dashboard</a></li>
-        <li><a href="/admin/members.php" class="nav-item-link">Members</a></li>
-        <li><a href="/admin/trainers.php" class="nav-item-link <?= $module === 'trainers' ? 'active' : '' ?>">Trainers</a></li>
-        <li><a href="/admin/memberships.php" class="nav-item-link <?= $module === 'memberships' ? 'active' : '' ?>">Memberships</a></li>
-        <li><a href="/admin/attendance.php" class="nav-item-link <?= $module === 'attendance' ? 'active' : '' ?>">Attendance</a></li>
-        <li><a href="/admin/payments.php" class="nav-item-link <?= $module === 'payments' ? 'active' : '' ?>">Payments</a></li>
-        <li><a href="/admin/workouts.php" class="nav-item-link <?= $module === 'workouts' ? 'active' : '' ?>">Workouts</a></li>
-        <li><a href="/admin/reports.php" class="nav-item-link <?= $module === 'reports' ? 'active' : '' ?>">Reports</a></li>
-      </ul>
-
-      <div class="sidebar-footer">
-        <div class="user-profile-badge">
-          <div class="avatar-circle"><?= strtoupper(substr($adminName, 0, 1)) ?></div>
-          <div class="user-info">
-            <div class="user-name"><?= e($adminName) ?></div>
-            <div class="user-role">Super Admin</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <a href="/admin/settings.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
-          <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
-        </div>
-      </div>
-    </aside>
-
-    <div class="main-wrapper">
-      <header class="dashboard-header">
-        <div class="header-title-group">
-          <h1><?= e($title) ?></h1>
-          <p>Live operational database management and controls</p>
-        </div>
-        <div class="header-actions">
-          <div class="header-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="admin-search-input" placeholder="Search..." aria-label="Search" autocomplete="off">
-            <span class="search-kbd">⌘K</span>
-            <div class="header-search-results" id="admin-search-results"></div>
-          </div>
-        </div>
-      </header>
+    <?php
+    $currentSection = $module;
+    $pageHeading    = $title;
+    $pageSubtitle   = 'Live operational database management and controls';
+    require_once __DIR__ . '/../layouts/admin_nav.php';
+    ?>
 
       <main class="dashboard-body">
         <div id="stats" class="module-grid"></div>
@@ -321,6 +273,12 @@ $adminName = $_SESSION['full_name'] ?? 'System Admin';
             if (M === 'memberships') {
               actionsHtml += `<button class="btn btn-secondary" onclick='togglePlanStatus(${x.id})'>Toggle</button>`;
             }
+            if (M === 'trainers') {
+              actionsHtml += `<button class="btn btn-secondary" style="color: var(--color-danger); border-color: rgba(239,68,68,0.3);" onclick='deleteTrainer(${x.id}, "${esc(x.full_name || "")}")'>Delete</button>`;
+            }
+            if (M === 'workouts') {
+              actionsHtml += `<button class="btn btn-secondary" style="color: var(--color-danger); border-color: rgba(239,68,68,0.3);" onclick='deleteWorkout(${x.id}, "${esc(x.title || "")}")'>Delete</button>`;
+            }
 
             if (actionsHtml) {
               rowHtml += `<td style="text-align: right;"><div class="row-actions" style="justify-content: flex-end;">${actionsHtml}</div></td>`;
@@ -382,6 +340,28 @@ $adminName = $_SESSION['full_name'] ?? 'System Admin';
       fd.append('csrf_token', CSRF);
       fd.append('id', planId);
       let r = await fetch(API + '?action=toggle_plan', { method: 'POST', body: fd });
+      let j = await r.json();
+      alert(j.message);
+      if (j.success) load();
+    }
+
+    async function deleteTrainer(trainerId, name) {
+      if (!confirm(`Are you sure you want to remove trainer "${name}"?`)) return;
+      let fd = new FormData();
+      fd.append('csrf_token', CSRF);
+      fd.append('id', trainerId);
+      let r = await fetch(API + '?action=delete_trainer', { method: 'POST', body: fd });
+      let j = await r.json();
+      alert(j.message);
+      if (j.success) load();
+    }
+
+    async function deleteWorkout(workoutId, title) {
+      if (!confirm(`Are you sure you want to delete workout "${title}"?`)) return;
+      let fd = new FormData();
+      fd.append('csrf_token', CSRF);
+      fd.append('id', workoutId);
+      let r = await fetch(API + '?action=delete_workout', { method: 'POST', body: fd });
       let j = await r.json();
       alert(j.message);
       if (j.success) load();
