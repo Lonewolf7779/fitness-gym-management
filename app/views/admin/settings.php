@@ -1,14 +1,50 @@
 <?php
 /**
- * IRONCORE Admin Settings Placeholder View
+ * IRONCORE System Settings View
+ * Live configuration persistence in MySQL system_settings table.
  */
+
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../middleware/AdminMiddleware.php';
+require_once __DIR__ . '/../../services/SettingsService.php';
 
 AdminMiddleware::handle();
 
-$adminName  = $_SESSION['full_name'] ?? 'System Admin';
+$settings = new SettingsService();
+$message = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? null)) {
+        $error = 'Security token expired. Please refresh and try again.';
+    } else {
+        try {
+            $settings->save([
+                'gym_name'      => $_POST['gym_name'] ?? 'IRONCORE Fitness',
+                'contact_email' => $_POST['contact_email'] ?? '',
+                'phone'         => $_POST['phone'] ?? '',
+                'address'       => $_POST['address'] ?? '',
+                'currency'      => $_POST['currency'] ?? 'INR',
+                'timezone'      => $_POST['timezone'] ?? 'Asia/Kolkata'
+            ]);
+            $message = 'Gym settings saved successfully.';
+        } catch (Throwable $e) {
+            $error = APP_DEBUG ? $e->getMessage() : 'Unable to save settings.';
+        }
+    }
+}
+
+$s = array_merge([
+    'gym_name'      => 'IRONCORE Fitness',
+    'contact_email' => 'contact@ironcore.com',
+    'phone'         => '+91 98765 43210',
+    'address'       => 'Plot 42, Cyber City, High-Tech Zone, Hyderabad, 500081',
+    'currency'      => 'INR',
+    'timezone'      => 'Asia/Kolkata'
+], $settings->all());
+
+$adminName = $_SESSION['full_name'] ?? 'System Admin';
 $adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
 ?>
 <!DOCTYPE html>
@@ -27,67 +63,116 @@ $adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
     <aside class="sidebar">
       <div class="sidebar-brand">
         <a href="/index.php" class="brand-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
+          </svg>
           <span>IRONCORE</span>
         </a>
         <span class="sidebar-badge">ADMINISTRATOR CONTROL</span>
       </div>
-
       <ul class="sidebar-nav">
-        <li><a href="/admin/index.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a></li>
-        <li><a href="/admin/members.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Members</span></a></li>
-        <li><a href="/admin/trainers.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg><span>Trainers</span></a></li>
-        <li><a href="/admin/memberships.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Memberships</span></a></li>
-        <li><a href="/admin/attendance.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Attendance</span></a></li>
-        <li><a href="/admin/payments.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Payments</span></a></li>
-        <li><a href="/admin/workouts.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg><span>Workouts</span></a></li>
-        <li><a href="/admin/reports.php" class="nav-item-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Reports</span></a></li>
+        <li><a href="/admin/index.php" class="nav-item-link">Dashboard</a></li>
+        <li><a href="/admin/members.php" class="nav-item-link">Members</a></li>
+        <li><a href="/admin/trainers.php" class="nav-item-link">Trainers</a></li>
+        <li><a href="/admin/memberships.php" class="nav-item-link">Memberships</a></li>
+        <li><a href="/admin/attendance.php" class="nav-item-link">Attendance</a></li>
+        <li><a href="/admin/payments.php" class="nav-item-link">Payments</a></li>
+        <li><a href="/admin/workouts.php" class="nav-item-link">Workouts</a></li>
+        <li><a href="/admin/reports.php" class="nav-item-link">Reports</a></li>
       </ul>
-
       <div class="sidebar-footer">
         <div class="user-profile-badge">
-          <div class="avatar-circle"><?= strtoupper(substr($adminName, 0, 1)) ?></div>
+          <div class="avatar-circle"><?= e(strtoupper(substr($adminName, 0, 1))) ?></div>
           <div class="user-info">
             <div class="user-name"><?= e($adminName) ?></div>
             <div class="user-role">Super Admin</div>
           </div>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <a href="/admin/settings.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
-          <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
-        </div>
+        <a href="/logout.php" class="btn btn-primary" style="width: 100%; justify-content: center;">Logout</a>
       </div>
     </aside>
 
     <div class="main-wrapper">
       <header class="dashboard-header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <button class="admin-mobile-toggle" aria-label="Toggle navigation drawer">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div class="header-title-group">
-            <h1>SYSTEM SETTINGS</h1>
-            <p>Gym branding settings, security parameters, & backup options.</p>
-          </div>
+        <div class="header-title-group">
+          <h1>SYSTEM SETTINGS</h1>
+          <p>Configure gym profile, operational defaults, and regional formatting</p>
         </div>
       </header>
 
       <main class="dashboard-body">
-        <div class="panel-card" style="padding: 3rem; text-align: center; max-width: 720px; margin: 2rem auto;">
-          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(232,255,0,0.1); border: 1px solid rgba(232,255,0,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--color-accent);">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </div>
-          <span class="status-pill warning" style="margin-bottom: 1rem; display: inline-block;">MODULE UNDER DEVELOPMENT</span>
-          <h2 style="font-size: 1.8rem; margin-bottom: 0.75rem;">SYSTEM SETTINGS</h2>
-          <p style="color: var(--color-text-muted); margin-bottom: 2rem; line-height: 1.6;">This section will manage facility details, operating hours, role permissions, and database backup configurations. Database integration is planned for the next development phase.</p>
-          <div style="display: flex; gap: 1rem; justify-content: center;">
-            <a href="/admin/index.php" class="btn btn-primary">BACK TO DASHBOARD</a>
-            <a href="/admin/members.php" class="btn btn-secondary">GO TO MEMBERS</a>
-          </div>
-        </div>
+        <section class="panel-card" style="max-width: 900px; margin: 0 auto; padding: 2.25rem;">
+          <h2 style="margin-bottom: 0.5rem;">Facility & Operational Configuration</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            These settings are stored securely in MySQL and govern operational defaults across the entire system.
+          </p>
+
+          <?php if ($message): ?>
+            <div class="status-pill active" style="margin-bottom: 1.5rem; display: inline-flex; padding: 0.5rem 1rem;">
+              <span class="status-dot-sm"></span> <?= e($message) ?>
+            </div>
+          <?php endif; ?>
+
+          <?php if ($error): ?>
+            <div class="status-pill danger" style="margin-bottom: 1.5rem; display: inline-flex; padding: 0.5rem 1rem;">
+              <?= e($error) ?>
+            </div>
+          <?php endif; ?>
+
+          <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+            <input type="hidden" name="csrf_token" value="<?= e(generateCsrfToken()) ?>">
+
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Gym Facility Name *</label>
+              <input type="text" name="gym_name" class="form-control" value="<?= e($s['gym_name']) ?>" required style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Contact Email Address *</label>
+              <input type="email" name="contact_email" class="form-control" value="<?= e($s['contact_email']) ?>" required style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Official Phone Number</label>
+              <input type="tel" name="phone" class="form-control" value="<?= e($s['phone']) ?>" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Base Currency</label>
+              <select name="currency" class="form-control" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+                <option value="INR" <?= $s['currency'] === 'INR' ? 'selected' : '' ?>>INR (₹)</option>
+                <option value="USD" <?= $s['currency'] === 'USD' ? 'selected' : '' ?>>USD ($)</option>
+                <option value="EUR" <?= $s['currency'] === 'EUR' ? 'selected' : '' ?>>EUR (€)</option>
+                <option value="GBP" <?= $s['currency'] === 'GBP' ? 'selected' : '' ?>>GBP (£)</option>
+              </select>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Timezone</label>
+              <select name="timezone" class="form-control" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+                <option value="Asia/Kolkata" <?= $s['timezone'] === 'Asia/Kolkata' ? 'selected' : '' ?>>Asia/Kolkata (IST +5:30)</option>
+                <option value="UTC" <?= $s['timezone'] === 'UTC' ? 'selected' : '' ?>>UTC</option>
+                <option value="Asia/Dubai" <?= $s['timezone'] === 'Asia/Dubai' ? 'selected' : '' ?>>Asia/Dubai (GST +4:00)</option>
+                <option value="America/New_York" <?= $s['timezone'] === 'America/New_York' ? 'selected' : '' ?>>America/New_York (EST -5:00)</option>
+                <option value="Europe/London" <?= $s['timezone'] === 'Europe/London' ? 'selected' : '' ?>>Europe/London (GMT +0:00)</option>
+              </select>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Facility Physical Address</label>
+              <textarea name="address" rows="3" class="form-control" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);"><?= e($s['address']) ?></textarea>
+            </div>
+
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+              <a class="btn btn-secondary" href="/admin/index.php">Cancel</a>
+              <button class="btn btn-primary" type="submit">Save System Settings</button>
+            </div>
+          </form>
+        </section>
       </main>
     </div>
   </div>
+
   <script src="/assets/js/main.js"></script>
   <script src="/assets/js/dashboard.js"></script>
 </body>

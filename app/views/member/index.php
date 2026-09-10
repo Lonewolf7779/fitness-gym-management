@@ -1,90 +1,37 @@
 <?php
 /**
  * IRONCORE Member Dashboard View Template
- * Section: Phase 3.2 Member Dashboard Refinement
+ * Section: Phase 3.2 Member Dashboard - 100% Live Database Integration
  */
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../../services/GymManagementService.php';
 
 // Execute Member Authorization Guard
 AuthMiddleware::handle();
 
 $memberName  = $_SESSION['full_name'] ?? 'Alex Rivera';
 $memberEmail = $_SESSION['email'] ?? 'alex@gmail.com';
+$userId      = (int) ($_SESSION['user_id'] ?? 0);
 
-// UI Placeholder Data for Member Dashboard (Structured for future PHP/MySQL data binding)
-$memberSummary = [
-    'current_plan'   => 'PRO PLAN',
-    'days_remaining' => 47,
-    'workout_streak' => 12,
-    'attendance_rate'=> 86
-];
+$svc = new GymManagementService();
+$memberData = $svc->memberDashboard($userId);
+$csrf = generateCsrfToken();
 
-$todayWorkout = [
-    'title'     => 'UPPER BODY STRENGTH & HYPERTROPHY',
-    'exercises' => [
-        [
-            'name'     => 'Barbell Bench Press',
-            'details'  => '4 sets × 10 reps (80 kg)',
-            'status'   => 'Completed'
-        ],
-        [
-            'name'     => 'Lat Pulldown',
-            'details'  => '3 sets × 12 reps (65 kg)',
-            'status'   => 'Completed'
-        ],
-        [
-            'name'     => 'Dumbbell Shoulder Press',
-            'details'  => '3 sets × 10 reps (24 kg)',
-            'status'   => 'In Progress'
-        ],
-        [
-            'name'     => 'Seated Cable Row',
-            'details'  => '3 sets × 12 reps (55 kg)',
-            'status'   => 'Pending'
-        ]
-    ]
-];
-
-$weeklyStats = [
-    'workouts_completed' => '5 / 6',
-    'calories_burned'    => '3,420 kcal',
-    'training_time'      => '4h 35m',
-    'weekly_attendance'  => '5 Days'
-];
-
-$upcomingSession = [
-    'trainer'  => 'Marcus Vance',
-    'role'     => 'Senior Strength Coach',
-    'session'  => '1-on-1 Personal Training',
-    'date'     => 'Tomorrow at 6:00 PM',
-    'status'   => 'Confirmed'
-];
-
-$recentActivity = [
-    [
-        'title' => 'Workout completed',
-        'desc'  => 'Upper Body Hypertrophy Session',
-        'time'  => 'Yesterday'
-    ],
-    [
-        'title' => 'Body weight updated',
-        'desc'  => '78.5 kg (-1.2 kg this month)',
-        'time'  => '2 days ago'
-    ],
-    [
-        'title' => 'Personal training session',
-        'desc'  => 'Form check & squat technique with Marcus',
-        'time'  => '3 days ago'
-    ],
-    [
-        'title' => 'Streak milestone reached',
-        'desc'  => 'Achieved 10-day active workout streak!',
-        'time'  => 'Last week'
-    ]
-];
+$sub = $memberData['subscription'];
+$planTitle = $sub ? strtoupper($sub['plan_title']) : 'NO ACTIVE PLAN';
+$planStatus = $sub ? ucfirst($sub['status']) : 'Inactive';
+$planColor = str_contains($planTitle, 'PRO') ? 'var(--color-accent)' : (str_contains($planTitle, 'ELITE') ? '#FFF' : 'var(--color-text-muted)');
+$daysRemaining = $memberData['days_remaining'];
+$streak = $memberData['attendance_streak'];
+$totalCheckins = $memberData['total_checkins'];
+$workoutPlan = $memberData['workout_plan'];
+$exercises = $memberData['workout_exercises'];
+$progressLogs = $memberData['progress_logs'];
+$weeklyStats = $memberData['weekly_stats'];
+$recentActivity = $memberData['recent_activity'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,7 +48,6 @@ $recentActivity = [
 <body style="background-color: var(--color-bg);">
 
   <div class="dashboard-shell">
-    <!-- Backdrop Overlay for Mobile Drawer -->
     <div class="sidebar-overlay"></div>
 
     <!-- ==========================================================================
@@ -110,7 +56,7 @@ $recentActivity = [
     <aside class="sidebar">
       <div class="sidebar-brand">
         <a href="/index.php" class="brand-logo" aria-label="IRONCORE Home">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
           </svg>
           <span>IRONCORE</span>
@@ -122,31 +68,7 @@ $recentActivity = [
         <li>
           <a href="/member/index.php" class="nav-item-link active">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            <span>My Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="#workout-plan" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
-            <span>Workout Plan</span>
-          </a>
-        </li>
-        <li>
-          <a href="#progress-logs" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>Progress Logs</span>
-          </a>
-        </li>
-        <li>
-          <a href="#attendance-history" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            <span>Attendance History</span>
-          </a>
-        </li>
-        <li>
-          <a href="#subscription" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            <span>Subscription</span>
+            <span>My Performance</span>
           </a>
         </li>
       </ul>
@@ -156,11 +78,10 @@ $recentActivity = [
           <div class="avatar-circle"><?= strtoupper(substr($memberName, 0, 1)) ?></div>
           <div class="user-info">
             <div class="user-name"><?= e($memberName) ?></div>
-            <div class="user-role">Pro Athlete</div>
+            <div class="user-role">Member Athlete</div>
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <a href="#settings" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
           <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
         </div>
       </div>
@@ -180,31 +101,19 @@ $recentActivity = [
 
           <div class="header-title-group">
             <h1>ATHLETE PERFORMANCE HUB</h1>
-            <p>Welcome back, <?= e($memberName) ?>. Track your workout programs, streak, & transformation.</p>
+            <p>Welcome back, <?= e($memberName) ?>. Live workout programs, attendance streak, & body metrics.</p>
           </div>
         </div>
 
         <div class="header-actions">
-          <!-- Notification Dropdown -->
-          <div class="dropdown-menu-wrapper">
-            <button class="icon-btn" id="notif-btn" aria-label="Notifications">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <span class="notification-badge"></span>
-            </button>
-            <div class="dropdown-panel" id="notif-dropdown">
-              <div class="dropdown-header">
-                <span>ATHLETE ALERTS</span>
-                <span style="font-size: 0.75rem; color: var(--color-accent);">1 New</span>
-              </div>
-              <div class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div>
-                  <div style="font-weight: 700; color: #FFF;">Personal Training Tomorrow</div>
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted);">Session with Marcus Vance at 6:00 PM</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <button class="btn btn-secondary" id="open-progress-modal-btn">
+            <span>+ LOG METRICS</span>
+          </button>
+
+          <button class="btn btn-primary" id="self-checkin-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>CHECK IN TODAY</span>
+          </button>
 
           <!-- Profile Dropdown -->
           <div class="dropdown-menu-wrapper">
@@ -229,12 +138,12 @@ $recentActivity = [
         <section class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Current Plan</span>
+              <span class="kpi-title">Current Membership</span>
               <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
             </div>
-            <div class="kpi-value" style="color: var(--color-accent); font-size: 1.8rem;"><?= e($memberSummary['current_plan']) ?></div>
-            <div class="kpi-foot" style="color: var(--color-success);">
-              <span>Status: Active</span>
+            <div class="kpi-value" style="color: <?= $planColor ?>; font-size: 1.6rem;"><?= e($planTitle) ?></div>
+            <div class="kpi-foot" style="color: <?= $planStatus === 'Active' ? 'var(--color-success)' : 'var(--color-danger)' ?>;">
+              <span>Status: <?= e($planStatus) ?></span>
             </div>
           </div>
 
@@ -243,31 +152,31 @@ $recentActivity = [
               <span class="kpi-title">Days Remaining</span>
               <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             </div>
-            <div class="kpi-value"><?= e($memberSummary['days_remaining']) ?> Days</div>
+            <div class="kpi-value"><?= e($daysRemaining) ?> Days</div>
             <div class="kpi-foot">
-              <span>Auto-renews Oct 15, 2026</span>
+              <span><?= $sub && !empty($sub['end_date']) ? 'Expires ' . date('M d, Y', strtotime($sub['end_date'])) : 'No active cycle' ?></span>
             </div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Workout Streak</span>
+              <span class="kpi-title">Active Streak</span>
               <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
-            <div class="kpi-value" style="color: #FF9F0A;"><?= e($memberSummary['workout_streak']) ?> Days 🔥</div>
+            <div class="kpi-value" style="color: #FF9F0A;"><?= e($streak) ?> Days 🔥</div>
             <div class="kpi-foot" style="color: #FF9F0A;">
-              <span>Personal Best Streak!</span>
+              <span>Consistent Training</span>
             </div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-header">
-              <span class="kpi-title">Monthly Attendance</span>
+              <span class="kpi-title">Total Check-ins</span>
               <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <div class="kpi-value"><?= e($memberSummary['attendance_rate']) ?>%</div>
+            <div class="kpi-value"><?= e($totalCheckins) ?></div>
             <div class="kpi-foot">
-              <span>18 Check-ins this month</span>
+              <span>All-time Gym Visits</span>
             </div>
           </div>
         </section>
@@ -279,76 +188,90 @@ $recentActivity = [
           <section class="panel-card">
             <div class="panel-header">
               <div>
-                <h3>TODAY'S WORKOUT PROGRAM</h3>
-                <div style="font-size: 0.775rem; color: var(--color-accent); font-weight: 700; margin-top: 0.2rem;"><?= e($todayWorkout['title']) ?></div>
-              </div>
-              <a href="#full-routine" class="panel-link">Full Routine</a>
-            </div>
-
-            <ul class="expiry-list">
-              <?php foreach ($todayWorkout['exercises'] as $ex): ?>
-                <li class="expiry-item">
-                  <div>
-                    <div class="expiry-user-title"><?= e($ex['name']) ?></div>
-                    <div class="expiry-user-sub"><?= e($ex['details']) ?></div>
-                  </div>
-                  <div>
-                    <?php if ($ex['status'] === 'Completed'): ?>
-                      <span class="status-pill active"><span class="status-dot-sm"></span> Completed</span>
-                    <?php elseif ($ex['status'] === 'In Progress'): ?>
-                      <span class="status-pill warning"><span class="status-dot-sm"></span> In Progress</span>
-                    <?php else: ?>
-                      <span class="status-pill pending"><span class="status-dot-sm"></span> Pending</span>
-                    <?php endif; ?>
-                  </div>
-                </li>
-              <?php endforeach; ?>
-            </ul>
-          </section>
-
-          <!-- WEEKLY PROGRESS & UPCOMING SESSION -->
-          <div style="display: flex; flex-direction: column; gap: 1.75rem;">
-            
-            <!-- UPCOMING SESSION CARD -->
-            <section class="panel-card" style="background: linear-gradient(135deg, #181818 0%, #1E1E1E 100%); border-color: rgba(232, 255, 0, 0.3);">
-              <div class="panel-header">
-                <h3>UPCOMING 1-ON-1 SESSION</h3>
-                <span class="status-pill active">Confirmed</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
-                <div class="avatar-circle" style="width: 44px; height: 44px; font-size: 1.1rem;">MV</div>
-                <div>
-                  <div style="font-weight: 800; font-size: 1rem; color: #FFF;"><?= e($upcomingSession['trainer']) ?></div>
-                  <div style="font-size: 0.8rem; color: var(--color-text-muted);"><?= e($upcomingSession['role']) ?></div>
-                  <div style="font-size: 0.825rem; font-weight: 700; color: var(--color-accent); margin-top: 0.35rem;"><?= e($upcomingSession['date']) ?></div>
+                <h3>ASSIGNED WORKOUT PROGRAM</h3>
+                <div style="font-size: 0.775rem; color: var(--color-accent); font-weight: 700; margin-top: 0.2rem;">
+                  <?= $workoutPlan ? e($workoutPlan['title']) : 'No Workout Assigned' ?>
                 </div>
               </div>
+              <?php if ($workoutPlan && !empty($workoutPlan['trainer_name'])): ?>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">Coach: <?= e($workoutPlan['trainer_name']) ?></span>
+              <?php endif; ?>
+            </div>
+
+            <?php if (!empty($exercises)): ?>
+              <ul class="expiry-list">
+                <?php foreach ($exercises as $ex): ?>
+                  <li class="expiry-item">
+                    <div>
+                      <div class="expiry-user-title"><?= e($ex['exercise_name']) ?> <span class="status-pill active" style="font-size: 0.65rem; padding: 0.1rem 0.4rem; margin-left: 0.5rem;"><?= e($ex['day_of_week']) ?></span></div>
+                      <div class="expiry-user-sub"><?= e($ex['sets']) ?> sets × <?= e($ex['reps']) ?> reps · <?= e($ex['muscle_group']) ?> (Rest: <?= (int)$ex['rest_seconds'] ?>s)</div>
+                    </div>
+                    <div>
+                      <span class="status-pill pending">Active</span>
+                    </div>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php else: ?>
+              <div style="text-align: center; padding: 3rem 1.5rem; color: var(--color-text-muted);">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #FFF; margin-bottom: 0.35rem;">No Workout Plan Assigned Yet</div>
+                <div style="font-size: 0.8rem;">Your certified trainer will prepare a customized fitness routine for you shortly.</div>
+              </div>
+            <?php endif; ?>
+          </section>
+
+          <!-- WEEKLY PROGRESS & BODY METRICS -->
+          <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+            
+            <!-- BODY METRICS SUMMARY CARD -->
+            <section class="panel-card" style="background: linear-gradient(135deg, #181818 0%, #1E1E1E 100%); border-color: rgba(232, 255, 0, 0.3);">
+              <div class="panel-header">
+                <h3>BODY METRICS & COMPOSITION</h3>
+                <span class="status-pill active"><?= count($progressLogs) ?> Logs</span>
+              </div>
+              <?php if (!empty($progressLogs)): 
+                $latest = $progressLogs[0];
+              ?>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.5rem;">
+                  <div>
+                    <div style="font-size: 0.725rem; color: var(--color-text-muted); text-transform: uppercase;">Body Weight</div>
+                    <div style="font-size: 1.25rem; font-weight: 800; color: #FFF; font-family: var(--font-heading);"><?= e($latest['weight_kg'] ?? '—') ?> kg</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.725rem; color: var(--color-text-muted); text-transform: uppercase;">Body Fat %</div>
+                    <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-accent); font-family: var(--font-heading);"><?= e($latest['body_fat_pct'] ? $latest['body_fat_pct'] . '%' : '—') ?></div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.725rem; color: var(--color-text-muted); text-transform: uppercase;">Last Logged</div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-top: 0.25rem;"><?= e(date('M d, Y', strtotime($latest['log_date']))) ?></div>
+                  </div>
+                </div>
+              <?php else: ?>
+                <div style="padding: 1rem 0; font-size: 0.825rem; color: var(--color-text-muted);">
+                  No body measurements recorded yet. Click <strong>+ LOG METRICS</strong> above to record your weight.
+                </div>
+              <?php endif; ?>
             </section>
 
             <!-- WEEKLY ANALYTICS SUMMARY -->
             <section class="panel-card">
               <div class="panel-header">
-                <h3>WEEKLY PERFORMANCE ANALYTICS</h3>
+                <h3>WEEKLY PERFORMANCE OVERVIEW</h3>
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Workouts</div>
-                  <div style="font-size: 1.3rem; font-weight: 800; color: #FFF; font-family: var(--font-heading);"><?= e($weeklyStats['workouts_completed']) ?></div>
+                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Assigned Exercises</div>
+                  <div style="font-size: 1.15rem; font-weight: 800; color: #FFF; font-family: var(--font-heading);"><?= e($weeklyStats['workouts_completed']) ?></div>
                 </div>
 
                 <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Calories Burned</div>
-                  <div style="font-size: 1.3rem; font-weight: 800; color: var(--color-accent); font-family: var(--font-heading);"><?= e($weeklyStats['calories_burned']) ?></div>
+                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Estimated Training</div>
+                  <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent); font-family: var(--font-heading);"><?= e($weeklyStats['training_time']) ?></div>
                 </div>
 
-                <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Training Time</div>
-                  <div style="font-size: 1.3rem; font-weight: 800; color: #FFF; font-family: var(--font-heading);"><?= e($weeklyStats['training_time']) ?></div>
-                </div>
-
-                <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Attendance</div>
-                  <div style="font-size: 1.3rem; font-weight: 800; color: var(--color-success); font-family: var(--font-heading);"><?= e($weeklyStats['weekly_attendance']) ?></div>
+                <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); grid-column: 1 / -1;">
+                  <div style="font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;">Weekly Attendance Days</div>
+                  <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-success); font-family: var(--font-heading);"><?= e($weeklyStats['weekly_attendance']) ?></div>
                 </div>
               </div>
             </section>
@@ -359,25 +282,132 @@ $recentActivity = [
         <!-- RECENT ACTIVITY FEED -->
         <section class="panel-card">
           <div class="panel-header">
-            <h3>RECENT ATHLETE ACTIVITY</h3>
+            <h3>RECENT ATHLETE ACTIVITY & CHECK-INS</h3>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
-            <?php foreach ($recentActivity as $act): ?>
-              <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-                <div style="font-weight: 700; font-size: 0.85rem; color: #FFF; margin-bottom: 0.25rem;"><?= e($act['title']) ?></div>
-                <div style="font-size: 0.775rem; color: var(--color-text-muted); margin-bottom: 0.5rem;"><?= e($act['desc']) ?></div>
-                <div style="font-size: 0.725rem; font-weight: 700; color: var(--color-accent);"><?= e($act['time']) ?></div>
-              </div>
-            <?php endforeach; ?>
-          </div>
+          <?php if (!empty($recentActivity)): ?>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+              <?php foreach ($recentActivity as $act): ?>
+                <div style="background-color: var(--color-bg); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                  <div style="font-weight: 700; font-size: 0.85rem; color: #FFF; margin-bottom: 0.25rem;"><?= e($act['title']) ?></div>
+                  <div style="font-size: 0.775rem; color: var(--color-text-muted); margin-bottom: 0.5rem;"><?= e($act['desc']) ?></div>
+                  <div style="font-size: 0.725rem; font-weight: 700; color: var(--color-accent);"><?= e($act['time']) ?></div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php else: ?>
+            <div style="text-align: center; padding: 2rem; color: var(--color-text-muted); font-size: 0.85rem;">
+              No check-in or workout activity logged yet. Check in today to start your streak!
+            </div>
+          <?php endif; ?>
         </section>
 
       </main>
     </div>
   </div>
 
+  <!-- =========================================================================
+       LOG PROGRESS METRICS MODAL
+       ========================================================================= -->
+  <div class="modal-overlay" id="progress-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>LOG BODY MEASUREMENTS</h3>
+        <button type="button" class="modal-close" id="close-progress-modal-btn">&times;</button>
+      </div>
+      <form id="member-progress-form">
+        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <div class="modal-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Weight (kg) *</label>
+              <input type="number" step="0.1" name="weight_kg" required class="form-control" placeholder="78.5" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Body Fat %</label>
+              <input type="number" step="0.1" name="body_fat_pct" class="form-control" placeholder="18.5" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Chest (cm)</label>
+              <input type="number" step="0.5" name="chest_cm" class="form-control" placeholder="102" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Waist (cm)</label>
+              <input type="number" step="0.5" name="waist_cm" class="form-control" placeholder="82" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Biceps (cm)</label>
+              <input type="number" step="0.5" name="biceps_cm" class="form-control" placeholder="36" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Date</label>
+            <input type="date" name="log_date" value="<?= date('Y-m-d') ?>" class="form-control" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Training Notes</label>
+            <textarea name="notes" rows="2" class="form-control" placeholder="Felt strong, increase bench press weight next week..." style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-progress-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Measurement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="/assets/js/main.js"></script>
   <script src="/assets/js/dashboard.js"></script>
+  <script>
+    const progressModal = document.getElementById('progress-modal');
+    const openProgressBtn = document.getElementById('open-progress-modal-btn');
+    const closeProgressBtn = document.getElementById('close-progress-modal-btn');
+    const cancelProgressBtn = document.getElementById('cancel-progress-modal-btn');
+    const progressForm = document.getElementById('member-progress-form');
+    const selfCheckinBtn = document.getElementById('self-checkin-btn');
+
+    const toggleProgressModal = (show) => {
+      if (progressModal) {
+        if (show) progressModal.classList.add('show');
+        else progressModal.classList.remove('show');
+      }
+    };
+
+    openProgressBtn?.addEventListener('click', () => toggleProgressModal(true));
+    closeProgressBtn?.addEventListener('click', () => toggleProgressModal(false));
+    cancelProgressBtn?.addEventListener('click', () => toggleProgressModal(false));
+
+    progressForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(progressForm);
+      try {
+        const res = await fetch('/api.php?action=member_add_progress', { method: 'POST', body: fd });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) window.location.reload();
+      } catch (err) {
+        alert('Failed to log metrics: ' + err.message);
+      }
+    });
+
+    selfCheckinBtn?.addEventListener('click', async () => {
+      const fd = new FormData();
+      fd.append('csrf_token', '<?= e($csrf) ?>');
+      try {
+        const res = await fetch('/api.php?action=member_self_checkin', { method: 'POST', body: fd });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) window.location.reload();
+      } catch (err) {
+        alert('Check-in error: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>

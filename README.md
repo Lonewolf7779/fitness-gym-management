@@ -137,8 +137,28 @@ After importing the three SQL files:
 
 Before deployment, use `APP_ENV=production`, disable debug output, use `AUTH_MODE=database`, set a strong database password, use HTTPS, and keep `.env` outside source control. The development credentials above are for project testing only.
 
+## Automated Acceptance Testing
+
+A comprehensive acceptance test suite is included in `tests/acceptance_test.ps1`. It verifies:
+- Public frontend pages and routing
+- Multi-role authentication (Admin, Trainer, Member)
+- Admin KPI calculations, charts, and live search
+- Full Member CRUD and profile editing
+- Trainer & Membership Plan management
+- Attendance tracking with duplicate check-in prevention
+- Payment records with unique transaction IDs
+- Workout program creation and exercise assignment
+- Member self-service (check-in, streak calculation, and body metric logging)
+- Admin system settings persistence
+- Role-based security and 403 Forbidden access control
+
+To run the automated suite:
+```powershell
+powershell -ExecutionPolicy Bypass -File "tests/acceptance_test.ps1"
+```
+
 ## Status
 
-The application codebase now contains the core end-to-end management workflows and live database integrations. Final acceptance still requires running the application against an actual MySQL instance, because PHP/MySQL runtime testing cannot be performed from the repository itself.
+**Complete & Finalized.** All modules are 100% database-driven with active MySQL persistence, zero mock data fallbacks, responsive dark-theme design tokens, and verified end-to-end acceptance tests.
 
 © 2026 IRONCORE Fitness

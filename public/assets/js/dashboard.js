@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
-  // Category 2: Unified Existing Temporary Member Entities
-  const adminMemberEntities = [
+  // Category 2: Unified Member Entities (Pre-populated with default and dynamically synced)
+  let adminMemberEntities = [
     { id: 1, name: 'Alex Rivera', email: 'alex@gmail.com', phone: '+91 9876543210', avatar: 'AR', plan: 'Pro Plan', status: 'Active' },
     { id: 2, name: 'Daniel Carter', email: 'daniel@gmail.com', phone: '+91 9876543211', avatar: 'DC', plan: 'Starter Plan', status: 'Active' },
     { id: 3, name: 'Sophia Miller', email: 'sophia@gmail.com', phone: '+91 9876543212', avatar: 'SM', plan: 'Elite Plan', status: 'Active' },
@@ -185,6 +185,29 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 12, name: 'Priya Singh', email: 'priya@gmail.com', phone: '+91 9876543220', avatar: 'PS', plan: 'Pro Plan', status: 'Active' },
     { id: 13, name: 'Marcus Vance', email: 'marcus@ironcore.com', phone: '+91 9876543221', avatar: 'MV', plan: 'Elite Plan', status: 'Active' }
   ];
+
+  // Asynchronously sync live members from database
+  fetch('/api.php?action=members')
+    .then(r => r.json())
+    .then(res => {
+      if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+        adminMemberEntities = res.data.map(m => {
+          const name = m.full_name || '';
+          const parts = name.split(' ').filter(Boolean);
+          const av = parts.map(p => p[0]).join('').substring(0, 2).toUpperCase() || 'MB';
+          return {
+            id: m.id,
+            name: name,
+            email: m.email || '',
+            phone: m.phone || '',
+            avatar: av,
+            plan: m.plan_title || 'No Plan',
+            status: m.status ? (m.status.charAt(0).toUpperCase() + m.status.slice(1)) : 'Active'
+          };
+        });
+      }
+    })
+    .catch(() => {});
 
   const escapeHtml = (str) => {
     return (str || '').replace(/[&<>'"]/g, tag => ({
@@ -548,22 +571,24 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 8. Add Member Form Submission Handler
+  // 8. Add Member Form Submission Handler (Live API Integration)
   // =========================================================================
-  addMemberForm?.addEventListener('submit', (e) => {
+  addMemberForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const firstName = document.getElementById('new-first-name')?.value.trim();
     const lastName = document.getElementById('new-last-name')?.value.trim();
     const email = document.getElementById('new-email')?.value.trim();
     const phone = document.getElementById('new-phone')?.value.trim();
-    const plan = document.getElementById('new-plan')?.value || 'Pro Plan';
+    const planId = document.getElementById('new-plan')?.value || '';
     const status = document.getElementById('new-status')?.value || 'active';
     const startDate = document.getElementById('new-start-date')?.value || new Date().toISOString().split('T')[0];
+    const password = document.getElementById('new-password')?.value || '';
+    const csrfToken = addMemberForm.querySelector('input[name="csrf_token"]')?.value || '';
 
     // Validation
     if (!firstName || !lastName || !email || !phone) {
       if (addFormError) {
-        addFormError.textContent = 'Please complete all required fields (Name, Email, Phone, Plan).';
+        addFormError.textContent = 'Please complete all required fields (Name, Email, Phone).';
         addFormError.style.display = 'block';
       }
       return;
@@ -577,79 +602,64 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Calculate 30-day membership expiry date
-    const startObj = new Date(startDate);
-    const expiryObj = new Date(startObj);
-    expiryObj.setDate(expiryObj.getDate() + 30);
-    const expiryDateStr = expiryObj.toISOString().split('T')[0];
-
     const fullName = `${firstName} ${lastName}`;
-    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    const newId = Date.now();
+    const submitBtn = addMemberForm.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
-    if (tableBody) {
-      const tr = document.createElement('tr');
-      tr.id = `member-row-${newId}`;
-      tr.setAttribute('data-id', newId);
-      tr.setAttribute('data-name', fullName.toLowerCase());
-      tr.setAttribute('data-email', email.toLowerCase());
-      tr.setAttribute('data-phone', phone.toLowerCase());
-      tr.setAttribute('data-status', status.toLowerCase());
-      tr.setAttribute('data-plan', plan.toLowerCase());
+    try {
+      const formData = new FormData();
+      formData.append('csrf_token', csrfToken);
+      formData.append('name', fullName);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('plan_id', planId);
+      formData.append('status', status);
+      formData.append('start_date', startDate);
+      formData.append('join_date', startDate);
+      if (password) formData.append('password', password);
 
-      const statusPillClass = (status === 'expired' || status === 'inactive' || status === 'suspended') ? status : 'active';
-      const planColor = plan.toLowerCase().includes('pro') ? 'var(--color-accent)' : (plan.toLowerCase().includes('elite') ? '#FFF' : 'var(--color-text-muted)');
+      const res = await fetch('/api.php?action=create_member', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
 
-      tr.innerHTML = `
-        <td>
-          <div class="member-cell">
-            <div class="member-avatar" id="row-avatar-${newId}">${initials}</div>
-            <div>
-              <div class="member-info-name" id="row-name-${newId}">${fullName}</div>
-              <div class="member-info-email" id="row-email-${newId}">${email}</div>
-            </div>
-          </div>
-        </td>
-        <td><span style="font-family: monospace; font-size: 0.825rem; color: var(--color-text-muted);" id="row-phone-${newId}">${phone}</span></td>
-        <td><span id="row-plan-${newId}" style="font-weight: 700; color: ${planColor};">${plan.toUpperCase()}</span></td>
-        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-joined-${newId}">${startDate}</span></td>
-        <td><span style="font-size: 0.8rem; color: var(--color-text-muted);" id="row-expiry-${newId}">${expiryDateStr}</span></td>
-        <td>
-          <span class="status-pill ${statusPillClass}" id="row-status-pill-${newId}">
-            <span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}
-          </span>
-        </td>
-        <td style="text-align: right;">
-          <div class="table-actions" style="justify-content: flex-end;">
-            <button type="button" class="btn-action-sm view-member-btn" data-id="${newId}" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="${startDate}" data-expiry="${expiryDateStr}">View</button>
-            <button type="button" class="btn-action-sm edit-member-btn" data-id="${newId}" data-name="${fullName}" data-email="${email}" data-phone="${phone}" data-plan="${plan}" data-status="${status}" data-joined="${startDate}" data-expiry="${expiryDateStr}">Edit</button>
-          </div>
-        </td>
-      `;
+      if (!data.success) {
+        if (addFormError) {
+          addFormError.textContent = data.message || 'Error adding member.';
+          addFormError.style.display = 'block';
+        }
+        if (submitBtn) submitBtn.disabled = false;
+        return;
+      }
 
-      tableBody.insertBefore(tr, tableBody.firstChild);
-      updateKpiCounts();
-      filterMembersTable();
+      showToast(`Member ${fullName} added successfully!`);
+      closeAllModals();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (err) {
+      if (addFormError) {
+        addFormError.textContent = 'Server connection error occurred.';
+        addFormError.style.display = 'block';
+      }
+      if (submitBtn) submitBtn.disabled = false;
     }
-
-    addMemberForm.reset();
-    closeAllModals();
-    showToast(`Member ${fullName} added successfully!`);
   });
 
   // =========================================================================
-  // 9. Edit Member Form Submission Handler
+  // 9. Edit Member Form Submission Handler (Live API Integration)
   // =========================================================================
-  editMemberForm?.addEventListener('submit', (e) => {
+  editMemberForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const memberId = document.getElementById('edit-member-id')?.value;
     const fullName = document.getElementById('edit-full-name')?.value.trim();
     const email = document.getElementById('edit-email')?.value.trim();
     const phone = document.getElementById('edit-phone')?.value.trim();
-    const plan = document.getElementById('edit-plan')?.value;
-    const status = document.getElementById('edit-status')?.value;
-    const joined = document.getElementById('edit-joined')?.value;
-    const expiry = document.getElementById('edit-expiry')?.value;
+    const planId = document.getElementById('edit-plan')?.value || '';
+    const status = document.getElementById('edit-status')?.value || 'active';
+    const emergency = document.getElementById('edit-emergency')?.value.trim();
+    const csrfToken = editMemberForm.querySelector('input[name="csrf_token"]')?.value || '';
 
     if (!fullName || !email || !phone) {
       if (editFormError) {
@@ -667,74 +677,47 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Update target DOM row
-    const targetRow = document.getElementById(`member-row-${memberId}`);
-    if (targetRow) {
-      targetRow.setAttribute('data-name', fullName.toLowerCase());
-      targetRow.setAttribute('data-email', email.toLowerCase());
-      targetRow.setAttribute('data-phone', phone.toLowerCase());
-      targetRow.setAttribute('data-status', status.toLowerCase());
-      targetRow.setAttribute('data-plan', plan.toLowerCase());
+    const submitBtn = editMemberForm.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
-      const nameParts = fullName.split(' ').filter(p => p.length > 0);
-      let initials = 'MB';
-      if (nameParts.length === 1) {
-        initials = nameParts[0].substring(0, 2).toUpperCase();
-      } else if (nameParts.length >= 2) {
-        initials = `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
-      }
+    try {
+      const formData = new FormData();
+      formData.append('csrf_token', csrfToken);
+      formData.append('id', memberId);
+      formData.append('name', fullName);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('plan_id', planId);
+      formData.append('status', status);
+      formData.append('emergency_contact', emergency);
 
-      const avatarElem = document.getElementById(`row-avatar-${memberId}`);
-      if (avatarElem) avatarElem.textContent = initials;
-
-      const nameElem = document.getElementById(`row-name-${memberId}`);
-      if (nameElem) nameElem.textContent = fullName;
-
-      const emailElem = document.getElementById(`row-email-${memberId}`);
-      if (emailElem) emailElem.textContent = email;
-
-      const phoneElem = document.getElementById(`row-phone-${memberId}`);
-      if (phoneElem) phoneElem.textContent = phone;
-
-      const planElem = document.getElementById(`row-plan-${memberId}`);
-      if (planElem) {
-        planElem.textContent = plan.toUpperCase();
-        planElem.style.color = plan.toLowerCase().includes('pro') ? 'var(--color-accent)' : (plan.toLowerCase().includes('elite') ? '#FFF' : 'var(--color-text-muted)');
-      }
-
-      const joinedElem = document.getElementById(`row-joined-${memberId}`);
-      if (joinedElem && joined) joinedElem.textContent = joined;
-
-      const expiryElem = document.getElementById(`row-expiry-${memberId}`);
-      if (expiryElem && expiry) expiryElem.textContent = expiry;
-
-      const pillElem = document.getElementById(`row-status-pill-${memberId}`);
-      if (pillElem) {
-        const statusClass = (status === 'expired' || status === 'inactive' || status === 'suspended') ? status : 'active';
-        pillElem.className = `status-pill ${statusClass}`;
-        pillElem.innerHTML = `<span class="status-dot-sm"></span> ${status.charAt(0).toUpperCase() + status.slice(1)}`;
-      }
-
-      // Update button data attributes for view & edit
-      const viewBtn = targetRow.querySelector('.view-member-btn');
-      const editBtn = targetRow.querySelector('.edit-member-btn');
-      [viewBtn, editBtn].forEach(btn => {
-        if (btn) {
-          btn.setAttribute('data-name', fullName);
-          btn.setAttribute('data-email', email);
-          btn.setAttribute('data-phone', phone);
-          btn.setAttribute('data-plan', plan);
-          btn.setAttribute('data-status', status);
-          if (joined) btn.setAttribute('data-joined', joined);
-          if (expiry) btn.setAttribute('data-expiry', expiry);
-        }
+      const res = await fetch('/api.php?action=update_member', {
+        method: 'POST',
+        body: formData
       });
-    }
+      const data = await res.json();
 
-    updateKpiCounts();
-    filterMembersTable();
-    closeAllModals();
-    showToast(`Updated details for ${fullName}.`);
+      if (!data.success) {
+        if (editFormError) {
+          editFormError.textContent = data.message || 'Error updating member.';
+          editFormError.style.display = 'block';
+        }
+        if (submitBtn) submitBtn.disabled = false;
+        return;
+      }
+
+      showToast(`Updated details for ${fullName}.`);
+      closeAllModals();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (err) {
+      if (editFormError) {
+        editFormError.textContent = 'Server connection error occurred.';
+        editFormError.style.display = 'block';
+      }
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
 
   // =========================================================================
@@ -753,6 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const status = (viewBtn.getAttribute('data-status') || 'active').toLowerCase();
       const joined = viewBtn.getAttribute('data-joined') || '';
       const expiry = viewBtn.getAttribute('data-expiry') || '';
+      const emergency = viewBtn.getAttribute('data-emergency') || '—';
 
       const nameParts = name.split(' ').filter(p => p.length > 0);
       let initials = 'MB';
@@ -769,15 +753,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const viewPlan = document.getElementById('view-plan');
       const viewJoined = document.getElementById('view-joined');
       const viewExpiry = document.getElementById('view-expiry');
+      const viewEmergency = document.getElementById('view-emergency');
       const viewPill = document.getElementById('view-status-pill');
 
       if (viewAvatar) viewAvatar.textContent = initials;
       if (viewName) viewName.textContent = name;
       if (viewEmail) viewEmail.textContent = email;
       if (viewPhone) viewPhone.textContent = phone;
-      if (viewPlan) viewPlan.textContent = plan;
+      if (viewPlan) viewPlan.textContent = plan.toUpperCase();
       if (viewJoined) viewJoined.textContent = joined;
       if (viewExpiry) viewExpiry.textContent = expiry;
+      if (viewEmergency) viewEmergency.textContent = emergency || '—';
 
       if (viewPill) {
         const statusClass = (status === 'expired' || status === 'inactive' || status === 'suspended') ? status : 'active';
@@ -794,10 +780,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = editBtn.getAttribute('data-name') || '';
       const email = editBtn.getAttribute('data-email') || '';
       const phone = editBtn.getAttribute('data-phone') || '';
-      const plan = editBtn.getAttribute('data-plan') || 'Pro Plan';
+      const plan = editBtn.getAttribute('data-plan') || '';
       const status = (editBtn.getAttribute('data-status') || 'active').toLowerCase();
-      const joined = editBtn.getAttribute('data-joined') || '';
-      const expiry = editBtn.getAttribute('data-expiry') || '';
+      const emergency = editBtn.getAttribute('data-emergency') || '';
 
       const editIdElem = document.getElementById('edit-member-id');
       const editNameElem = document.getElementById('edit-full-name');
@@ -805,8 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const editPhoneElem = document.getElementById('edit-phone');
       const editPlanElem = document.getElementById('edit-plan');
       const editStatusElem = document.getElementById('edit-status');
-      const editJoinedElem = document.getElementById('edit-joined');
-      const editExpiryElem = document.getElementById('edit-expiry');
+      const editEmergencyElem = document.getElementById('edit-emergency');
 
       if (editIdElem) editIdElem.value = id;
       if (editNameElem) editNameElem.value = name;
@@ -814,8 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (editPhoneElem) editPhoneElem.value = phone;
       if (editPlanElem) editPlanElem.value = plan;
       if (editStatusElem) editStatusElem.value = status;
-      if (editJoinedElem) editJoinedElem.value = joined;
-      if (editExpiryElem) editExpiryElem.value = expiry;
+      if (editEmergencyElem) editEmergencyElem.value = emergency;
 
       editModal?.classList.add('show');
     }

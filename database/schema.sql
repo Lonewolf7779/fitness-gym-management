@@ -156,3 +156,11 @@ CREATE TABLE IF NOT EXISTS `progress_logs` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`member_id`) REFERENCES `members`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 12. System Settings
+CREATE TABLE IF NOT EXISTS `system_settings` (
+    `setting_key` VARCHAR(80) PRIMARY KEY,
+    `setting_value` TEXT NULL,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

@@ -1,12 +1,13 @@
 <?php
 /**
  * IRONCORE Admin Dashboard View Template
- * Section: Phase 3.1 Admin UI Foundation
+ * Section: Phase 3.1 Admin UI Foundation & Live Database Integration
  */
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../middleware/AdminMiddleware.php';
+require_once __DIR__ . '/../../services/GymManagementService.php';
 
 // Execute Role Authorization Guard
 AdminMiddleware::handle();
@@ -14,13 +15,11 @@ AdminMiddleware::handle();
 $adminName  = $_SESSION['full_name'] ?? 'System Admin';
 $adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
 
-// UI Placeholder Metric Values (Structured for future PHP/MySQL data binding)
-$stats = [
-    'total_members'     => 642,
-    'active_members'    => 518,
-    'today_attendance'  => 387,
-    'monthly_revenue'   => '2.84L'
-];
+// Query Live Database Statistics & Records
+$svc = new GymManagementService();
+$stats = $svc->dashboardStats();
+$recentMembers = $svc->recentMembers(5);
+$expiries = $svc->approachingExpiries(7);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -156,22 +155,23 @@ $stats = [
             <div class="dropdown-panel" id="notif-dropdown">
               <div class="dropdown-header">
                 <span>SYSTEM ALERTS</span>
-                <span style="font-size: 0.75rem; color: var(--color-accent);">3 New</span>
+                <span style="font-size: 0.75rem; color: var(--color-accent);"><?= count($expiries) ?> Expiring</span>
               </div>
-              <div class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div>
-                  <div style="font-weight: 700; color: #FFF;">3 Memberships Expiring</div>
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted);">Action required for renewal</div>
+              <?php if (!empty($expiries)): ?>
+                <?php foreach (array_slice($expiries, 0, 3) as $notifExp): ?>
+                <div class="dropdown-item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <div>
+                    <div style="font-weight: 700; color: #FFF;"><?= e($notifExp['full_name']) ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($notifExp['plan_title']) ?> (Expires in <?= (int)$notifExp['days_left'] ?> days)</div>
+                  </div>
                 </div>
-              </div>
-              <div class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                <div>
-                  <div style="font-weight: 700; color: #FFF;">Payment Received</div>
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted);">₹1,999 received via UPI</div>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div class="dropdown-item">
+                  <div style="font-size: 0.8rem; color: var(--color-text-muted);">All memberships in good standing.</div>
                 </div>
-              </div>
+              <?php endif; ?>
             </div>
           </div>
 
@@ -185,7 +185,6 @@ $stats = [
                 <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($adminName) ?></div>
                 <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($adminEmail) ?></div>
               </div>
-              <a href="/admin/members.php" class="dropdown-item">My Members</a>
               <a href="/admin/settings.php" class="dropdown-item">System Settings</a>
               <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
             </div>
@@ -193,30 +192,10 @@ $stats = [
         </div>
       </header>
 
-      <!-- DASHBOARD BODY CONTENT -->
+      <!-- MAIN DASHBOARD CONTENT AREA -->
       <main class="dashboard-body">
 
-        <!-- G. QUICK ACTIONS STRIP -->
-        <div class="quick-actions-strip">
-          <a href="/admin/members.php?action=add" class="action-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Member
-          </a>
-          <a href="/admin/trainers.php" class="action-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Trainer
-          </a>
-          <a href="/admin/memberships.php" class="action-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Create Membership
-          </a>
-          <a href="/admin/payments.php" class="action-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Record Payment
-          </a>
-        </div>
-
-        <!-- C. KPI / SUMMARY AREA -->
+        <!-- C. TOP 4 SUMMARY METRIC CARDS (KPIs) -->
         <section class="kpi-grid">
           <!-- Total Members -->
           <div class="kpi-card">
@@ -226,8 +205,7 @@ $stats = [
             </div>
             <div class="kpi-value"><?= e($stats['total_members']) ?></div>
             <div class="kpi-foot">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-              <span>+14% vs last month</span>
+              <span>Registered Athletes</span>
             </div>
           </div>
 
@@ -239,7 +217,7 @@ $stats = [
             </div>
             <div class="kpi-value" style="color: var(--color-accent);"><?= e($stats['active_members']) ?></div>
             <div class="kpi-foot" style="color: var(--color-accent);">
-              <span>80.6% Active Subscriptions</span>
+              <span><?= e($stats['active_pct']) ?>% Active Subscriptions</span>
             </div>
           </div>
 
@@ -251,7 +229,7 @@ $stats = [
             </div>
             <div class="kpi-value"><?= e($stats['today_attendance']) ?></div>
             <div class="kpi-foot">
-              <span>Peak: 6:00 PM – 9:00 PM</span>
+              <span>Live Check-in Count</span>
             </div>
           </div>
 
@@ -263,8 +241,7 @@ $stats = [
             </div>
             <div class="kpi-value">₹<?= e($stats['monthly_revenue']) ?></div>
             <div class="kpi-foot">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-              <span>+18.5% Growth</span>
+              <span>Current Billing Cycle</span>
             </div>
           </div>
         </section>
@@ -286,7 +263,7 @@ $stats = [
 
           <!-- SVG Visual Render Box -->
           <div class="svg-chart-wrapper" id="admin-chart-svg">
-            <!-- Rendered dynamically by dashboard.js -->
+            <!-- Rendered dynamically by dashboard.js using live API data -->
           </div>
         </section>
 
@@ -297,7 +274,7 @@ $stats = [
           <section class="panel-card">
             <div class="panel-header">
               <h3>RECENT REGISTERED MEMBERS</h3>
-              <a href="#members" class="panel-link">View All</a>
+              <a href="/admin/members.php" class="panel-link">View All</a>
             </div>
 
             <div class="table-responsive">
@@ -311,80 +288,35 @@ $stats = [
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>
-                      <div class="member-cell">
-                        <div class="member-avatar">AR</div>
-                        <div>
-                          <div class="member-info-name">Alex Rivera</div>
-                          <div class="member-info-email">alex@gmail.com</div>
+                  <?php if (!empty($recentMembers)): ?>
+                    <?php foreach ($recentMembers as $rm): 
+                      $initials = '';
+                      $parts = explode(' ', trim($rm['full_name']));
+                      foreach ($parts as $p) { if (!empty($p)) $initials .= strtoupper($p[0]); }
+                      $initials = substr($initials ?: 'MB', 0, 2);
+                      $planTitle = strtoupper($rm['plan_title'] ?? 'NO PLAN');
+                      $planColor = str_contains($planTitle, 'PRO') ? 'var(--color-accent)' : (str_contains($planTitle, 'ELITE') ? '#FFF' : 'var(--color-text-muted)');
+                      $status = strtolower($rm['status'] ?? 'active');
+                      $pillClass = ($status === 'expired' || $status === 'inactive' || $status === 'suspended') ? $status : 'active';
+                    ?>
+                    <tr>
+                      <td>
+                        <div class="member-cell">
+                          <div class="member-avatar"><?= e($initials) ?></div>
+                          <div>
+                            <div class="member-info-name"><?= e($rm['full_name']) ?></div>
+                            <div class="member-info-email"><?= e($rm['email']) ?></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td><span style="font-weight: 700; color: var(--color-accent);">PRO PLAN</span></td>
-                    <td>15 Aug 2026</td>
-                    <td><span class="status-pill active"><span class="status-dot-sm"></span> Active</span></td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="member-cell">
-                        <div class="member-avatar">ER</div>
-                        <div>
-                          <div class="member-info-name">Elena Rostova</div>
-                          <div class="member-info-email">elena@ironcore.com</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span style="font-weight: 700; color: #FFF;">ELITE PLAN</span></td>
-                    <td>18 Aug 2026</td>
-                    <td><span class="status-pill active"><span class="status-dot-sm"></span> Active</span></td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="member-cell">
-                        <div class="member-avatar">SC</div>
-                        <div>
-                          <div class="member-info-name">Sarah Connor</div>
-                          <div class="member-info-email">sarah@gmail.com</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span style="font-weight: 600; color: var(--color-text-muted);">STARTER</span></td>
-                    <td>22 Aug 2026</td>
-                    <td><span class="status-pill pending"><span class="status-dot-sm"></span> Pending</span></td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="member-cell">
-                        <div class="member-avatar">MC</div>
-                        <div>
-                          <div class="member-info-name">Michael Chang</div>
-                          <div class="member-info-email">michael@gmail.com</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span style="font-weight: 700; color: var(--color-accent);">PRO PLAN</span></td>
-                    <td>25 Aug 2026</td>
-                    <td><span class="status-pill active"><span class="status-dot-sm"></span> Active</span></td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <div class="member-cell">
-                        <div class="member-avatar">DB</div>
-                        <div>
-                          <div class="member-info-name">David Black</div>
-                          <div class="member-info-email">david@gmail.com</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span style="font-weight: 600; color: var(--color-text-muted);">STARTER</span></td>
-                    <td>27 Aug 2026</td>
-                    <td><span class="status-pill danger"><span class="status-dot-sm"></span> Expired</span></td>
-                  </tr>
+                      </td>
+                      <td><span style="font-weight: 700; color: <?= $planColor ?>;"><?= e($planTitle) ?></span></td>
+                      <td><?= e(date('d M Y', strtotime($rm['join_date'] ?? 'now'))) ?></td>
+                      <td><span class="status-pill <?= e($pillClass) ?>"><span class="status-dot-sm"></span> <?= e(ucfirst($status)) ?></span></td>
+                    </tr>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">No members registered yet.</td></tr>
+                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -394,53 +326,32 @@ $stats = [
           <section class="panel-card">
             <div class="panel-header">
               <h3>APPROACHING EXPIRY</h3>
-              <a href="#memberships" class="panel-link">Manage Plans</a>
+              <a href="/admin/memberships.php" class="panel-link">Manage Plans</a>
             </div>
 
             <ul class="expiry-list">
-              <li class="expiry-item">
-                <div>
-                  <div class="expiry-user-title">Viktor Vance</div>
-                  <div class="expiry-user-sub">Pro Plan • Expires Aug 31, 2026</div>
-                </div>
-                <div style="text-align: right;">
-                  <span class="status-pill warning" style="margin-bottom: 0.35rem; display: inline-block;">In 2 Days</span>
-                  <div><a href="#renew" style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent);">RENEW</a></div>
-                </div>
-              </li>
-
-              <li class="expiry-item">
-                <div>
-                  <div class="expiry-user-title">Anita Sharma</div>
-                  <div class="expiry-user-sub">Elite Plan • Expires Aug 30, 2026</div>
-                </div>
-                <div style="text-align: right;">
-                  <span class="status-pill danger" style="margin-bottom: 0.35rem; display: inline-block;">Tomorrow</span>
-                  <div><a href="#renew" style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent);">RENEW</a></div>
-                </div>
-              </li>
-
-              <li class="expiry-item">
-                <div>
-                  <div class="expiry-user-title">Rahul Kapoor</div>
-                  <div class="expiry-user-sub">Starter Plan • Expires Sep 02, 2026</div>
-                </div>
-                <div style="text-align: right;">
-                  <span class="status-pill warning" style="margin-bottom: 0.35rem; display: inline-block;">In 4 Days</span>
-                  <div><a href="#renew" style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent);">RENEW</a></div>
-                </div>
-              </li>
-
-              <li class="expiry-item">
-                <div>
-                  <div class="expiry-user-title">Priya Singh</div>
-                  <div class="expiry-user-sub">Pro Plan • Expires Sep 03, 2026</div>
-                </div>
-                <div style="text-align: right;">
-                  <span class="status-pill warning" style="margin-bottom: 0.35rem; display: inline-block;">In 5 Days</span>
-                  <div><a href="#renew" style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent);">RENEW</a></div>
-                </div>
-              </li>
+              <?php if (!empty($expiries)): ?>
+                <?php foreach ($expiries as $ex): 
+                  $daysLeft = (int) $ex['days_left'];
+                  $pillClass = ($daysLeft <= 2) ? 'danger' : 'warning';
+                  $label = ($daysLeft === 0) ? 'Today' : (($daysLeft === 1) ? 'Tomorrow' : "In {$daysLeft} Days");
+                ?>
+                <li class="expiry-item">
+                  <div>
+                    <div class="expiry-user-title"><?= e($ex['full_name']) ?></div>
+                    <div class="expiry-user-sub"><?= e($ex['plan_title']) ?> • Expires <?= e(date('M d, Y', strtotime($ex['end_date']))) ?></div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="status-pill <?= $pillClass ?>" style="margin-bottom: 0.35rem; display: inline-block;"><?= e($label) ?></span>
+                    <div><a href="/admin/memberships.php" style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent);">MANAGE</a></div>
+                  </div>
+                </li>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <li style="text-align: center; padding: 2.5rem 1rem; color: var(--color-text-muted); font-size: 0.85rem;">
+                  No memberships approaching expiration this week.
+                </li>
+              <?php endif; ?>
             </ul>
           </section>
 

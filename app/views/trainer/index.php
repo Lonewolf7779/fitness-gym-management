@@ -1,92 +1,36 @@
 <?php
 /**
  * IRONCORE Trainer Dashboard View Template
- * Section: Phase 3.2 Trainer Dashboard Refinement
+ * Section: Phase 3.2 Trainer Dashboard - 100% Live Database Integration
  */
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../middleware/TrainerMiddleware.php';
+require_once __DIR__ . '/../../services/GymManagementService.php';
 
 // Execute Trainer Authorization Guard
 TrainerMiddleware::handle();
 
 $trainerName  = $_SESSION['full_name'] ?? 'Marcus Vance';
 $trainerEmail = $_SESSION['email'] ?? 'marcus@ironcore.com';
+$userId       = (int) ($_SESSION['user_id'] ?? 0);
 
-// UI Placeholder Data for Trainer Dashboard (Structured for future PHP/MySQL data binding)
+$svc = new GymManagementService();
+$trainerData = $svc->trainerDashboard($userId);
+$allMembers  = $svc->members();
+$allExercises = $svc->exercises();
+$csrf        = generateCsrfToken();
+
 $summaryStats = [
-    'assigned_clients'         => 24,
-    'active_programs'          => 18,
-    'sessions_this_week'       => 32,
-    'clients_needing_attention'=> 5
+    'assigned_clients'          => $trainerData['assigned_clients_count'],
+    'active_programs'           => $trainerData['active_programs_count'],
+    'sessions_this_week'        => $trainerData['sessions_this_week'],
+    'clients_needing_attention' => $trainerData['clients_needing_attention_count']
 ];
 
-$clientsList = [
-    [
-        'name'         => 'Alex Rivera',
-        'email'        => 'alex@gmail.com',
-        'avatar'       => 'AR',
-        'goal'         => 'Fat Loss & Conditioning',
-        'progress'     => 68,
-        'next_session' => 'Today (11:00 AM)',
-        'status'       => 'Active'
-    ],
-    [
-        'name'         => 'Daniel Carter',
-        'email'        => 'daniel@gmail.com',
-        'avatar'       => 'DC',
-        'goal'         => 'Muscle Gain & Strength',
-        'progress'     => 54,
-        'next_session' => 'Tomorrow (09:00 AM)',
-        'status'       => 'Active'
-    ],
-    [
-        'name'         => 'Sophia Miller',
-        'email'        => 'sophia@gmail.com',
-        'avatar'       => 'SM',
-        'goal'         => 'Powerlifting & Technique',
-        'progress'     => 82,
-        'next_session' => 'Friday (04:30 PM)',
-        'status'       => 'Active'
-    ],
-    [
-        'name'         => 'Ryan Brooks',
-        'email'        => 'ryan@gmail.com',
-        'avatar'       => 'RB',
-        'goal'         => 'Endurance & Mobility',
-        'progress'     => 61,
-        'next_session' => 'Saturday (06:00 PM)',
-        'status'       => 'Active'
-    ]
-];
-
-$todaySchedule = [
-    [
-        'time'     => '09:00 AM',
-        'client'   => 'Alex Rivera',
-        'type'     => 'Personal Training',
-        'status'   => 'Completed'
-    ],
-    [
-        'time'     => '11:00 AM',
-        'client'   => 'Daniel Carter',
-        'type'     => 'Strength Training',
-        'status'   => 'Upcoming'
-    ],
-    [
-        'time'     => '04:30 PM',
-        'client'   => 'Sophia Miller',
-        'type'     => 'Progress Session',
-        'status'   => 'Upcoming'
-    ],
-    [
-        'time'     => '06:00 PM',
-        'client'   => 'Ryan Brooks',
-        'type'     => 'Cardio Session',
-        'status'   => 'Upcoming'
-    ]
-];
+$clientsList   = $trainerData['clients'];
+$todaySchedule = $trainerData['today_schedule'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -103,7 +47,6 @@ $todaySchedule = [
 <body style="background-color: var(--color-bg);">
 
   <div class="dashboard-shell">
-    <!-- Backdrop Overlay for Mobile Drawer -->
     <div class="sidebar-overlay"></div>
 
     <!-- ==========================================================================
@@ -112,7 +55,7 @@ $todaySchedule = [
     <aside class="sidebar">
       <div class="sidebar-brand">
         <a href="/index.php" class="brand-logo" aria-label="IRONCORE Home">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/>
           </svg>
           <span>IRONCORE</span>
@@ -127,30 +70,6 @@ $todaySchedule = [
             <span>My Clients</span>
           </a>
         </li>
-        <li>
-          <a href="#programs" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
-            <span>Workout Programs</span>
-          </a>
-        </li>
-        <li>
-          <a href="#schedule" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            <span>Today's Schedule</span>
-          </a>
-        </li>
-        <li>
-          <a href="#progress" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>Client Progress</span>
-          </a>
-        </li>
-        <li>
-          <a href="#messages" class="nav-item-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span>Messages</span>
-          </a>
-        </li>
       </ul>
 
       <div class="sidebar-footer">
@@ -158,11 +77,10 @@ $todaySchedule = [
           <div class="avatar-circle"><?= strtoupper(substr($trainerName, 0, 1)) ?></div>
           <div class="user-info">
             <div class="user-name"><?= e($trainerName) ?></div>
-            <div class="user-role">Head Coach</div>
+            <div class="user-role">Certified Coach</div>
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <a href="#settings" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Settings</a>
           <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
         </div>
       </div>
@@ -182,37 +100,15 @@ $todaySchedule = [
 
           <div class="header-title-group">
             <h1>TRAINER ATHLETE HUB</h1>
-            <p>Assigned athletes, daily workout schedules, & performance tracking</p>
+            <p>Live assigned athletes, weekly session metrics, & routine assignments</p>
           </div>
         </div>
 
         <div class="header-actions">
-          <div class="header-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="admin-search-input" placeholder="Search client name..." aria-label="Search Clients">
-            <span class="search-kbd">⌘K</span>
-          </div>
-
-          <!-- Notification Dropdown -->
-          <div class="dropdown-menu-wrapper">
-            <button class="icon-btn" id="notif-btn" aria-label="Notifications">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <span class="notification-badge"></span>
-            </button>
-            <div class="dropdown-panel" id="notif-dropdown">
-              <div class="dropdown-header">
-                <span>TRAINER NOTIFICATIONS</span>
-                <span style="font-size: 0.75rem; color: var(--color-accent);">2 New</span>
-              </div>
-              <div class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                <div>
-                  <div style="font-weight: 700; color: #FFF;">Alex Rivera completed workout</div>
-                  <div style="font-size: 0.75rem; color: var(--color-text-muted);">Upper Body Strength Session</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <button class="btn btn-primary" id="open-workout-modal-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ ASSIGN WORKOUT</span>
+          </button>
 
           <!-- Profile Dropdown -->
           <div class="dropdown-menu-wrapper">
@@ -242,7 +138,7 @@ $todaySchedule = [
             </div>
             <div class="kpi-value"><?= e($summaryStats['assigned_clients']) ?></div>
             <div class="kpi-foot">
-              <span>Active client Roster</span>
+              <span>Active client roster</span>
             </div>
           </div>
 
@@ -253,7 +149,7 @@ $todaySchedule = [
             </div>
             <div class="kpi-value" style="color: var(--color-accent);"><?= e($summaryStats['active_programs']) ?></div>
             <div class="kpi-foot" style="color: var(--color-accent);">
-              <span>Custom Training Routines</span>
+              <span>Assigned training routines</span>
             </div>
           </div>
 
@@ -264,7 +160,7 @@ $todaySchedule = [
             </div>
             <div class="kpi-value"><?= e($summaryStats['sessions_this_week']) ?></div>
             <div class="kpi-foot">
-              <span>85% Completion Rate</span>
+              <span>Current week attendance</span>
             </div>
           </div>
 
@@ -275,7 +171,7 @@ $todaySchedule = [
             </div>
             <div class="kpi-value" style="color: var(--color-danger);"><?= e($summaryStats['clients_needing_attention']) ?></div>
             <div class="kpi-foot" style="color: var(--color-danger);">
-              <span>Check-in or plan update required</span>
+              <span>Expiring plans or low check-ins</span>
             </div>
           </div>
         </section>
@@ -286,8 +182,8 @@ $todaySchedule = [
           <!-- MY CLIENTS TABLE -->
           <section class="panel-card">
             <div class="panel-header">
-              <h3>MY ASSIGNED ATHLETS & CLIENTS</h3>
-              <a href="#all-clients" class="panel-link">View All</a>
+              <h3>ATHLETE ROSTER & PROGRAM STATUS</h3>
+              <span style="font-size: 0.8rem; color: var(--color-text-muted);"><?= count($clientsList) ?> Athletes</span>
             </div>
 
             <div class="table-responsive">
@@ -295,37 +191,43 @@ $todaySchedule = [
                 <thead>
                   <tr>
                     <th>Client</th>
-                    <th>Fitness Goal</th>
-                    <th>Program Progress</th>
-                    <th>Next Session</th>
+                    <th>Assigned Program</th>
+                    <th>Total Check-ins</th>
+                    <th>Membership Plan</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($clientsList as $client): ?>
-                    <tr>
-                      <td>
-                        <div class="member-cell">
-                          <div class="member-avatar"><?= e($client['avatar']) ?></div>
-                          <div>
-                            <div class="member-info-name"><?= e($client['name']) ?></div>
-                            <div class="member-info-email"><?= e($client['email']) ?></div>
+                  <?php if (!empty($clientsList)): ?>
+                    <?php foreach ($clientsList as $client): 
+                      $initials = '';
+                      $parts = explode(' ', trim($client['full_name']));
+                      foreach ($parts as $p) { if (!empty($p)) $initials .= strtoupper($p[0]); }
+                      $initials = substr($initials ?: 'MB', 0, 2);
+                      $workoutTitle = $client['workout_title'] ?? 'No Workout Assigned';
+                      $planTitle = strtoupper($client['plan_title'] ?? 'NO PLAN');
+                      $planColor = str_contains($planTitle, 'PRO') ? 'var(--color-accent)' : (str_contains($planTitle, 'ELITE') ? '#FFF' : 'var(--color-text-muted)');
+                      $status = strtolower($client['status'] ?? 'active');
+                    ?>
+                      <tr>
+                        <td>
+                          <div class="member-cell">
+                            <div class="member-avatar"><?= e($initials) ?></div>
+                            <div>
+                              <div class="member-info-name"><?= e($client['full_name']) ?></div>
+                              <div class="member-info-email"><?= e($client['email']) ?></div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td><span style="font-weight: 600; color: #FFF;"><?= e($client['goal']) ?></span></td>
-                      <td>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                          <div style="flex-grow: 1; height: 6px; background-color: var(--color-surface-elevated); border-radius: 3px; overflow: hidden; max-width: 80px;">
-                            <div style="width: <?= $client['progress'] ?>%; height: 100%; background-color: var(--color-accent);"></div>
-                          </div>
-                          <span style="font-size: 0.775rem; font-weight: 700;"><?= $client['progress'] ?>%</span>
-                        </div>
-                      </td>
-                      <td><span style="font-size: 0.8rem; color: var(--color-text-muted);"><?= e($client['next_session']) ?></span></td>
-                      <td><span class="status-pill active"><span class="status-dot-sm"></span> <?= e($client['status']) ?></span></td>
-                    </tr>
-                  <?php endforeach; ?>
+                        </td>
+                        <td><span style="font-weight: 600; color: #FFF;"><?= e($workoutTitle) ?></span></td>
+                        <td><span style="font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--color-accent);"><?= (int)$client['total_checkins'] ?> Check-ins</span></td>
+                        <td><span style="font-size: 0.8rem; font-weight: 700; color: <?= $planColor ?>;"><?= e($planTitle) ?></span></td>
+                        <td><span class="status-pill active"><span class="status-dot-sm"></span> <?= e(ucfirst($status)) ?></span></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <tr><td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--color-text-muted);">No athletes registered in roster yet.</td></tr>
+                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -334,29 +236,31 @@ $todaySchedule = [
           <!-- TODAY'S SCHEDULE -->
           <section class="panel-card">
             <div class="panel-header">
-              <h3>TODAY'S SCHEDULE</h3>
-              <span style="font-size: 0.775rem; color: var(--color-accent); font-weight: 700;">4 SESSIONS</span>
+              <h3>TODAY'S ATHLETE CHECK-INS</h3>
+              <span style="font-size: 0.775rem; color: var(--color-accent); font-weight: 700;"><?= count($todaySchedule) ?> CHECKED IN</span>
             </div>
 
             <ul class="expiry-list">
-              <?php foreach ($todaySchedule as $item): ?>
-                <li class="expiry-item">
-                  <div style="display: flex; align-items: center; gap: 0.85rem;">
-                    <div style="font-family: var(--font-heading); font-weight: 800; font-size: 0.85rem; color: var(--color-accent); min-width: 65px;"><?= e($item['time']) ?></div>
-                    <div>
-                      <div class="expiry-user-title"><?= e($item['client']) ?></div>
-                      <div class="expiry-user-sub"><?= e($item['type']) ?></div>
+              <?php if (!empty($todaySchedule)): ?>
+                <?php foreach ($todaySchedule as $item): ?>
+                  <li class="expiry-item">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                      <div style="font-family: var(--font-heading); font-weight: 800; font-size: 0.85rem; color: var(--color-accent); min-width: 65px;"><?= e(date('h:i A', strtotime($item['check_in_time']))) ?></div>
+                      <div>
+                        <div class="expiry-user-title"><?= e($item['full_name']) ?></div>
+                        <div class="expiry-user-sub"><?= e($item['email']) ?></div>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <?php if ($item['status'] === 'Completed'): ?>
-                      <span class="status-pill active">Done</span>
-                    <?php else: ?>
-                      <span class="status-pill pending">Upcoming</span>
-                    <?php endif; ?>
-                  </div>
+                    <div>
+                      <span class="status-pill active">Present</span>
+                    </div>
+                  </li>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <li style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted); font-size: 0.85rem;">
+                  No check-ins recorded today yet.
                 </li>
-              <?php endforeach; ?>
+              <?php endif; ?>
             </ul>
           </section>
 
@@ -366,8 +270,91 @@ $todaySchedule = [
     </div>
   </div>
 
+  <!-- =========================================================================
+       ASSIGN WORKOUT MODAL
+       ========================================================================= -->
+  <div class="modal-overlay" id="workout-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>ASSIGN WORKOUT PROGRAM</h3>
+        <button type="button" class="modal-close" id="close-workout-modal-btn">&times;</button>
+      </div>
+      <form id="trainer-workout-form">
+        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <div class="modal-body">
+          <div>
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Select Athlete *</label>
+            <select name="member_id" class="form-control" required style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+              <?php foreach ($allMembers as $m): ?>
+                <option value="<?= (int)$m['id'] ?>"><?= e($m['full_name']) ?> (<?= e($m['email']) ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Program Title *</label>
+            <input type="text" name="title" class="form-control" required placeholder="e.g. Upper Body Hypertrophy & Power" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Training Goal / Notes</label>
+            <textarea name="goal" rows="2" class="form-control" placeholder="Target muscle groups, recovery guidelines..." style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);"></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Start Date</label>
+              <input type="date" name="start_date" class="form-control" value="<?= date('Y-m-d') ?>" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+            <div>
+              <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">End Date (Optional)</label>
+              <input type="date" name="end_date" class="form-control" value="<?= date('Y-m-d', strtotime('+30 days')) ?>" style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-workout-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Program</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="/assets/js/main.js"></script>
   <script src="/assets/js/dashboard.js"></script>
+  <script>
+    const workoutModal = document.getElementById('workout-modal');
+    const openWorkoutBtn = document.getElementById('open-workout-modal-btn');
+    const closeWorkoutBtn = document.getElementById('close-workout-modal-btn');
+    const cancelWorkoutBtn = document.getElementById('cancel-workout-modal-btn');
+    const workoutForm = document.getElementById('trainer-workout-form');
+
+    const toggleWorkoutModal = (show) => {
+      if (workoutModal) {
+        if (show) workoutModal.classList.add('show');
+        else workoutModal.classList.remove('show');
+      }
+    };
+
+    openWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(true));
+    closeWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(false));
+    cancelWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(false));
+
+    workoutForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(workoutForm);
+      try {
+        const res = await fetch('/api.php?action=create_workout', { method: 'POST', body: fd });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Failed to save workout: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
