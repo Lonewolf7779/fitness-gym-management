@@ -408,6 +408,12 @@ class GymManagementService {
         }
     }
 
+    public function getUserById(int $userId): ?array {
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $userId]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function resetPassword(int $userId, string $newPassword): void {
         if (strlen($newPassword) < 6) {
             throw new InvalidArgumentException('Password must be at least 6 characters.');
@@ -415,6 +421,73 @@ class GymManagementService {
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
         $stmt = $this->db->prepare("UPDATE users SET password_hash = :p WHERE id = :id");
         $stmt->execute(['p' => $hash, 'id' => $userId]);
+    }
+
+    public function changeUserPassword(int $userId, string $oldPassword, string $newPassword): void {
+        if (strlen($newPassword) < 6) {
+            throw new InvalidArgumentException('New password must be at least 6 characters.');
+        }
+        $stmt = $this->db->prepare("SELECT password_hash FROM users WHERE id = :id");
+        $stmt->execute(['id' => $userId]);
+        $currentHash = $stmt->fetchColumn();
+        if (!$currentHash || !password_verify($oldPassword, $currentHash)) {
+            throw new InvalidArgumentException('Current password is incorrect.');
+        }
+        $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("UPDATE users SET password_hash = :p WHERE id = :id");
+        $stmt->execute(['p' => $hash, 'id' => $userId]);
+    }
+
+    public function updateUserProfile(int $userId, array $d): void {
+        $user = $this->getUserById($userId);
+        if (!$user) {
+            throw new InvalidArgumentException('User not found.');
+        }
+
+        $fullName = trim($d['full_name'] ?? $user['full_name']);
+        $email = trim($d['email'] ?? $user['email']);
+
+        if (empty($fullName) || empty($email)) {
+            throw new InvalidArgumentException('Name and email cannot be empty.');
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare("UPDATE users SET full_name = :name, email = :email WHERE id = :id");
+            $stmt->execute(['name' => $fullName, 'email' => $email, 'id' => $userId]);
+
+            if ($user['role'] === 'trainer') {
+                $stmt = $this->db->prepare("
+                    UPDATE trainers 
+                    SET phone = :phone, specialty = :specialty, bio = :bio, experience_years = :exp 
+                    WHERE user_id = :uid
+                ");
+                $stmt->execute([
+                    'phone'     => $d['phone'] ?? null,
+                    'specialty' => $d['specialty'] ?? null,
+                    'bio'       => $d['bio'] ?? null,
+                    'exp'       => (int) ($d['experience_years'] ?? 1),
+                    'uid'       => $userId
+                ]);
+            } elseif ($user['role'] === 'member') {
+                $stmt = $this->db->prepare("
+                    UPDATE members 
+                    SET phone = :phone, address = :address, emergency_contact = :emergency 
+                    WHERE user_id = :uid
+                ");
+                $stmt->execute([
+                    'phone'     => $d['phone'] ?? null,
+                    'address'   => $d['address'] ?? null,
+                    'emergency' => $d['emergency_contact'] ?? null,
+                    'uid'       => $userId
+                ]);
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function setUserStatus(int $userId, string $status): void {
@@ -942,6 +1015,13 @@ class GymManagementService {
             throw new RuntimeException('Member profile not found.');
         }
 
+        $check = $this->db->prepare("SELECT id FROM attendance WHERE member_id = :m AND date = :d");
+        $check->execute(['m' => (int) $member['id'], 'd' => date('Y-m-d')]);
+        $existingId = $check->fetchColumn();
+        if ($existingId) {
+            return (int) $existingId;
+        }
+
         return $this->checkIn((int) $member['id'], 'present');
     }
 
@@ -950,6 +1030,8 @@ class GymManagementService {
         if (!$member) {
             throw new RuntimeException('Member profile not found.');
         }
+
+        $biceps = !empty($d['biceps_cm']) ? (float) $d['biceps_cm'] : (!empty($d['arms_cm']) ? (float) $d['arms_cm'] : null);
 
         $stmt = $this->db->prepare("
             INSERT INTO progress_logs (member_id, log_date, weight_kg, body_fat_pct, chest_cm, waist_cm, biceps_cm, notes)
@@ -962,7 +1044,7 @@ class GymManagementService {
             'bf'     => !empty($d['body_fat_pct']) ? (float) $d['body_fat_pct'] : null,
             'chest'  => !empty($d['chest_cm']) ? (float) $d['chest_cm'] : null,
             'waist'  => !empty($d['waist_cm']) ? (float) $d['waist_cm'] : null,
-            'biceps' => !empty($d['biceps_cm']) ? (float) $d['biceps_cm'] : null,
+            'biceps' => $biceps,
             'notes'  => $d['notes'] ?? null
         ]);
         return (int) $this->db->lastInsertId();
@@ -1241,18 +1323,124 @@ class GymManagementService {
         return (int) $this->db->lastInsertId();
     }
 
+    public function workoutModuleStats(): array {
+        $totalPrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans")->fetchColumn();
+        $activePrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans WHERE end_date >= CURDATE() OR end_date IS NULL")->fetchColumn();
+        $assignedAthletes = (int) $this->db->query("SELECT COUNT(DISTINCT member_id) FROM workout_plans")->fetchColumn();
+        $totalExercises = (int) $this->db->query("SELECT COUNT(*) FROM exercise_catalog")->fetchColumn();
+
+        return [
+            'total_programs'         => $totalPrograms,
+            'total_workouts'         => $totalPrograms,
+            'active_programs'        => $activePrograms,
+            'assigned_athletes'      => $assignedAthletes,
+            'assigned_members_count' => $assignedAthletes,
+            'total_exercises'        => $totalExercises,
+            'exercise_library_count' => $totalExercises,
+            'workouts'               => $this->workouts()
+        ];
+    }
+
+    public function getWorkoutDetails(int $id): ?array {
+        $stmt = $this->db->prepare("
+            SELECT wp.*, u.full_name as member_name, u.email as member_email,
+                   tu.full_name as trainer_name, tu.email as trainer_email
+            FROM workout_plans wp
+            JOIN members m ON m.id = wp.member_id
+            JOIN users u ON u.id = m.user_id
+            LEFT JOIN trainers t ON t.id = wp.trainer_id
+            LEFT JOIN users tu ON tu.id = t.user_id
+            WHERE wp.id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+        $plan = $stmt->fetch();
+        if (!$plan) return null;
+
+        $stmtEx = $this->db->prepare("
+            SELECT wpe.*, ec.name as exercise_name, ec.category, ec.muscle_group, ec.equipment, ec.instructions
+            FROM workout_plan_exercises wpe
+            JOIN exercise_catalog ec ON ec.id = wpe.exercise_id
+            WHERE wpe.plan_id = :id
+            ORDER BY FIELD(wpe.day_of_week, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'), wpe.id ASC
+        ");
+        $stmtEx->execute(['id' => $id]);
+        $plan['exercises'] = $stmtEx->fetchAll();
+
+        return $plan;
+    }
+
+    public function checkOutByMemberId(int $memberId): void {
+        $stmt = $this->db->prepare("
+            UPDATE attendance 
+            SET check_out_time = :t 
+            WHERE member_id = :m AND date = CURDATE() AND check_out_time IS NULL
+        ");
+        $stmt->execute([
+            't' => date('H:i:s'),
+            'm' => $memberId
+        ]);
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException('No active in-gym attendance session found for this member today.');
+        }
+    }
+
     // =========================================================================
     // 9. REPORTS & ANALYTICS
     // =========================================================================
 
     public function reportStats(): array {
+        $monthlyRevenue = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments 
+            WHERE status = 'paid' AND MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())
+        ")->fetchColumn();
+
+        $totalRevenueAllTime = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'paid'
+        ")->fetchColumn();
+
+        $totalMembers = (int) $this->db->query("SELECT COUNT(*) FROM members")->fetchColumn();
+        $activeMembers = (int) $this->db->query("
+            SELECT COUNT(*) FROM members m JOIN users u ON u.id = m.user_id WHERE u.status = 'active'
+        ")->fetchColumn();
+
+        $retentionRate = ($totalMembers > 0) ? round(($activeMembers / $totalMembers) * 100, 1) : 100.0;
+
+        $weeklyCheckins = (int) $this->db->query("
+            SELECT COUNT(*) FROM attendance WHERE YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)
+        ")->fetchColumn();
+
+        $plansDistribution = $this->db->query("
+            SELECT p.title, COUNT(s.id) as subscriber_count
+            FROM membership_plans p
+            LEFT JOIN subscriptions s ON s.plan_id = p.id AND s.status = 'active'
+            GROUP BY p.id
+            ORDER BY subscriber_count DESC
+        ")->fetchAll();
+
+        $recentPayments = $this->db->query("
+            SELECT p.*, u.full_name as member_name, mp.title as plan_title
+            FROM payments p
+            JOIN members m ON m.id = p.member_id
+            JOIN users u ON u.id = m.user_id
+            LEFT JOIN subscriptions s ON s.id = p.subscription_id
+            LEFT JOIN membership_plans mp ON mp.id = s.plan_id
+            ORDER BY p.payment_date DESC
+            LIMIT 10
+        ")->fetchAll();
+
         return [
-            'members'          => (int) $this->db->query("SELECT COUNT(*) FROM members")->fetchColumn(),
-            'active_members'   => (int) $this->db->query("SELECT COUNT(*) FROM members m JOIN users u ON u.id = m.user_id WHERE u.status = 'active'")->fetchColumn(),
-            'trainers'         => (int) $this->db->query("SELECT COUNT(*) FROM trainers t JOIN users u ON u.id = t.user_id WHERE u.status = 'active'")->fetchColumn(),
-            'plans'            => (int) $this->db->query("SELECT COUNT(*) FROM membership_plans WHERE status = 'active'")->fetchColumn(),
-            'attendance_today' => (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE()")->fetchColumn(),
-            'revenue'          => (float) $this->db->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'paid' AND MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())")->fetchColumn()
+            'members'               => $totalMembers,
+            'active_members'        => $activeMembers,
+            'retention_rate'        => $retentionRate,
+            'trainers'              => (int) $this->db->query("SELECT COUNT(*) FROM trainers t JOIN users u ON u.id = t.user_id WHERE u.status = 'active'")->fetchColumn(),
+            'plans'                 => (int) $this->db->query("SELECT COUNT(*) FROM membership_plans WHERE status = 'active'")->fetchColumn(),
+            'attendance_today'      => (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE()")->fetchColumn(),
+            'weekly_checkins'       => $weeklyCheckins,
+            'revenue'               => $monthlyRevenue,
+            'total_revenue_alltime' => $totalRevenueAllTime,
+            'plans_distribution'    => $plansDistribution,
+            'recent_payments'       => $recentPayments
         ];
     }
 }

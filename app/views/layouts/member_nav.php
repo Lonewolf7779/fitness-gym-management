@@ -31,7 +31,31 @@ $extraHeaderAction = $extraHeaderAction ?? '';
     <li>
       <a href="/member/index.php" class="nav-item-link <?= $currentSection === 'dashboard' ? 'active' : '' ?>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span>My Performance</span>
+        <span>Performance Hub</span>
+      </a>
+    </li>
+    <li>
+      <a href="/member/workout.php" class="nav-item-link <?= $currentSection === 'workout' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
+        <span>My Workout</span>
+      </a>
+    </li>
+    <li>
+      <a href="/member/progress.php" class="nav-item-link <?= $currentSection === 'progress' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Body Metrics</span>
+      </a>
+    </li>
+    <li>
+      <a href="/member/attendance.php" class="nav-item-link <?= $currentSection === 'attendance' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/></svg>
+        <span>Attendance Log</span>
+      </a>
+    </li>
+    <li>
+      <a href="/member/profile.php" class="nav-item-link <?= $currentSection === 'profile' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+        <span>My Profile</span>
       </a>
     </li>
   </ul>
@@ -45,6 +69,7 @@ $extraHeaderAction = $extraHeaderAction ?? '';
       </div>
     </div>
     <div style="display: flex; gap: 0.5rem;">
+      <a href="/member/profile.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Profile</a>
       <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
     </div>
   </div>
@@ -84,6 +109,7 @@ $extraHeaderAction = $extraHeaderAction ?? '';
             <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($memberName) ?></div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($memberEmail) ?></div>
           </div>
+          <a href="/member/profile.php" class="dropdown-item">My Profile</a>
           <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
         </div>
       </div>

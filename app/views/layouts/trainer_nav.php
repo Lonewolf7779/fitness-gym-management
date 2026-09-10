@@ -31,7 +31,25 @@ $extraHeaderAction = $extraHeaderAction ?? '';
     <li>
       <a href="/trainer/index.php" class="nav-item-link <?= $currentSection === 'dashboard' ? 'active' : '' ?>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span>Athlete Roster</span>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li>
+      <a href="/trainer/members.php" class="nav-item-link <?= $currentSection === 'members' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>My Athletes</span>
+      </a>
+    </li>
+    <li>
+      <a href="/trainer/workouts.php" class="nav-item-link <?= $currentSection === 'workouts' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
+        <span>Workout Programs</span>
+      </a>
+    </li>
+    <li>
+      <a href="/trainer/profile.php" class="nav-item-link <?= $currentSection === 'profile' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+        <span>Coach Profile</span>
       </a>
     </li>
   </ul>
@@ -45,6 +63,7 @@ $extraHeaderAction = $extraHeaderAction ?? '';
       </div>
     </div>
     <div style="display: flex; gap: 0.5rem;">
+      <a href="/trainer/profile.php" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Profile</a>
       <a href="/logout.php" class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; justify-content: center;">Logout</a>
     </div>
   </div>
@@ -84,6 +103,7 @@ $extraHeaderAction = $extraHeaderAction ?? '';
             <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($trainerName) ?></div>
             <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($trainerEmail) ?></div>
           </div>
+          <a href="/trainer/profile.php" class="dropdown-item">My Profile</a>
           <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
         </div>
       </div>

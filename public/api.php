@@ -127,6 +127,25 @@ try {
                 echo json_encode(['success' => true, 'data' => $svc->workouts()]);
                 break;
 
+            case 'workout_stats':
+                if ($role !== 'admin' && $role !== 'trainer') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
+                    exit;
+                }
+                echo json_encode(['success' => true, 'data' => $svc->workoutModuleStats()]);
+                break;
+
+            case 'workout_details':
+                if ($role !== 'admin' && $role !== 'trainer' && $role !== 'member') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
+                    exit;
+                }
+                $wid = (int) ($_GET['id'] ?? 0);
+                echo json_encode(['success' => true, 'data' => $svc->getWorkoutDetails($wid)]);
+                break;
+
             case 'reports':
                 if ($role !== 'admin') {
                     http_response_code(403);
@@ -244,6 +263,13 @@ try {
             $id = (int) $_POST['attendance_id'];
             break;
 
+        case 'check_out_member':
+            if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $memberId = (int) ($_POST['member_id'] ?? 0);
+            $svc->checkOutByMemberId($memberId);
+            $id = $memberId;
+            break;
+
         case 'create_payment':
             if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $id = $svc->createPayment($_POST);
@@ -255,9 +281,49 @@ try {
             $id = $svc->createWorkout($_POST);
             break;
 
+        case 'create_workout_plan':
+            if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $workoutData = $_POST;
+            if ($role === 'trainer' && empty($workoutData['trainer_id'])) {
+                $tr = $svc->getTrainerByUserId($userId);
+                if ($tr) {
+                    $workoutData['trainer_id'] = (int) $tr['id'];
+                }
+            }
+            $planId = $svc->createWorkout($workoutData);
+            if (!empty($_POST['exercises']) && is_array($_POST['exercises'])) {
+                foreach ($_POST['exercises'] as $ex) {
+                    if (!empty($ex['exercise_id'])) {
+                        $svc->addWorkoutExercise([
+                            'plan_id'      => $planId,
+                            'exercise_id'  => (int) $ex['exercise_id'],
+                            'sets'         => (int) ($ex['sets'] ?? 3),
+                            'reps'         => (string) ($ex['reps'] ?? '10-12'),
+                            'rest_seconds' => (int) ($ex['rest_seconds'] ?? 60),
+                            'day_of_week'  => (string) ($ex['day_of_week'] ?? 'Mon')
+                        ]);
+                    }
+                }
+            }
+            $id = $planId;
+            break;
+
         case 'add_workout_exercise':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $id = $svc->addWorkoutExercise($_POST);
+            break;
+
+        // User Self-Service Profile & Password
+        case 'update_profile':
+            $svc->updateUserProfile($userId, $_POST);
+            if (!empty($_POST['full_name'])) $_SESSION['full_name'] = trim($_POST['full_name']);
+            if (!empty($_POST['email'])) $_SESSION['email'] = trim($_POST['email']);
+            $id = $userId;
+            break;
+
+        case 'change_password':
+            $svc->changeUserPassword($userId, $_POST['current_password'] ?? '', $_POST['new_password'] ?? '');
+            $id = $userId;
             break;
 
         // Member Self-Service

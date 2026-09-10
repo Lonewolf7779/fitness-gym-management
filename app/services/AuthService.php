@@ -120,7 +120,7 @@ class AuthService {
                 'status'    => 'active'
             ],
             'alex@gmail.com' => [
-                'id'        => 4,
+                'id'        => 3,
                 'full_name' => 'Alex Rivera',
                 'email'     => 'alex@gmail.com',
                 'password'  => 'Member@123',

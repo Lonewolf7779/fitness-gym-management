@@ -169,22 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
-  // Category 2: Unified Member Entities (Pre-populated with default and dynamically synced)
-  let adminMemberEntities = [
-    { id: 1, name: 'Alex Rivera', email: 'alex@gmail.com', phone: '+91 9876543210', avatar: 'AR', plan: 'Pro Plan', status: 'Active' },
-    { id: 2, name: 'Daniel Carter', email: 'daniel@gmail.com', phone: '+91 9876543211', avatar: 'DC', plan: 'Starter Plan', status: 'Active' },
-    { id: 3, name: 'Sophia Miller', email: 'sophia@gmail.com', phone: '+91 9876543212', avatar: 'SM', plan: 'Elite Plan', status: 'Active' },
-    { id: 4, name: 'Ryan Brooks', email: 'ryan@gmail.com', phone: '+91 9876543213', avatar: 'RB', plan: 'Pro Plan', status: 'Expired' },
-    { id: 5, name: 'Elena Rostova', email: 'elena@ironcore.com', phone: '+91 9876543214', avatar: 'ER', plan: 'Elite Plan', status: 'Active' },
-    { id: 6, name: 'Sarah Connor', email: 'sarah@gmail.com', phone: '+91 9876543215', avatar: 'SC', plan: 'Starter Plan', status: 'Inactive' },
-    { id: 7, name: 'David Black', email: 'david@gmail.com', phone: '+91 9876543216', avatar: 'DB', plan: 'Starter Plan', status: 'Expired' },
-    { id: 8, name: 'Michael Chang', email: 'michael@gmail.com', phone: '+91 9876543222', avatar: 'MC', plan: 'Pro Plan', status: 'Active' },
-    { id: 9, name: 'Viktor Vance', email: 'viktor@gmail.com', phone: '+91 9876543217', avatar: 'VV', plan: 'Pro Plan', status: 'Expired' },
-    { id: 10, name: 'Anita Sharma', email: 'anita@gmail.com', phone: '+91 9876543218', avatar: 'AS', plan: 'Elite Plan', status: 'Expired' },
-    { id: 11, name: 'Rahul Kapoor', email: 'kapoor@gmail.com', phone: '+91 9876543219', avatar: 'RK', plan: 'Starter Plan', status: 'Active' },
-    { id: 12, name: 'Priya Singh', email: 'priya@gmail.com', phone: '+91 9876543220', avatar: 'PS', plan: 'Pro Plan', status: 'Active' },
-    { id: 13, name: 'Marcus Vance', email: 'marcus@ironcore.com', phone: '+91 9876543221', avatar: 'MV', plan: 'Elite Plan', status: 'Active' }
-  ];
+  // Category 2: Unified Member Entities (Dynamically synced from live database)
+  let adminMemberEntities = [];
 
   // Asynchronously sync live members from database
   fetch('/api.php?action=members')
@@ -330,19 +316,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const adminChartData = {
     revenue: {
-      title: 'Monthly Revenue Stream (₹ In Lakhs)',
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-      values: [1.8, 2.1, 2.3, 2.2, 2.5, 2.65, 2.72, 2.84],
-      max: 3.5,
+      title: 'Monthly Revenue Stream',
+      labels: [],
+      values: [],
+      max: 100,
       color: '#E8FF00',
       prefix: '₹',
-      suffix: 'L'
+      suffix: ''
     },
     attendance: {
-      title: 'Daily Member Check-ins (Last 7 Days)',
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      values: [320, 345, 387, 360, 410, 440, 290],
-      max: 500,
+      title: 'Daily Member Check-ins',
+      labels: [],
+      values: [],
+      max: 10,
       color: '#30D158',
       prefix: '',
       suffix: ''
