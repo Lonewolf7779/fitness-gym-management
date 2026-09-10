@@ -549,8 +549,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetFormError) resetFormError.style.display = 'none';
   };
 
-  openAddBtn?.addEventListener('click', () => {
-    addModal?.classList.add('show');
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-add-modal-btn')) {
+      e.preventDefault();
+      addModal?.classList.add('show');
+    }
   });
 
   // Check URL parameters for ?search=... or ?action=add

@@ -295,11 +295,9 @@ $recentActivity = $memberData['recent_activity'];
   <script src="/assets/js/dashboard.js"></script>
   <script>
     const progressModal = document.getElementById('progress-modal');
-    const openProgressBtn = document.getElementById('open-progress-modal-btn');
     const closeProgressBtn = document.getElementById('close-progress-modal-btn');
     const cancelProgressBtn = document.getElementById('cancel-progress-modal-btn');
     const progressForm = document.getElementById('member-progress-form');
-    const selfCheckinBtn = document.getElementById('self-checkin-btn');
 
     const toggleProgressModal = (show) => {
       if (progressModal) {
@@ -308,7 +306,17 @@ $recentActivity = $memberData['recent_activity'];
       }
     };
 
-    openProgressBtn?.addEventListener('click', () => toggleProgressModal(true));
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#open-progress-modal-btn')) {
+        e.preventDefault();
+        toggleProgressModal(true);
+      }
+      if (e.target.closest('#self-checkin-btn')) {
+        e.preventDefault();
+        performSelfCheckin();
+      }
+    });
+
     closeProgressBtn?.addEventListener('click', () => toggleProgressModal(false));
     cancelProgressBtn?.addEventListener('click', () => toggleProgressModal(false));
 
@@ -325,7 +333,7 @@ $recentActivity = $memberData['recent_activity'];
       }
     });
 
-    selfCheckinBtn?.addEventListener('click', async () => {
+    async function performSelfCheckin() {
       const fd = new FormData();
       fd.append('csrf_token', '<?= e($csrf) ?>');
       try {
@@ -336,7 +344,7 @@ $recentActivity = $memberData['recent_activity'];
       } catch (err) {
         alert('Check-in error: ' + err.message);
       }
-    });
+    }
   </script>
 </body>
 </html>

@@ -254,7 +254,6 @@ $todaySchedule = $trainerData['today_schedule'];
   <script src="/assets/js/dashboard.js"></script>
   <script>
     const workoutModal = document.getElementById('workout-modal');
-    const openWorkoutBtn = document.getElementById('open-workout-modal-btn');
     const closeWorkoutBtn = document.getElementById('close-workout-modal-btn');
     const cancelWorkoutBtn = document.getElementById('cancel-workout-modal-btn');
     const workoutForm = document.getElementById('trainer-workout-form');
@@ -266,7 +265,13 @@ $todaySchedule = $trainerData['today_schedule'];
       }
     };
 
-    openWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(true));
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#open-workout-modal-btn')) {
+        e.preventDefault();
+        toggleWorkoutModal(true);
+      }
+    });
+
     closeWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(false));
     cancelWorkoutBtn?.addEventListener('click', () => toggleWorkoutModal(false));
 

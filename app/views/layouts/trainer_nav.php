@@ -55,32 +55,44 @@ $extraHeaderAction = $extraHeaderAction ?? '';
 
 <!-- Unified Trainer Header Component -->
 <header class="dashboard-header">
-  <div class="header-left" style="display: flex; align-items: center; gap: 1rem; min-width: 0;">
-    <button class="admin-mobile-toggle" aria-label="Toggle navigation drawer">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-
-    <div class="header-title-group" style="min-width: 0;">
-      <h1><?= e($pageTitle) ?></h1>
-      <p><?= e($pageSubtitle) ?></p>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <?= $extraHeaderAction ?>
-
-    <!-- User Profile Dropdown -->
-    <div class="dropdown-menu-wrapper">
-      <button class="icon-btn" id="profile-btn" aria-label="User profile menu" style="padding: 0; overflow: hidden;">
-        <div class="avatar-circle" style="width: 100%; height: 100%; border-radius: 0; font-size: 0.85rem;"><?= e($trainerInitial) ?></div>
+  <div class="header-top-row">
+    <div class="header-left">
+      <button class="admin-mobile-toggle" aria-label="Toggle navigation drawer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <div class="dropdown-panel" id="profile-dropdown" style="width: 220px;">
-        <div style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); margin-bottom: 0.5rem;">
-          <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($trainerName) ?></div>
-          <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($trainerEmail) ?></div>
+
+      <div class="header-title-group">
+        <h1><?= e($pageTitle) ?></h1>
+        <p><?= e($pageSubtitle) ?></p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <?php if (!empty($extraHeaderAction)): ?>
+      <div class="desktop-header-cta">
+        <?= $extraHeaderAction ?>
+      </div>
+      <?php endif; ?>
+
+      <!-- User Profile Dropdown -->
+      <div class="dropdown-menu-wrapper">
+        <button class="icon-btn" id="profile-btn" aria-label="User profile menu" style="padding: 0; overflow: hidden;">
+          <div class="avatar-circle" style="width: 100%; height: 100%; border-radius: 0; font-size: 0.85rem;"><?= e($trainerInitial) ?></div>
+        </button>
+        <div class="dropdown-panel" id="profile-dropdown" style="width: 220px;">
+          <div style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); margin-bottom: 0.5rem;">
+            <div style="font-weight: 700; color: #FFF; font-size: 0.9rem;"><?= e($trainerName) ?></div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);"><?= e($trainerEmail) ?></div>
+          </div>
+          <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
         </div>
-        <a href="/logout.php" class="dropdown-item" style="color: var(--color-danger);">Sign Out</a>
       </div>
     </div>
   </div>
+
+  <?php if (!empty($extraHeaderAction)): ?>
+  <div class="mobile-header-cta">
+    <?= $extraHeaderAction ?>
+  </div>
+  <?php endif; ?>
 </header>
