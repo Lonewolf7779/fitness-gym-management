@@ -149,13 +149,22 @@ class GymManagementService {
             SELECT m.id, m.user_id, m.phone, m.emergency_contact, m.gender, m.dob, m.address, m.join_date,
                    u.full_name, u.email, u.status,
                    s.id as subscription_id, s.start_date, s.end_date, s.status as subscription_status,
-                   p.id as plan_id, p.title as plan_title, p.price as plan_price
+                   p.id as plan_id, p.title as plan_title, p.price as plan_price,
+                   tu.full_name as trainer_name,
+                   wp.title as workout_title,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.member_id = m.id) as total_checkins,
+                   (SELECT MAX(CONCAT(a2.date, ' ', a2.check_in_time)) FROM attendance a2 WHERE a2.member_id = m.id) as last_checkin
             FROM members m
             JOIN users u ON u.id = m.user_id
             LEFT JOIN subscriptions s ON s.member_id = m.id AND s.id = (
                 SELECT MAX(s2.id) FROM subscriptions s2 WHERE s2.member_id = m.id
             )
             LEFT JOIN membership_plans p ON p.id = s.plan_id
+            LEFT JOIN workout_plans wp ON wp.member_id = m.id AND wp.id = (
+                SELECT MAX(wp2.id) FROM workout_plans wp2 WHERE wp2.member_id = m.id
+            )
+            LEFT JOIN trainers t ON t.id = wp.trainer_id
+            LEFT JOIN users tu ON tu.id = t.user_id
             WHERE 1=1
         ";
         $params = [];
@@ -167,14 +176,50 @@ class GymManagementService {
             $params['q3'] = "%$search%";
         }
         if ($status !== '' && $status !== 'all') {
-            $sql .= " AND u.status = :status";
-            $params['status'] = $status;
+            if ($status === 'expiring') {
+                $sql .= " AND s.status = 'active' AND s.end_date >= CURDATE() AND s.end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)";
+            } elseif ($status === 'expired') {
+                $sql .= " AND (s.status = 'expired' OR (s.end_date IS NOT NULL AND s.end_date < CURDATE()))";
+            } else {
+                $sql .= " AND u.status = :status";
+                $params['status'] = $status;
+            }
         }
 
         $sql .= " ORDER BY m.id DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    public function memberModuleStats(): array {
+        $totalMembers = (int) $this->db->query("SELECT COUNT(*) FROM members")->fetchColumn();
+        $activeMembers = (int) $this->db->query("SELECT COUNT(*) FROM members m JOIN users u ON u.id = m.user_id WHERE u.status = 'active'")->fetchColumn();
+        $activeSubs = (int) $this->db->query("
+            SELECT COUNT(DISTINCT s.member_id) FROM subscriptions s
+            JOIN users u ON u.id = (SELECT m2.user_id FROM members m2 WHERE m2.id = s.member_id)
+            WHERE s.status = 'active' AND s.end_date >= CURDATE() AND u.status = 'active'
+        ")->fetchColumn();
+        $expiringSoon = (int) $this->db->query("
+            SELECT COUNT(DISTINCT s.member_id) FROM subscriptions s
+            JOIN users u ON u.id = (SELECT m2.user_id FROM members m2 WHERE m2.id = s.member_id)
+            WHERE s.status = 'active' AND s.end_date >= CURDATE() AND s.end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND u.status = 'active'
+        ")->fetchColumn();
+        $expired = (int) $this->db->query("
+            SELECT COUNT(DISTINCT m.id) FROM members m
+            LEFT JOIN subscriptions s ON s.member_id = m.id AND s.id = (
+                SELECT MAX(s2.id) FROM subscriptions s2 WHERE s2.member_id = m.id
+            )
+            WHERE s.id IS NULL OR s.status = 'expired' OR s.end_date < CURDATE()
+        ")->fetchColumn();
+
+        return [
+            'total_members'        => $totalMembers,
+            'active_members'       => $activeMembers,
+            'active_subscriptions' => $activeSubs,
+            'expiring_soon'        => $expiringSoon,
+            'expired'              => $expired
+        ];
     }
 
     public function getMemberById(int $id): ?array {
@@ -854,17 +899,54 @@ class GymManagementService {
     // 6. ATTENDANCE OPERATIONS
     // =========================================================================
 
-    public function attendance(string $date = ''): array {
-        $date = $date ?: date('Y-m-d');
-        $stmt = $this->db->prepare("
-            SELECT a.*, u.full_name, u.email 
+    public function attendanceModuleStats(): array {
+        $todayCheckins = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE()")->fetchColumn();
+        $currentlyInGym = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE() AND check_out_time IS NULL")->fetchColumn();
+        $weeklyVisits = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)")->fetchColumn();
+        $monthlyVisits = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())")->fetchColumn();
+
+        return [
+            'today_checkins'   => $todayCheckins,
+            'currently_in_gym' => $currentlyInGym,
+            'weekly_visits'    => $weeklyVisits,
+            'monthly_visits'   => $monthlyVisits
+        ];
+    }
+
+    public function attendance(string $filter = ''): array {
+        $filter = trim($filter);
+        $sql = "
+            SELECT a.*, u.full_name, u.email, m.phone,
+                   p.title as plan_title
             FROM attendance a 
             JOIN members m ON m.id = a.member_id 
             JOIN users u ON u.id = m.user_id 
-            WHERE a.date = :date 
-            ORDER BY a.check_in_time DESC
-        ");
-        $stmt->execute(['date' => $date]);
+            LEFT JOIN subscriptions s ON s.member_id = m.id AND s.id = (
+                SELECT MAX(s2.id) FROM subscriptions s2 WHERE s2.member_id = m.id
+            )
+            LEFT JOIN membership_plans p ON p.id = s.plan_id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if ($filter === '' || $filter === 'today') {
+            $sql .= " AND a.date = CURDATE()";
+        } elseif ($filter === 'yesterday') {
+            $sql .= " AND a.date = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+        } elseif ($filter === 'this_week') {
+            $sql .= " AND YEARWEEK(a.date, 1) = YEARWEEK(CURDATE(), 1)";
+        } elseif ($filter === 'this_month') {
+            $sql .= " AND MONTH(a.date) = MONTH(CURDATE()) AND YEAR(a.date) = YEAR(CURDATE())";
+        } elseif ($filter === 'in_gym') {
+            $sql .= " AND a.date = CURDATE() AND a.check_out_time IS NULL";
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter)) {
+            $sql .= " AND a.date = :d";
+            $params['d'] = $filter;
+        }
+
+        $sql .= " ORDER BY a.date DESC, a.check_in_time DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -909,18 +991,81 @@ class GymManagementService {
         }
     }
 
+    public function deleteAttendance(int $id): void {
+        $stmt = $this->db->prepare("DELETE FROM attendance WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+    }
+
     // =========================================================================
     // 7. PAYMENTS & FINANCIALS
     // =========================================================================
 
-    public function payments(): array {
-        return $this->db->query("
-            SELECT p.*, u.full_name, p.payment_date 
+    public function paymentModuleStats(): array {
+        $todayRev = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments 
+            WHERE status = 'paid' AND DATE(payment_date) = CURDATE()
+        ")->fetchColumn();
+
+        $monthRev = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments 
+            WHERE status = 'paid' AND MONTH(payment_date) = MONTH(CURDATE()) AND YEAR(payment_date) = YEAR(CURDATE())
+        ")->fetchColumn();
+
+        $totalRev = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments 
+            WHERE status = 'paid'
+        ")->fetchColumn();
+
+        $pendingAmount = (float) $this->db->query("
+            SELECT COALESCE(SUM(amount), 0) FROM payments 
+            WHERE status = 'pending'
+        ")->fetchColumn();
+
+        $methodsQuery = $this->db->query("
+            SELECT payment_method, COUNT(*) as txn_count, COALESCE(SUM(amount), 0) as total_amount
+            FROM payments
+            WHERE status = 'paid'
+            GROUP BY payment_method
+            ORDER BY total_amount DESC
+        ")->fetchAll();
+
+        return [
+            'today_revenue'  => $todayRev,
+            'month_revenue'  => $monthRev,
+            'total_revenue'  => $totalRev,
+            'pending_amount' => $pendingAmount,
+            'methods'        => $methodsQuery
+        ];
+    }
+
+    public function payments(string $search = '', string $status = ''): array {
+        $sql = "
+            SELECT p.*, u.full_name, u.email, m.phone,
+                   mp.title as plan_title
             FROM payments p 
             JOIN members m ON m.id = p.member_id 
             JOIN users u ON u.id = m.user_id 
-            ORDER BY p.payment_date DESC
-        ")->fetchAll();
+            LEFT JOIN subscriptions s ON s.id = p.subscription_id
+            LEFT JOIN membership_plans mp ON mp.id = s.plan_id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if ($search !== '') {
+            $sql .= " AND (u.full_name LIKE :q1 OR u.email LIKE :q2 OR p.transaction_id LIKE :q3)";
+            $params['q1'] = "%$search%";
+            $params['q2'] = "%$search%";
+            $params['q3'] = "%$search%";
+        }
+        if ($status !== '' && $status !== 'all') {
+            $sql .= " AND p.status = :s";
+            $params['s'] = $status;
+        }
+
+        $sql .= " ORDER BY p.payment_date DESC, p.id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function createPayment(array $d): int {
@@ -954,6 +1099,11 @@ class GymManagementService {
             'status'       => $d['status'] ?? 'paid'
         ]);
         return (int) $this->db->lastInsertId();
+    }
+
+    public function deletePayment(int $id): void {
+        $stmt = $this->db->prepare("DELETE FROM payments WHERE id = :id");
+        $stmt->execute(['id' => $id]);
     }
 
     // =========================================================================

@@ -1,0 +1,830 @@
+﻿/* ==========================================================================
+   IRONCORE GYM MANAGEMENT - BESPOKE ADMIN MODULES STYLESHEET
+   Scoped specifically for: Members, Attendance, and Payments Control Centers
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. KPI GRID & LUXURY METRIC CARDS
+   -------------------------------------------------------------------------- */
+.module-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.module-kpi-grid.cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.module-kpi-grid.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.module-kpi-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(26, 26, 36, 0.85) 0%, rgba(18, 18, 24, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.module-kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--card-accent, rgba(229, 9, 20, 0.6)), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.module-kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.module-kpi-card:hover::before {
+  opacity: 1;
+}
+
+.module-kpi-card.accent-red { --card-accent: #E50914; }
+.module-kpi-card.accent-emerald { --card-accent: #10B981; }
+.module-kpi-card.accent-cyan { --card-accent: #06B6D4; }
+.module-kpi-card.accent-amber { --card-accent: #F59E0B; }
+.module-kpi-card.accent-purple { --card-accent: #8B5CF6; }
+
+.kpi-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8E8E9F;
+}
+
+.kpi-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #FFF;
+  transition: transform 0.2s ease;
+}
+
+.module-kpi-card:hover .kpi-icon-wrap {
+  transform: scale(1.08);
+}
+
+.kpi-icon-wrap.red { background: rgba(229, 9, 20, 0.12); border-color: rgba(229, 9, 20, 0.25); color: #FF4D4D; }
+.kpi-icon-wrap.emerald { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25); color: #34D399; }
+.kpi-icon-wrap.cyan { background: rgba(6, 182, 212, 0.12); border-color: rgba(6, 182, 212, 0.25); color: #38BDF8; }
+.kpi-icon-wrap.amber { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); color: #FBBF24; }
+.kpi-icon-wrap.purple { background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.25); color: #A78BFA; }
+
+.kpi-main-val {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-heading, "Inter", -apple-system, sans-serif);
+}
+
+.kpi-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.775rem;
+  color: #8E8E9F;
+}
+
+.kpi-sub-row .badge-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.badge-trend.positive { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+.badge-trend.neutral { background: rgba(255, 255, 255, 0.08); color: #D1D5DB; }
+.badge-trend.warning { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
+.badge-trend.danger { background: rgba(239, 68, 68, 0.15); color: #F87171; }
+
+/* --------------------------------------------------------------------------
+   2. MODULE TOOLBAR & CONTROLS
+   -------------------------------------------------------------------------- */
+.module-toolbar-wrap {
+  background: linear-gradient(180deg, rgba(24, 24, 32, 0.9) 0%, rgba(18, 18, 24, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbar-primary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.module-search-box {
+  position: relative;
+  min-width: 260px;
+  max-width: 380px;
+  flex: 1;
+}
+
+.module-search-box input {
+  width: 100%;
+  background: rgba(10, 10, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.65rem 1rem 0.65rem 2.4rem;
+  color: #FFF;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.module-search-box input:focus {
+  outline: none;
+  border-color: var(--color-accent, #E50914);
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.15);
+  background: rgba(14, 14, 20, 0.95);
+}
+
+.module-search-box .search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #6B7280;
+  pointer-events: none;
+}
+
+/* Filter Pills Row */
+.filter-pills-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #9CA3AF;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFF;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.filter-pill.active {
+  background: rgba(229, 9, 20, 0.15);
+  border-color: rgba(229, 9, 20, 0.4);
+  color: #FFF;
+  box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
+}
+
+.filter-pill.active .pill-count {
+  background: #E50914;
+  color: #FFF;
+}
+
+.pill-count {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #9CA3AF;
+}
+
+/* --------------------------------------------------------------------------
+   3. DATA TABLE & CELL DESIGNS
+   -------------------------------------------------------------------------- */
+.module-panel-card {
+  background: linear-gradient(180deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.table-glass-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.module-data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.module-data-table thead tr th {
+  background: rgba(14, 14, 18, 0.9);
+  padding: 0.95rem 1.15rem;
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8E8E9F;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.module-data-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.module-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.module-data-table tbody tr td {
+  padding: 1rem 1.15rem;
+  font-size: 0.875rem;
+  color: #D1D5DB;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+/* Entity Avatar & Hierarchy */
+.entity-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.entity-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #FFF;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.entity-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.entity-title {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entity-subtitle {
+  font-size: 0.775rem;
+  color: #8E8E9F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Plan Badges */
+.plan-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plan-chip.starter {
+  background: rgba(107, 114, 128, 0.15);
+  border: 1px solid rgba(156, 163, 175, 0.25);
+  color: #D1D5DB;
+}
+
+.plan-chip.pro {
+  background: rgba(229, 9, 20, 0.15);
+  border: 1px solid rgba(229, 9, 20, 0.35);
+  color: #FF4D4D;
+}
+
+.plan-chip.elite {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.25) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #FBBF24;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-pill .status-dot-sm {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-pill.active, .status-pill.paid, .status-pill.completed {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34D399;
+}
+.status-pill.active .status-dot-sm, .status-pill.paid .status-dot-sm, .status-pill.completed .status-dot-sm {
+  background: #34D399;
+  box-shadow: 0 0 6px #34D399;
+}
+
+.status-pill.in-gym {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #38BDF8;
+}
+.status-pill.in-gym .status-dot-sm {
+  background: #38BDF8;
+  box-shadow: 0 0 8px #38BDF8;
+  animation: pulseDot 1.8s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 10px #38BDF8; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.status-pill.expiring, .status-pill.pending {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #FBBF24;
+}
+.status-pill.expiring .status-dot-sm, .status-pill.pending .status-dot-sm {
+  background: #FBBF24;
+  box-shadow: 0 0 6px #FBBF24;
+}
+
+.status-pill.expired, .status-pill.inactive, .status-pill.failed, .status-pill.suspended {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #F87171;
+}
+.status-pill.expired .status-dot-sm, .status-pill.inactive .status-dot-sm, .status-pill.failed .status-dot-sm {
+  background: #F87171;
+}
+
+/* Action Buttons */
+.row-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.btn-mini {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #E5E7EB;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-mini:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFF;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-mini.danger {
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+}
+.btn-mini.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.btn-mini.checkout {
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+}
+.btn-mini.checkout:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #FFF;
+}
+
+/* --------------------------------------------------------------------------
+   4. SPLIT LAYOUT & CONTROL PANELS (Attendance & Payments)
+   -------------------------------------------------------------------------- */
+.module-split-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.module-widget-card {
+  background: linear-gradient(180deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  margin-bottom: 1.5rem;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.widget-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Quick Terminal Widget */
+.quick-terminal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.terminal-select-wrap select {
+  width: 100%;
+  background: rgba(10, 10, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  color: #FFF;
+  font-size: 0.875rem;
+}
+
+.terminal-submit-btn {
+  width: 100%;
+  padding: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.825rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #E50914 0%, #B80710 100%);
+  color: #FFF;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.4);
+  transition: all 0.2s ease;
+}
+
+.terminal-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
+}
+
+/* Payment Method Breakdown Bar */
+.method-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.method-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.method-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.method-name {
+  font-weight: 700;
+  color: #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.method-val {
+  font-weight: 700;
+  color: #FFF;
+  font-family: monospace;
+}
+
+.method-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.method-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #E50914, #FF5555);
+}
+
+/* --------------------------------------------------------------------------
+   5. DIGITAL RECEIPT MODAL & PRINTING
+   -------------------------------------------------------------------------- */
+.receipt-paper {
+  background: #111116;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 2rem;
+  color: #FFF;
+  position: relative;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.receipt-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.receipt-brand-logo {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.receipt-brand-logo span { color: #E50914; }
+
+.receipt-meta-block {
+  text-align: right;
+  font-size: 0.775rem;
+  color: #8E8E9F;
+}
+
+.receipt-txn-badge {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #38BDF8;
+  background: rgba(6, 182, 212, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+  display: inline-block;
+}
+
+.receipt-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.receipt-kv {
+  font-size: 0.8rem;
+}
+
+.receipt-kv .lbl {
+  color: #8E8E9F;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.receipt-kv .val {
+  font-weight: 700;
+  color: #FFF;
+}
+
+.receipt-total-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.receipt-total-box .total-lbl {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #9CA3AF;
+}
+
+.receipt-total-box .total-amount {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #34D399;
+  font-family: monospace;
+}
+
+/* --------------------------------------------------------------------------
+   6. 360 ATHLETE PROFILE MODAL
+   -------------------------------------------------------------------------- */
+.profile-modal-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+}
+
+.profile-hero-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #E50914 0%, #7F1D1D 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #FFF;
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.4);
+}
+
+.profile-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-strip-card {
+  background: rgba(10, 10, 14, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.profile-strip-card .strip-lbl {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #8E8E9F;
+  margin-bottom: 0.25rem;
+}
+
+.profile-strip-card .strip-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #FFF;
+}
+
+/* --------------------------------------------------------------------------
+   7. RESPONSIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .module-kpi-grid.cols-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .module-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .module-kpi-grid.cols-5,
+  .module-kpi-grid.cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .module-kpi-grid.cols-5,
+  .module-kpi-grid.cols-4 {
+    grid-template-columns: 1fr;
+  }
+  .toolbar-primary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar-left-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .module-search-box {
+    max-width: 100%;
+    min-width: 100%;
+  }
+  .receipt-details-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-stat-strip {
+    grid-template-columns: 1fr;
+  }
+}
