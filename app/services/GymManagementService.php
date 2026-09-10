@@ -486,13 +486,50 @@ class GymManagementService {
     // 3. MEMBERSHIP PLANS
     // =========================================================================
 
+    public function membershipModuleStats(): array {
+        $totalPlans = (int) $this->db->query("SELECT COUNT(*) FROM membership_plans")->fetchColumn();
+        $activePlans = (int) $this->db->query("SELECT COUNT(*) FROM membership_plans WHERE status = 'active'")->fetchColumn();
+        $totalActiveSubs = (int) $this->db->query("SELECT COUNT(*) FROM subscriptions WHERE status = 'active' AND end_date >= CURDATE()")->fetchColumn();
+        
+        $popStmt = $this->db->query("
+            SELECT p.title, COUNT(s.id) as sub_count 
+            FROM membership_plans p
+            JOIN subscriptions s ON s.plan_id = p.id
+            WHERE s.status = 'active' AND s.end_date >= CURDATE()
+            GROUP BY p.id
+            ORDER BY sub_count DESC
+            LIMIT 1
+        ");
+        $popular = $popStmt->fetch();
+        $popularPlan = $popular ? $popular['title'] : 'PRO';
+
+        return [
+            'total_plans'         => $totalPlans,
+            'active_plans'        => $activePlans,
+            'total_active_subs'   => $totalActiveSubs,
+            'most_popular_plan'   => $popularPlan
+        ];
+    }
+
     public function plans(bool $activeOnly = false): array {
-        $sql = "SELECT * FROM membership_plans" . ($activeOnly ? " WHERE status = 'active'" : "") . " ORDER BY price ASC";
+        $sql = "
+            SELECT p.*,
+                   (SELECT COUNT(*) FROM subscriptions s WHERE s.plan_id = p.id AND s.status = 'active' AND s.end_date >= CURDATE()) as active_subscribers
+            FROM membership_plans p
+        ";
+        if ($activeOnly) {
+            $sql .= " WHERE p.status = 'active'";
+        }
+        $sql .= " ORDER BY p.price ASC";
         return $this->db->query($sql)->fetchAll();
     }
 
     public function getPlan(int $id): ?array {
-        $stmt = $this->db->prepare("SELECT * FROM membership_plans WHERE id = :id LIMIT 1");
+        $stmt = $this->db->prepare("
+            SELECT p.*,
+                   (SELECT COUNT(*) FROM subscriptions s WHERE s.plan_id = p.id AND s.status = 'active' AND s.end_date >= CURDATE()) as active_subscribers
+            FROM membership_plans p WHERE p.id = :id LIMIT 1
+        ");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -540,17 +577,53 @@ class GymManagementService {
         $stmt->execute(['id' => $id]);
     }
 
+    public function deletePlan(int $id): void {
+        $stmt = $this->db->prepare("DELETE FROM membership_plans WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+    }
+
     // =========================================================================
     // 4. TRAINERS & TRAINER PORTAL
     // =========================================================================
 
-    public function trainers(): array {
-        return $this->db->query("
-            SELECT t.*, u.full_name, u.email, u.status 
+    public function trainerModuleStats(): array {
+        $totalTrainers = (int) $this->db->query("SELECT COUNT(*) FROM trainers t JOIN users u ON u.id = t.user_id")->fetchColumn();
+        $activeTrainers = (int) $this->db->query("SELECT COUNT(*) FROM trainers t JOIN users u ON u.id = t.user_id WHERE u.status = 'active'")->fetchColumn();
+        $assignedAthletes = (int) $this->db->query("SELECT COUNT(DISTINCT wp.member_id) FROM workout_plans wp WHERE wp.trainer_id IS NOT NULL")->fetchColumn();
+        $activePrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans WHERE trainer_id IS NOT NULL")->fetchColumn();
+
+        return [
+            'total_trainers'    => $totalTrainers,
+            'active_trainers'   => $activeTrainers,
+            'assigned_athletes' => $assignedAthletes,
+            'active_programs'   => $activePrograms
+        ];
+    }
+
+    public function trainers(string $search = '', string $status = ''): array {
+        $sql = "
+            SELECT t.*, u.full_name, u.email, u.status,
+                   (SELECT COUNT(DISTINCT wp.member_id) FROM workout_plans wp WHERE wp.trainer_id = t.id) as assigned_athletes,
+                   (SELECT COUNT(*) FROM workout_plans wp WHERE wp.trainer_id = t.id) as active_programs
             FROM trainers t 
             JOIN users u ON u.id = t.user_id 
-            ORDER BY t.id DESC
-        ")->fetchAll();
+            WHERE 1=1
+        ";
+        $params = [];
+        if ($search !== '') {
+            $sql .= " AND (u.full_name LIKE :q1 OR u.email LIKE :q2 OR t.specialization LIKE :q3)";
+            $params['q1'] = "%$search%";
+            $params['q2'] = "%$search%";
+            $params['q3'] = "%$search%";
+        }
+        if ($status !== '' && $status !== 'all') {
+            $sql .= " AND u.status = :status";
+            $params['status'] = $status;
+        }
+        $sql .= " ORDER BY t.id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function getTrainerByUserId(int $userId): ?array {

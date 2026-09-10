@@ -358,11 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartW = width - padding * 2;
     const chartH = height - padding * 2;
 
-    const step = chartW / (data.values.length - 1);
+    const numPoints = (data.values && data.values.length) ? data.values.length : 1;
+    const step = numPoints > 1 ? chartW / (numPoints - 1) : 0;
+    const maxVal = data.max > 0 ? data.max : 1;
     const points = data.values.map((val, i) => {
       const x = padding + i * step;
-      const y = height - padding - (val / data.max) * chartH;
-      return { x, y, val, label: data.labels[i] };
+      const y = height - padding - (val / maxVal) * chartH;
+      return { x, y, val, label: data.labels[i] || '' };
     });
 
     let pathD = `M ${points[0].x} ${points[0].y}`;
@@ -398,6 +400,44 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   };
 
+  // Asynchronously fetch live chart datasets from database
+  const fetchLiveChartData = async () => {
+    try {
+      const [revRes, attRes] = await Promise.all([
+        fetch('/api.php?action=chart_revenue').then(r => r.json()).catch(() => null),
+        fetch('/api.php?action=chart_attendance').then(r => r.json()).catch(() => null)
+      ]);
+
+      if (revRes && revRes.success && revRes.data) {
+        if (Array.isArray(revRes.data.labels) && revRes.data.labels.length > 0) {
+          adminChartData.revenue.labels = revRes.data.labels;
+        }
+        if (Array.isArray(revRes.data.values) && revRes.data.values.length > 0) {
+          adminChartData.revenue.values = revRes.data.values;
+        }
+        if (revRes.data.max) {
+          adminChartData.revenue.max = revRes.data.max;
+        }
+      }
+
+      if (attRes && attRes.success && attRes.data) {
+        if (Array.isArray(attRes.data.labels) && attRes.data.labels.length > 0) {
+          adminChartData.attendance.labels = attRes.data.labels;
+        }
+        if (Array.isArray(attRes.data.values) && attRes.data.values.length > 0) {
+          adminChartData.attendance.values = attRes.data.values;
+        }
+        if (attRes.data.max) {
+          adminChartData.attendance.max = attRes.data.max;
+        }
+      }
+
+      const activeBtn = document.querySelector('.switch-btn.active');
+      const activeView = activeBtn ? activeBtn.getAttribute('data-view') : 'revenue';
+      renderAdminSVGChart(activeView);
+    } catch (e) {}
+  };
+
   switchBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       switchBtns.forEach(b => b.classList.remove('active'));
@@ -409,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (chartContainer) {
     renderAdminSVGChart('revenue');
+    fetchLiveChartData();
   }
 
   // =========================================================================

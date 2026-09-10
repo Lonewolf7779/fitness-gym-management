@@ -48,7 +48,7 @@ try {
                 break;
 
             case 'trainers':
-                echo json_encode(['success' => true, 'data' => $svc->trainers()]);
+                echo json_encode(['success' => true, 'data' => $svc->trainers($_GET['q'] ?? '', $_GET['status'] ?? '')]);
                 break;
 
             case 'attendance':
@@ -94,6 +94,24 @@ try {
                     exit;
                 }
                 echo json_encode(['success' => true, 'data' => $svc->memberModuleStats()]);
+                break;
+
+            case 'trainer_stats':
+                if ($role !== 'admin') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Administrator privileges required.']);
+                    exit;
+                }
+                echo json_encode(['success' => true, 'data' => $svc->trainerModuleStats()]);
+                break;
+
+            case 'membership_stats':
+                if ($role !== 'admin') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Administrator privileges required.']);
+                    exit;
+                }
+                echo json_encode(['success' => true, 'data' => $svc->membershipModuleStats()]);
                 break;
 
             case 'exercises':
@@ -195,6 +213,12 @@ try {
         case 'toggle_plan':
             if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $svc->togglePlan((int) $_POST['id']);
+            $id = (int) $_POST['id'];
+            break;
+
+        case 'delete_plan':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $svc->deletePlan((int) $_POST['id']);
             $id = (int) $_POST['id'];
             break;
 
