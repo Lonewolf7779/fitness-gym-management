@@ -3,6 +3,12 @@
    Preserves original spacious desktop design while providing natural mobile adaptations.
    ========================================================================== */
 
+/* Baseline hidden rules (Desktop > 768px) */
+.mobile-only-nav-item,
+.mobile-nav-auth {
+  display: none !important;
+}
+
 /* Large Tablets & Small Laptops (max-width: 1024px) */
 @media (max-width: 1024px) {
   .hero-grid {
@@ -91,7 +97,7 @@
 
   .mobile-only-nav-item,
   .mobile-nav-auth {
-    display: block;
+    display: block !important;
     width: 100%;
     max-width: 240px;
     margin-top: 1rem;
@@ -148,7 +154,64 @@
 
   /* Dashboard Header & Body Mobile Adjustments */
   .dashboard-header {
-    padding: 0 1rem;
+    height: auto !important;
+    min-height: 64px;
+    padding: 0.85rem 1rem !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 80;
+  }
+
+  .dashboard-header .header-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .dashboard-header .header-title-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dashboard-header .header-title-group h1 {
+    font-size: 1.15rem;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+    margin-bottom: 0.2rem;
+  }
+
+  .dashboard-header .header-title-group p {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .dashboard-header .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .dashboard-header .header-actions .btn {
+    flex: 1 1 auto;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .dashboard-header .header-actions .dropdown-menu-wrapper {
+    flex-shrink: 0;
   }
 
   .header-search {
@@ -156,12 +219,13 @@
   }
 
   .dashboard-body {
-    padding: 1.25rem;
+    padding: 1.25rem 1rem;
     gap: 1.5rem;
   }
 
   .kpi-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .quick-actions-strip {
@@ -215,6 +279,11 @@
   .hero-cta-group .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .dashboard-header .header-actions .btn {
+    width: 100%;
+    flex: 1 1 100%;
   }
 
   .modal-body > div[style*="grid-template-columns"] {

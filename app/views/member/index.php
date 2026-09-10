@@ -139,8 +139,12 @@ $recentActivity = $memberData['recent_activity'];
               </ul>
             <?php else: ?>
               <div style="text-align: center; padding: 3rem 1.5rem; color: var(--color-text-muted);">
-                <div style="font-weight: 700; font-size: 0.95rem; color: #FFF; margin-bottom: 0.35rem;">No Workout Plan Assigned Yet</div>
-                <div style="font-size: 0.8rem;">Your certified trainer will prepare a customized fitness routine for you shortly.</div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #FFF; margin-bottom: 0.35rem;">
+                  <?= $workoutPlan ? 'No Exercises Added to Plan Yet' : 'No Workout Plan Assigned Yet' ?>
+                </div>
+                <div style="font-size: 0.8rem;">
+                  <?= $workoutPlan ? 'Your assigned trainer will configure individual sets and repetitions for this plan soon.' : 'Your certified trainer will prepare a customized fitness routine for you shortly.' ?>
+                </div>
               </div>
             <?php endif; ?>
           </section>
