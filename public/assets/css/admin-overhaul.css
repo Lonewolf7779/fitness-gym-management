@@ -1,0 +1,356 @@
+/* ==========================================================================
+   IRONCORE ADMIN DESKTOP + MOBILE OVERHAUL
+   Layout-first overrides. The page itself is the only normal scroll surface.
+   ========================================================================== */
+
+.dashboard-shell,
+.dashboard-shell * {
+  min-width: 0;
+}
+
+.dashboard-shell {
+  overflow: visible;
+}
+
+.dashboard-shell .main-wrapper {
+  min-width: 0;
+  width: auto;
+}
+
+.dashboard-shell .dashboard-header {
+  min-height: 82px;
+  padding: 1rem 1.5rem;
+  display: block;
+}
+
+.dashboard-shell .header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.dashboard-shell .header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 260px;
+  flex: 1 1 auto;
+}
+
+.dashboard-shell .header-title-group {
+  min-width: 0;
+}
+
+.dashboard-shell .header-title-group h1 {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-shell .header-title-group p {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-shell .header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+}
+
+.dashboard-shell .header-search {
+  width: min(320px, 28vw);
+  min-width: 220px;
+}
+
+.dashboard-shell .desktop-header-cta {
+  flex: 0 0 auto;
+}
+
+.dashboard-shell .desktop-header-cta .btn {
+  white-space: nowrap;
+}
+
+.dashboard-shell .dashboard-body {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 2.2vw, 2rem) 3rem;
+  overflow: visible;
+}
+
+.dashboard-shell .module-kpi-grid,
+.dashboard-shell .kpi-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard-shell .module-kpi-card,
+.dashboard-shell .kpi-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dashboard-shell .module-toolbar-wrap,
+.dashboard-shell .filters-bar,
+.dashboard-shell .table-controls-bar {
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard-shell .table-responsive {
+  width: 100%;
+  overflow: visible !important;
+  -webkit-overflow-scrolling: auto;
+}
+
+.dashboard-shell .data-table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+
+.dashboard-shell .data-table th,
+.dashboard-shell .data-table td {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  vertical-align: middle;
+}
+
+.dashboard-shell .data-table th {
+  font-size: 0.69rem;
+}
+
+.dashboard-shell .data-table td {
+  font-size: 0.8rem;
+}
+
+.dashboard-shell .member-cell {
+  min-width: 0;
+}
+
+.dashboard-shell .member-info-name,
+.dashboard-shell .member-info-email,
+.dashboard-shell .coach-name,
+.dashboard-shell .coach-email,
+.dashboard-shell .coach-bio-text {
+  overflow-wrap: anywhere;
+}
+
+.dashboard-shell .table-actions,
+.dashboard-shell td > div[style*="display: inline-flex"] {
+  flex-wrap: wrap;
+}
+
+.dashboard-shell .module-toolbar-wrap .toolbar-primary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard-shell .toolbar-left-group {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-shell .module-search-box {
+  min-width: 0;
+  flex: 1 1 280px;
+}
+
+.dashboard-shell .coach-card-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard-shell .coach-card,
+.dashboard-shell .workout-card {
+  min-width: 0;
+}
+
+.dashboard-shell .chart-section-card,
+.dashboard-shell .panel-card,
+.dashboard-shell .module-widget-card {
+  min-width: 0;
+  overflow: visible;
+}
+
+.dashboard-shell .svg-chart-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.dashboard-shell .dashboard-split-grid,
+.dashboard-shell .module-split-grid {
+  min-width: 0;
+}
+
+.dashboard-shell .dashboard-split-grid > *,
+.dashboard-shell .module-split-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-shell .header-search {
+    width: 240px;
+    min-width: 180px;
+  }
+
+  .dashboard-shell .module-toolbar-wrap .toolbar-primary-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-shell .header-top-row {
+    align-items: flex-start;
+  }
+
+  .dashboard-shell .header-actions {
+    max-width: 48%;
+  }
+
+  .dashboard-shell .header-search {
+    display: none;
+  }
+
+  .dashboard-shell .module-kpi-grid.cols-4,
+  .dashboard-shell .module-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-shell .dashboard-header {
+    min-height: 0;
+    padding: 0.85rem 1rem;
+  }
+
+  .dashboard-shell .header-top-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .dashboard-shell .header-left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .dashboard-shell .header-actions {
+    max-width: none;
+    flex: 0 0 auto;
+  }
+
+  .dashboard-shell .header-actions .dropdown-menu-wrapper {
+    display: none;
+  }
+
+  .dashboard-shell .mobile-header-cta {
+    margin-top: 0.7rem;
+  }
+
+  .dashboard-shell .mobile-header-cta .btn {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dashboard-shell .dashboard-body {
+    padding: 1rem 0.85rem 2.5rem;
+  }
+
+  .dashboard-shell .module-kpi-grid.cols-4,
+  .dashboard-shell .module-kpi-grid,
+  .dashboard-shell .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-shell .module-toolbar-wrap {
+    padding: 0.9rem;
+  }
+
+  .dashboard-shell .toolbar-left-group,
+  .dashboard-shell .toolbar-primary-row {
+    width: 100%;
+  }
+
+  .dashboard-shell .module-search-box,
+  .dashboard-shell .toolbar-left-group select,
+  .dashboard-shell .filter-select,
+  .dashboard-shell .filter-search-box {
+    width: 100% !important;
+    flex-basis: 100%;
+  }
+
+  .dashboard-shell .data-table {
+    font-size: 0.75rem;
+  }
+
+  .dashboard-shell .data-table th,
+  .dashboard-shell .data-table td {
+    padding: 0.65rem 0.5rem;
+  }
+
+  .dashboard-shell .data-table .member-cell {
+    align-items: flex-start;
+  }
+
+  .dashboard-shell .member-info-email {
+    font-size: 0.68rem;
+  }
+
+  .dashboard-shell .table-actions {
+    justify-content: flex-start;
+  }
+
+  .dashboard-shell .coach-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-shell .coach-actions {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-shell .coach-actions .btn {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-shell .header-title-group h1 {
+    font-size: 0.96rem;
+  }
+
+  .dashboard-shell .header-title-group p {
+    display: none;
+  }
+
+  .dashboard-shell .data-table th {
+    font-size: 0.62rem;
+  }
+
+  .dashboard-shell .data-table td {
+    font-size: 0.72rem;
+  }
+
+  .dashboard-shell .data-table th,
+  .dashboard-shell .data-table td {
+    padding: 0.55rem 0.4rem;
+  }
+}
