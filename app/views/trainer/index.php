@@ -21,6 +21,8 @@ $trainerData = $svc->trainerDashboard($userId);
 $allMembers  = $svc->members();
 $allExercises = $svc->exercises();
 $csrf        = generateCsrfToken();
+$trainerProfile = $svc->getTrainerByUserId($userId);
+$assignedExercises = $trainerProfile ? $svc->trainerExercises((int)$trainerProfile['id']) : [];
 
 $summaryStats = [
     'assigned_clients'          => $trainerData['assigned_clients_count'],
