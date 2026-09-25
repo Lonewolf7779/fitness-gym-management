@@ -380,16 +380,20 @@ try {
                     }
                 }
             }
+            if ($role === 'trainer' && !empty($_POST['exercises']) && is_array($_POST['exercises'])) {
+                foreach ($_POST['exercises'] as $ex) {
+                    if (!empty($ex['exercise_id']) && !$svc->isExerciseAssignedToTrainer($userId, (int)$ex['exercise_id'])) {
+                        http_response_code(403);
+                        echo json_encode(['success' => false, 'message' => 'One or more selected exercises have not been assigned to you by an administrator.']);
+                        exit;
+                    }
+                }
+            }
             $planId = $svc->createWorkout($workoutData);
             if (!empty($_POST['exercises']) && is_array($_POST['exercises'])) {
                 foreach ($_POST['exercises'] as $ex) {
                     if (!empty($ex['exercise_id'])) {
                         $exerciseId = (int) $ex['exercise_id'];
-                        if ($role === 'trainer' && !$svc->isExerciseAssignedToTrainer($userId, $exerciseId)) {
-                            http_response_code(403);
-                            echo json_encode(['success' => false, 'message' => 'This exercise has not been assigned to you by an administrator.']);
-                            exit;
-                        }
                         $svc->addWorkoutExercise([
                             'plan_id'      => $planId,
                             'exercise_id'  => $exerciseId,
