@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../helpers/response.php';
 
-$selectedPlan = $_GET['plan'] ?? 'pro';
+$selectedPlan = trim($_GET['plan'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,17 +43,17 @@ $selectedPlan = $_GET['plan'] ?? 'pro';
 
       <div class="form-group">
         <label for="full_name" class="form-label">Full Name</label>
-        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Alex Rivera" required autofocus>
+        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Your full name" required autofocus>
       </div>
 
       <div class="form-group">
         <label for="username" class="form-label">Username</label>
-        <input type="text" id="username" name="username" class="form-control" placeholder="alex.rivera" pattern="[a-zA-Z0-9_.-]{3,30}" title="3-30 characters: letters, numbers, dots, underscores, or dashes" required>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" pattern="[a-zA-Z0-9_.-]{3,30}" title="3-30 characters: letters, numbers, dots, underscores, or dashes" required>
       </div>
 
       <div class="form-group">
         <label for="email" class="form-label">Email Address</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="alex@gmail.com" required>
+        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
       </div>
 
       <div class="form-group">
