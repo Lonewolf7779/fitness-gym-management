@@ -27,40 +27,28 @@ class AuthService {
     }
 
     /**
-     * Authenticate user credentials and establish session
+     * Authenticate user credentials (via email or username) and establish session
      * 
-     * @param string $email
+     * @param string $identifier Email or Username
      * @param string $password
-     * @return array Result status and message
+     * @return array Result status, message, and role
      */
-    public function login(string $email, string $password): array {
-        $email = strtolower(trim($email));
+    public function login(string $identifier, string $password): array {
+        $identifier = trim($identifier);
 
-        if (empty($email) || empty($password)) {
-            return ['success' => false, 'message' => 'Please enter both email and password.'];
-        }
-
-        if (!validateEmail($email)) {
-            return ['success' => false, 'message' => 'Please enter a valid email address format.'];
+        if (empty($identifier) || empty($password)) {
+            return ['success' => false, 'message' => 'Please enter both username/email and password.'];
         }
 
         // =========================================================================
-        // Development-only authentication mode. Must never be enabled in production.
-        // Enabled ONLY when APP_ENV=local AND AUTH_MODE=dev
-        // =========================================================================
-        if (defined('APP_ENV') && APP_ENV === 'local' && defined('AUTH_MODE') && AUTH_MODE === 'dev') {
-            return $this->authenticateDevUser($email, $password);
-        }
-
-        // =========================================================================
-        // Database Authentication Mode (Production & Normal MySQL Architecture)
+        // Database Authentication Mode (MySQL Single Source of Truth)
         // =========================================================================
         try {
-            $user = $this->getUserModel()->findByEmail($email);
+            $user = $this->getUserModel()->findByIdentifier($identifier);
 
             // Verify User existence & password hash
             if (!$user || !verifyPassword($password, $user['password_hash'])) {
-                return ['success' => false, 'message' => 'Invalid email or password credentials.'];
+                return ['success' => false, 'message' => 'Invalid email/username or password credentials.'];
             }
 
             // Verify User Status (active / inactive / suspended)
@@ -72,9 +60,13 @@ class AuthService {
             }
 
             // Establish Secure Session (Regenerate ID to prevent session fixation)
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
             session_regenerate_id(true);
             $_SESSION['user_id']      = (int) $user['id'];
             $_SESSION['full_name']    = $user['full_name'];
+            $_SESSION['username']     = $user['username'] ?? '';
             $_SESSION['email']        = $user['email'];
             $_SESSION['role']         = strtolower($user['role']);
             $_SESSION['logged_in_at'] = time();
@@ -86,7 +78,6 @@ class AuthService {
             ];
 
         } catch (Exception $e) {
-            // Log error internally
             if (defined('STORAGE_PATH')) {
                 error_log("[" . date('Y-m-d H:i:s') . "] Auth Login Error: " . $e->getMessage() . "\n", 3, STORAGE_PATH . '/logs/app.log');
             }
@@ -98,83 +89,92 @@ class AuthService {
     }
 
     /**
-     * Temporary Development Authentication Handler (Local Testing Without MySQL)
-     * Development-only authentication mode. Must never be enabled in production.
+     * Register a new member in the system
+     *
+     * @param array $data Form submission payload
+     * @return array Result status and message
      */
-    private function authenticateDevUser(string $email, string $password): array {
-        $devUsers = [
-            'admin@ironcore.com' => [
-                'id'        => 1,
-                'full_name' => 'System Administrator',
-                'email'     => 'admin@ironcore.com',
-                'password'  => 'Admin@123',
-                'role'      => 'admin',
-                'status'    => 'active'
-            ],
-            'marcus@ironcore.com' => [
-                'id'        => 2,
-                'full_name' => 'Marcus Vance',
-                'email'     => 'marcus@ironcore.com',
-                'password'  => 'Trainer@123',
-                'role'      => 'trainer',
-                'status'    => 'active'
-            ],
-            'alex@gmail.com' => [
-                'id'        => 3,
-                'full_name' => 'Alex Rivera',
-                'email'     => 'alex@gmail.com',
-                'password'  => 'Member@123',
-                'role'      => 'member',
-                'status'    => 'active'
-            ],
-            'suspended@gmail.com' => [
-                'id'        => 5,
-                'full_name' => 'David Black',
-                'email'     => 'suspended@gmail.com',
-                'password'  => 'Member@123',
-                'role'      => 'member',
-                'status'    => 'suspended'
-            ],
-            'inactive@gmail.com' => [
-                'id'        => 6,
-                'full_name' => 'Sarah Connor',
-                'email'     => 'inactive@gmail.com',
-                'password'  => 'Member@123',
-                'role'      => 'member',
-                'status'    => 'inactive'
-            ]
-        ];
+    public function registerUser(array $data): array {
+        $fullName = trim($data['full_name'] ?? '');
+        $username = strtolower(trim($data['username'] ?? ''));
+        $email    = strtolower(trim($data['email'] ?? ''));
+        $phone    = trim($data['phone'] ?? '');
+        $password = $data['password'] ?? '';
 
-        if (!array_key_exists($email, $devUsers)) {
-            return ['success' => false, 'message' => 'Invalid email or password credentials.'];
+        if (empty($fullName) || strlen($fullName) < 2) {
+            return ['success' => false, 'message' => 'Please provide a valid full name.'];
         }
 
-        $user = $devUsers[$email];
-
-        if ($password !== $user['password']) {
-            return ['success' => false, 'message' => 'Invalid email or password credentials.'];
+        if (empty($username) || !preg_match('/^[a-z0-9_.-]{3,30}$/', $username)) {
+            return ['success' => false, 'message' => 'Username must be between 3 and 30 characters (alphanumeric, dots, underscores, dashes only).'];
         }
 
-        if ($user['status'] !== 'active') {
-            $statusMsg = ($user['status'] === 'suspended') 
-                ? 'Your account has been suspended. Please contact gym administration.' 
-                : 'Your account is currently inactive. Please contact support.';
-            return ['success' => false, 'message' => $statusMsg];
+        if (empty($email) || !validateEmail($email)) {
+            return ['success' => false, 'message' => 'Please provide a valid email address.'];
         }
 
-        // Establish Standard Session Structure
-        session_regenerate_id(true);
-        $_SESSION['user_id']      = (int) $user['id'];
-        $_SESSION['full_name']    = $user['full_name'];
-        $_SESSION['email']        = $user['email'];
-        $_SESSION['role']         = strtolower($user['role']);
-        $_SESSION['logged_in_at'] = time();
+        if (empty($password) || strlen($password) < 6) {
+            return ['success' => false, 'message' => 'Password must be at least 6 characters long.'];
+        }
 
-        return [
-            'success' => true,
-            'message' => 'Login successful (Dev Mode).',
-            'role'    => strtolower($user['role'])
-        ];
+        try {
+            // Check if username is taken
+            if ($this->getUserModel()->findByUsername($username)) {
+                return ['success' => false, 'message' => 'The chosen username is already taken.'];
+            }
+
+            // Check if email is registered
+            if ($this->getUserModel()->findByEmail($email)) {
+                return ['success' => false, 'message' => 'An account with this email address already exists.'];
+            }
+
+            // Hash password
+            $passwordHash = hashPassword($password);
+
+            // Create User Record
+            $userId = $this->getUserModel()->create([
+                'full_name'     => $fullName,
+                'username'      => $username,
+                'email'         => $email,
+                'password_hash' => $passwordHash,
+                'role'          => 'member',
+                'status'        => 'active'
+            ]);
+
+            // Create Member Profile Record
+            $this->getMemberModel()->create([
+                'user_id'   => $userId,
+                'phone'     => !empty($phone) ? $phone : null,
+                'join_date' => date('Y-m-d')
+            ]);
+
+            // Establish Secure Session for immediate login
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            session_regenerate_id(true);
+            $_SESSION['user_id']      = $userId;
+            $_SESSION['full_name']    = $fullName;
+            $_SESSION['username']     = $username;
+            $_SESSION['email']        = $email;
+            $_SESSION['role']         = 'member';
+            $_SESSION['logged_in_at'] = time();
+
+            return [
+                'success' => true,
+                'message' => 'Account created successfully! Welcome to IRONCORE.',
+                'role'    => 'member'
+            ];
+
+        } catch (Exception $e) {
+            if (defined('STORAGE_PATH')) {
+                error_log("[" . date('Y-m-d H:i:s') . "] Auth Register Error: " . $e->getMessage() . "\n", 3, STORAGE_PATH . '/logs/app.log');
+            }
+            return [
+                'success' => false,
+                'message' => 'Registration could not be completed. Please try again or contact support.'
+            ];
+        }
     }
 
     /**

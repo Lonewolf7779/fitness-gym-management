@@ -42,9 +42,6 @@ fitness-gym-management/
 │   ├── login.php
 │   ├── register.php
 │   ├── api.php
-│   ├── dashboard-data.php
-│   ├── dashboard-chart.php
-│   ├── member-data.php
 │   ├── admin/
 │   ├── trainer/
 │   ├── member/

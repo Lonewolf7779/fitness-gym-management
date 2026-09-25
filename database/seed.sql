@@ -27,20 +27,20 @@ INSERT INTO `system_settings` (`setting_key`, `setting_value`) VALUES
 
 -- 2. Insert Exactly 1 Admin, 1 Trainer, 1 Member
 -- Credentials:
--- Admin:   admin@ironcore.com   / Admin@123
--- Trainer: marcus@ironcore.com  / Trainer@123
--- Member:  alex@gmail.com       / Member@123
-INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `status`) VALUES
-(1, 'System Administrator', 'admin@ironcore.com', '$2y$10$PSDVDniqt5886aTezjeli.6VGpJ2oJBEFhpcfCFXhEtzq/4B4CR3y', 'admin', 'active'),
-(2, 'Marcus Vance', 'marcus@ironcore.com', '$2y$10$6dhZuld0ArcZFHJGWSAfzuh67GpAaRxGU2abaB5LPwoZz.3GLmwZO', 'trainer', 'active'),
-(3, 'Alex Rivera', 'alex@gmail.com', '$2y$10$5BS7zio7lT.L4hLK/bhfEunJ7iIaup8g/gTPBoKMnedgLztKUmWIK', 'member', 'active');
+-- Admin:   admin@ironcore.com   / admin         / Admin@123
+-- Trainer: marcus@ironcore.com  / marcus.vance  / Trainer@123
+-- Member:  alex@gmail.com       / alex.rivera   / Member@123
+INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password_hash`, `role`, `status`) VALUES
+(1, 'System Administrator', 'admin', 'admin@ironcore.com', '$2y$10$PSDVDniqt5886aTezjeli.6VGpJ2oJBEFhpcfCFXhEtzq/4B4CR3y', 'admin', 'active'),
+(2, 'Marcus Vance', 'marcus.vance', 'marcus@ironcore.com', '$2y$10$6dhZuld0ArcZFHJGWSAfzuh67GpAaRxGU2abaB5LPwoZz.3GLmwZO', 'trainer', 'active'),
+(3, 'Alex Rivera', 'alex.rivera', 'alex@gmail.com', '$2y$10$5BS7zio7lT.L4hLK/bhfEunJ7iIaup8g/gTPBoKMnedgLztKUmWIK', 'member', 'active');
 
 -- 3. Profiles (1 Trainer, 1 Member)
-INSERT INTO `trainers` (`id`, `user_id`, `specialization`, `experience_years`, `bio`, `hourly_rate`) VALUES
-(1, 2, 'Strength & Hypertrophy', 8, 'Senior strength coach specializing in Olympic lifting, hypertrophy, and athlete conditioning.', 1500.00);
+INSERT INTO `trainers` (`id`, `user_id`, `phone`, `specialization`, `experience_years`, `bio`, `hourly_rate`) VALUES
+(1, 2, '+91 98765 11111', 'Strength & Hypertrophy', 8, 'Senior strength coach specializing in Olympic lifting, hypertrophy, and athlete conditioning.', 1500.00);
 
-INSERT INTO `members` (`id`, `user_id`, `phone`, `emergency_contact`, `gender`, `dob`, `address`, `join_date`) VALUES
-(1, 3, '+91 9876543210', 'Maria Rivera (+91 9876543211)', 'male', '1998-05-14', 'B-402 Horizon Towers, Downtown', DATE_SUB(CURDATE(), INTERVAL 30 DAY));
+INSERT INTO `members` (`id`, `user_id`, `assigned_trainer_id`, `phone`, `emergency_contact`, `gender`, `dob`, `address`, `join_date`) VALUES
+(1, 3, 1, '+91 9876543210', 'Maria Rivera (+91 9876543211)', 'male', '1998-05-14', 'B-402 Horizon Towers, Downtown', DATE_SUB(CURDATE(), INTERVAL 30 DAY));
 
 -- 4. Exactly 1 Initial Membership Plan
 INSERT INTO `membership_plans` (`id`, `title`, `tag`, `price`, `billing_cycle`, `duration_days`, `description`, `features`, `is_recommended`, `status`) VALUES
@@ -65,8 +65,8 @@ INSERT INTO `payments` (`id`, `subscription_id`, `member_id`, `amount`, `payment
 (1, 1, 1, 1999.00, 'UPI', 'TXN_IRON_99841', 'paid', DATE_SUB(NOW(), INTERVAL 5 DAY));
 
 -- 8. Exactly 1 Workout Plan with Exercises
-INSERT INTO `workout_plans` (`id`, `member_id`, `trainer_id`, `title`, `goal`, `start_date`, `end_date`) VALUES
-(1, 1, 1, 'Hypertrophy & Strength Foundation', 'Build upper-body strength, compound power, and lean muscle mass.', DATE_SUB(CURDATE(), INTERVAL 7 DAY), DATE_ADD(CURDATE(), INTERVAL 23 DAY));
+INSERT INTO `workout_plans` (`id`, `member_id`, `trainer_id`, `title`, `difficulty`, `goal`, `description`, `start_date`, `end_date`) VALUES
+(1, 1, 1, 'Hypertrophy & Strength Foundation', 'Intermediate', 'Build upper-body strength, compound power, and lean muscle mass.', 'A comprehensive periodized protocol emphasizing barbell compound lifts and accessory hypertrophy movements.', DATE_SUB(CURDATE(), INTERVAL 7 DAY), DATE_ADD(CURDATE(), INTERVAL 23 DAY));
 
 INSERT INTO `workout_plan_exercises` (`plan_id`, `exercise_id`, `sets`, `reps`, `rest_seconds`, `day_of_week`) VALUES
 (1, 1, 4, '8-10', 90, 'Mon'),

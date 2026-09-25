@@ -4,8 +4,8 @@
  */
 
 $currentSection = $currentSection ?? 'dashboard';
-$memberName = $_SESSION['full_name'] ?? 'Alex Rivera';
-$memberEmail = $_SESSION['email'] ?? 'alex@gmail.com';
+$memberName = $_SESSION['full_name'] ?? 'Member';
+$memberEmail = $_SESSION['email'] ?? '';
 $memberInitial = strtoupper(substr($memberName, 0, 1)) ?: 'M';
 $pageTitle = $pageHeading ?? 'ATHLETE PERFORMANCE HUB';
 $pageSubtitle = $pageSubtitle ?? 'Welcome back, ' . e($memberName) . '. Live workout programs, attendance streak, & body metrics.';

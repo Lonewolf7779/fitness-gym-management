@@ -372,10 +372,20 @@ $csrf = generateCsrfToken();
             </div>
           </div>
 
-          <!-- Row 2: Program Title -->
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Program Title *</label>
-            <input type="text" name="title" class="form-control" placeholder="e.g. Upper Body Hypertrophy & Power Foundation" required style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem;">
+          <!-- Row 2: Program Title & Difficulty -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Program Title *</label>
+              <input type="text" name="title" class="form-control" placeholder="e.g. Upper Body Hypertrophy & Power Foundation" required style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Difficulty *</label>
+              <select name="difficulty" class="form-control" required style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem;">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
           </div>
 
           <!-- Row 3: Dates -->
@@ -390,10 +400,16 @@ $csrf = generateCsrfToken();
             </div>
           </div>
 
-          <!-- Row 4: Goal & Instructions -->
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Training Goal & Coaching Notes</label>
-            <textarea name="goal" rows="2" class="form-control" placeholder="Target muscle groups, recovery guidelines, RPE targets..." style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem; resize: vertical;"></textarea>
+          <!-- Row 4: Goal & Description -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+              <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Training Goal</label>
+              <textarea name="goal" rows="2" class="form-control" placeholder="Primary athletic objective, focus areas..." style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem; resize: vertical;"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="display: block; font-size: 0.775rem; font-weight: 700; color: #8E8E9F; margin-bottom: 0.35rem; text-transform: uppercase;">Program Description</label>
+              <textarea name="description" rows="2" class="form-control" placeholder="Instructions, rest periods, warm-up sets..." style="width: 100%; background: rgba(10, 10, 14, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; padding: 0.65rem 0.85rem; resize: vertical;"></textarea>
+            </div>
           </div>
 
           <!-- Row 5: Dynamic Exercises Builder -->

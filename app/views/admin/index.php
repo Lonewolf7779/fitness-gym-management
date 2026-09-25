@@ -12,8 +12,8 @@ require_once __DIR__ . '/../../services/GymManagementService.php';
 // Execute Role Authorization Guard
 AdminMiddleware::handle();
 
-$adminName  = $_SESSION['full_name'] ?? 'System Admin';
-$adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
+$adminName  = $_SESSION['full_name'] ?? 'Admin';
+$adminEmail = $_SESSION['email'] ?? '';
 
 // Query Live Database Statistics & Records
 $svc = new GymManagementService();

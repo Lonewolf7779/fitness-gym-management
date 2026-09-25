@@ -14,9 +14,11 @@ TrainerMiddleware::handle();
 $userId = (int) ($_SESSION['user_id'] ?? 0);
 $svc = new GymManagementService();
 $trainerData = $svc->trainerDashboard($userId);
-$allMembers  = $svc->members();
+$trainer = $trainerData['trainer'];
+$trainerId = $trainer ? (int) $trainer['id'] : null;
+$trainerClients = $trainerData['clients'];
 $allExercises = $svc->exercises();
-$workoutStats = $svc->workoutModuleStats();
+$workoutStats = $svc->workoutModuleStats($trainerId);
 $allWorkouts = $workoutStats['workouts'];
 $csrf = generateCsrfToken();
 ?>
@@ -184,7 +186,7 @@ $csrf = generateCsrfToken();
             <label class="form-label" style="font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 6px; display: block;">Select Target Athlete *</label>
             <select name="member_id" class="form-select" required style="width: 100%;">
               <option value="">-- Choose Athlete --</option>
-              <?php foreach ($allMembers as $m): ?>
+              <?php foreach ($trainerClients as $m): ?>
                 <option value="<?= (int)$m['id'] ?>"><?= htmlspecialchars($m['full_name']) ?> (<?= htmlspecialchars($m['email']) ?>)</option>
               <?php endforeach; ?>
             </select>

@@ -5,8 +5,8 @@
  */
 
 $currentSection    = $currentSection ?? 'dashboard';
-$adminName         = $_SESSION['full_name'] ?? 'System Admin';
-$adminEmail        = $_SESSION['email'] ?? 'admin@ironcore.com';
+$adminName         = $_SESSION['full_name'] ?? 'Admin';
+$adminEmail        = $_SESSION['email'] ?? '';
 $adminInitial      = strtoupper(substr($adminName, 0, 1)) ?: 'A';
 $pageTitle         = $pageHeading ?? 'OPERATIONAL CONTROL CENTER';
 $pageSubtitle      = $pageSubtitle ?? 'Gym Operations, Member Metrics & Performance Tracking';

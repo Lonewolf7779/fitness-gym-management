@@ -6,14 +6,14 @@
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
-require_once __DIR__ . '/../../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../../middleware/MemberMiddleware.php';
 require_once __DIR__ . '/../../services/GymManagementService.php';
 
 // Execute Member Authorization Guard
-AuthMiddleware::handle();
+MemberMiddleware::handle();
 
-$memberName  = $_SESSION['full_name'] ?? 'Alex Rivera';
-$memberEmail = $_SESSION['email'] ?? 'alex@gmail.com';
+$memberName  = $_SESSION['full_name'] ?? 'Member';
+$memberEmail = $_SESSION['email'] ?? '';
 $userId      = (int) ($_SESSION['user_id'] ?? 0);
 
 $svc = new GymManagementService();

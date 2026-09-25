@@ -146,16 +146,18 @@ class GymManagementService {
 
     public function members(string $search = '', string $status = ''): array {
         $sql = "
-            SELECT m.id, m.user_id, m.phone, m.emergency_contact, m.gender, m.dob, m.address, m.join_date,
+            SELECT m.id, m.user_id, m.assigned_trainer_id, m.phone, m.emergency_contact, m.gender, m.dob, m.address, m.join_date,
                    u.full_name, u.email, u.status,
                    s.id as subscription_id, s.start_date, s.end_date, s.status as subscription_status,
                    p.id as plan_id, p.title as plan_title, p.price as plan_price,
-                   tu.full_name as trainer_name,
+                   COALESCE(atu.full_name, tu.full_name) as trainer_name,
                    wp.title as workout_title,
                    (SELECT COUNT(*) FROM attendance a WHERE a.member_id = m.id) as total_checkins,
                    (SELECT MAX(CONCAT(a2.date, ' ', a2.check_in_time)) FROM attendance a2 WHERE a2.member_id = m.id) as last_checkin
             FROM members m
             JOIN users u ON u.id = m.user_id
+            LEFT JOIN trainers at ON at.id = m.assigned_trainer_id
+            LEFT JOIN users atu ON atu.id = at.user_id
             LEFT JOIN subscriptions s ON s.member_id = m.id AND s.id = (
                 SELECT MAX(s2.id) FROM subscriptions s2 WHERE s2.member_id = m.id
             )
@@ -266,30 +268,34 @@ class GymManagementService {
         $this->db->beginTransaction();
         try {
             $passHash = password_hash($d['password'] ?? 'Member@123', PASSWORD_BCRYPT);
+            $username = !empty($d['username']) ? strtolower(trim($d['username'])) : strtolower(preg_replace('/[^a-zA-Z0-9_.]/', '', explode('@', $email)[0])) . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
+
             $stmt = $this->db->prepare("
-                INSERT INTO users (full_name, email, password_hash, role, status)
-                VALUES (:name, :email, :pass, 'member', :status)
+                INSERT INTO users (full_name, username, email, password_hash, role, status)
+                VALUES (:name, :username, :email, :pass, 'member', :status)
             ");
             $stmt->execute([
-                'name'   => trim($d['name']),
-                'email'  => $email,
-                'pass'   => $passHash,
-                'status' => $d['status'] ?? 'active'
+                'name'     => trim($d['name']),
+                'username' => $username,
+                'email'    => $email,
+                'pass'     => $passHash,
+                'status'   => $d['status'] ?? 'active'
             ]);
             $uid = (int) $this->db->lastInsertId();
 
             $stmt = $this->db->prepare("
-                INSERT INTO members (user_id, phone, emergency_contact, gender, dob, address, join_date)
-                VALUES (:uid, :phone, :emergency, :gender, :dob, :address, :join_date)
+                INSERT INTO members (user_id, assigned_trainer_id, phone, emergency_contact, gender, dob, address, join_date)
+                VALUES (:uid, :trainer_id, :phone, :emergency, :gender, :dob, :address, :join_date)
             ");
             $stmt->execute([
-                'uid'       => $uid,
-                'phone'     => $d['phone'] ?? null,
-                'emergency' => $d['emergency_contact'] ?? null,
-                'gender'    => $d['gender'] ?? null,
-                'dob'       => !empty($d['dob']) ? $d['dob'] : null,
-                'address'   => $d['address'] ?? null,
-                'join_date' => !empty($d['join_date']) ? $d['join_date'] : date('Y-m-d')
+                'uid'        => $uid,
+                'trainer_id' => !empty($d['assigned_trainer_id']) ? (int) $d['assigned_trainer_id'] : (!empty($d['trainer_id']) ? (int) $d['trainer_id'] : null),
+                'phone'      => $d['phone'] ?? null,
+                'emergency'  => $d['emergency_contact'] ?? null,
+                'gender'     => $d['gender'] ?? null,
+                'dob'        => !empty($d['dob']) ? $d['dob'] : null,
+                'address'    => $d['address'] ?? null,
+                'join_date'  => !empty($d['join_date']) ? $d['join_date'] : date('Y-m-d')
             ]);
             $mid = (int) $this->db->lastInsertId();
 
@@ -367,17 +373,18 @@ class GymManagementService {
 
             $stmt = $this->db->prepare("
                 UPDATE members 
-                SET phone = :phone, emergency_contact = :emergency, gender = :gender, 
+                SET assigned_trainer_id = :trainer_id, phone = :phone, emergency_contact = :emergency, gender = :gender, 
                     dob = :dob, address = :address 
                 WHERE id = :id
             ");
             $stmt->execute([
-                'phone'     => $d['phone'] ?? null,
-                'emergency' => $d['emergency_contact'] ?? null,
-                'gender'    => $d['gender'] ?? null,
-                'dob'       => !empty($d['dob']) ? $d['dob'] : null,
-                'address'   => $d['address'] ?? null,
-                'id'        => $id
+                'trainer_id' => array_key_exists('assigned_trainer_id', $d) ? (!empty($d['assigned_trainer_id']) ? (int) $d['assigned_trainer_id'] : null) : (array_key_exists('trainer_id', $d) ? (!empty($d['trainer_id']) ? (int) $d['trainer_id'] : null) : null),
+                'phone'      => $d['phone'] ?? null,
+                'emergency'  => $d['emergency_contact'] ?? null,
+                'gender'     => $d['gender'] ?? null,
+                'dob'        => !empty($d['dob']) ? $d['dob'] : null,
+                'address'    => $d['address'] ?? null,
+                'id'         => $id
             ]);
 
             // If a new plan is assigned or updated
@@ -457,17 +464,18 @@ class GymManagementService {
             $stmt->execute(['name' => $fullName, 'email' => $email, 'id' => $userId]);
 
             if ($user['role'] === 'trainer') {
+                $spec = $d['specialization'] ?? $d['specialty'] ?? null;
                 $stmt = $this->db->prepare("
                     UPDATE trainers 
-                    SET phone = :phone, specialty = :specialty, bio = :bio, experience_years = :exp 
+                    SET phone = :phone, specialization = :specialization, bio = :bio, experience_years = :exp 
                     WHERE user_id = :uid
                 ");
                 $stmt->execute([
-                    'phone'     => $d['phone'] ?? null,
-                    'specialty' => $d['specialty'] ?? null,
-                    'bio'       => $d['bio'] ?? null,
-                    'exp'       => (int) ($d['experience_years'] ?? 1),
-                    'uid'       => $userId
+                    'phone'          => $d['phone'] ?? null,
+                    'specialization' => $spec,
+                    'bio'            => $d['bio'] ?? null,
+                    'exp'            => (int) ($d['experience_years'] ?? 1),
+                    'uid'            => $userId
                 ]);
             } elseif ($user['role'] === 'member') {
                 $stmt = $this->db->prepare("
@@ -725,28 +733,32 @@ class GymManagementService {
         $this->db->beginTransaction();
         try {
             $passHash = password_hash($d['password'] ?? 'Trainer@123', PASSWORD_BCRYPT);
+            $username = !empty($d['username']) ? strtolower(trim($d['username'])) : strtolower(preg_replace('/[^a-zA-Z0-9_.]/', '', explode('@', $email)[0])) . '_' . substr(bin2hex(random_bytes(2)), 0, 4);
+
             $stmt = $this->db->prepare("
-                INSERT INTO users (full_name, email, password_hash, role, status)
-                VALUES (:name, :email, :pass, 'trainer', :status)
+                INSERT INTO users (full_name, username, email, password_hash, role, status)
+                VALUES (:name, :username, :email, :pass, 'trainer', :status)
             ");
             $stmt->execute([
-                'name'   => trim($d['name']),
-                'email'  => $email,
-                'pass'   => $passHash,
-                'status' => $d['status'] ?? 'active'
+                'name'     => trim($d['name']),
+                'username' => $username,
+                'email'    => $email,
+                'pass'     => $passHash,
+                'status'   => $d['status'] ?? 'active'
             ]);
             $uid = (int) $this->db->lastInsertId();
 
             $stmt = $this->db->prepare("
-                INSERT INTO trainers (user_id, specialization, experience_years, bio, hourly_rate)
-                VALUES (:uid, :spec, :exp, :bio, :rate)
+                INSERT INTO trainers (user_id, phone, specialization, experience_years, bio, hourly_rate)
+                VALUES (:uid, :phone, :spec, :exp, :bio, :rate)
             ");
             $stmt->execute([
-                'uid'  => $uid,
-                'spec' => $d['specialization'] ?? 'General Fitness & Strength',
-                'exp'  => (int) ($d['experience_years'] ?? 0),
-                'bio'  => $d['bio'] ?? null,
-                'rate' => (float) ($d['hourly_rate'] ?? 0)
+                'uid'   => $uid,
+                'phone' => $d['phone'] ?? null,
+                'spec'  => $d['specialization'] ?? $d['specialty'] ?? 'General Fitness & Strength',
+                'exp'   => (int) ($d['experience_years'] ?? 0),
+                'bio'   => $d['bio'] ?? null,
+                'rate'  => (float) ($d['hourly_rate'] ?? 0)
             ]);
             $tid = (int) $this->db->lastInsertId();
 
@@ -778,15 +790,16 @@ class GymManagementService {
 
             $stmt = $this->db->prepare("
                 UPDATE trainers 
-                SET specialization = :spec, experience_years = :exp, bio = :bio, hourly_rate = :rate 
+                SET phone = :phone, specialization = :spec, experience_years = :exp, bio = :bio, hourly_rate = :rate 
                 WHERE id = :id
             ");
             $stmt->execute([
-                'spec' => $d['specialization'] ?? 'General Fitness',
-                'exp'  => (int) ($d['experience_years'] ?? 0),
-                'bio'  => $d['bio'] ?? null,
-                'rate' => (float) ($d['hourly_rate'] ?? 0),
-                'id'   => $id
+                'phone' => $d['phone'] ?? null,
+                'spec'  => $d['specialization'] ?? $d['specialty'] ?? 'General Fitness',
+                'exp'   => (int) ($d['experience_years'] ?? 0),
+                'bio'   => $d['bio'] ?? null,
+                'rate'  => (float) ($d['hourly_rate'] ?? 0),
+                'id'    => $id
             ]);
 
             $this->db->commit();
@@ -1229,6 +1242,25 @@ class GymManagementService {
             throw new InvalidArgumentException('Payment amount must be greater than zero.');
         }
 
+        $memberId = (int) ($d['member_id'] ?? 0);
+        if ($memberId <= 0) {
+            throw new InvalidArgumentException('Valid member ID is required.');
+        }
+
+        // Validate subscription ownership if subscription_id is provided
+        $subId = !empty($d['subscription_id']) ? (int) $d['subscription_id'] : null;
+        if ($subId !== null) {
+            $stmt = $this->db->prepare("SELECT member_id FROM subscriptions WHERE id = :sid");
+            $stmt->execute(['sid' => $subId]);
+            $subMember = $stmt->fetchColumn();
+            if ($subMember === false) {
+                throw new InvalidArgumentException("Subscription not found.");
+            }
+            if ((int) $subMember !== $memberId) {
+                throw new InvalidArgumentException("The specified subscription does not belong to this member.");
+            }
+        }
+
         $txn = trim($d['transaction_id'] ?? '');
         if ($txn === '') {
             $txn = 'TXN_IRN_' . strtoupper(bin2hex(random_bytes(4)));
@@ -1246,8 +1278,8 @@ class GymManagementService {
             VALUES (:subscription, :member, :amount, :method, :txn, :status, NOW())
         ");
         $stmt->execute([
-            'subscription' => !empty($d['subscription_id']) ? (int) $d['subscription_id'] : null,
-            'member'       => (int) $d['member_id'],
+            'subscription' => $subId,
+            'member'       => $memberId,
             'amount'       => $amount,
             'method'       => $d['payment_method'] ?? 'UPI',
             'txn'          => $txn,
@@ -1269,16 +1301,57 @@ class GymManagementService {
         return $this->db->query("SELECT * FROM exercise_catalog ORDER BY category, name")->fetchAll();
     }
 
-    public function workouts(): array {
-        return $this->db->query("
+    public function workouts(?int $trainerId = null): array {
+        $sql = "
             SELECT wp.*, u.full_name as member_name, tu.full_name as trainer_name 
             FROM workout_plans wp 
             JOIN members m ON m.id = wp.member_id 
             JOIN users u ON u.id = m.user_id 
             LEFT JOIN trainers t ON t.id = wp.trainer_id 
             LEFT JOIN users tu ON tu.id = t.user_id 
-            ORDER BY wp.id DESC
-        ")->fetchAll();
+        ";
+        if ($trainerId !== null) {
+            $sql .= " WHERE wp.trainer_id = :tid ";
+        }
+        $sql .= " ORDER BY wp.id DESC";
+        $stmt = $this->db->prepare($sql);
+        if ($trainerId !== null) {
+            $stmt->execute(['tid' => $trainerId]);
+        } else {
+            $stmt->execute();
+        }
+        return $stmt->fetchAll();
+    }
+
+    public function isTrainerAuthorizedForMember(int $trainerUserId, int $memberId): bool {
+        $trainer = $this->getTrainerByUserId($trainerUserId);
+        if (!$trainer) {
+            return false;
+        }
+        $trainerId = (int) $trainer['id'];
+        $stmt = $this->db->prepare("
+            SELECT 1 FROM members m
+            LEFT JOIN workout_plans wp ON wp.member_id = m.id AND wp.trainer_id = :tid1
+            WHERE m.id = :mid AND (m.assigned_trainer_id = :tid2 OR wp.trainer_id = :tid3)
+            LIMIT 1
+        ");
+        $stmt->execute(['tid1' => $trainerId, 'tid2' => $trainerId, 'tid3' => $trainerId, 'mid' => $memberId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function isTrainerAuthorizedForWorkout(int $trainerUserId, int $workoutId): bool {
+        $trainer = $this->getTrainerByUserId($trainerUserId);
+        if (!$trainer) {
+            return false;
+        }
+        $trainerId = (int) $trainer['id'];
+        $stmt = $this->db->prepare("
+            SELECT 1 FROM workout_plans 
+            WHERE id = :wid AND trainer_id = :tid
+            LIMIT 1
+        ");
+        $stmt->execute(['wid' => $workoutId, 'tid' => $trainerId]);
+        return (bool) $stmt->fetchColumn();
     }
 
     public function createWorkout(array $d): int {
@@ -1287,15 +1360,22 @@ class GymManagementService {
             throw new InvalidArgumentException('Workout plan title is required.');
         }
 
+        $difficulty = $d['difficulty'] ?? 'Intermediate';
+        if (!in_array($difficulty, ['Beginner', 'Intermediate', 'Advanced'], true)) {
+            $difficulty = 'Intermediate';
+        }
+
         $stmt = $this->db->prepare("
-            INSERT INTO workout_plans (member_id, trainer_id, title, goal, start_date, end_date)
-            VALUES (:member, :trainer, :title, :goal, :start, :end)
+            INSERT INTO workout_plans (member_id, trainer_id, title, difficulty, goal, description, start_date, end_date)
+            VALUES (:member, :trainer, :title, :diff, :goal, :desc, :start, :end)
         ");
         $stmt->execute([
             'member'  => (int) $d['member_id'],
             'trainer' => !empty($d['trainer_id']) ? (int) $d['trainer_id'] : null,
             'title'   => $title,
+            'diff'    => $difficulty,
             'goal'    => $d['goal'] ?? null,
+            'desc'    => $d['description'] ?? null,
             'start'   => !empty($d['start_date']) ? $d['start_date'] : date('Y-m-d'),
             'end'     => !empty($d['end_date']) ? $d['end_date'] : null
         ]);
@@ -1323,10 +1403,24 @@ class GymManagementService {
         return (int) $this->db->lastInsertId();
     }
 
-    public function workoutModuleStats(): array {
-        $totalPrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans")->fetchColumn();
-        $activePrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans WHERE end_date >= CURDATE() OR end_date IS NULL")->fetchColumn();
-        $assignedAthletes = (int) $this->db->query("SELECT COUNT(DISTINCT member_id) FROM workout_plans")->fetchColumn();
+    public function workoutModuleStats(?int $trainerId = null): array {
+        if ($trainerId !== null) {
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM workout_plans WHERE trainer_id = ?");
+            $stmt->execute([$trainerId]);
+            $totalPrograms = (int) $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM workout_plans WHERE trainer_id = ? AND (end_date >= CURDATE() OR end_date IS NULL)");
+            $stmt->execute([$trainerId]);
+            $activePrograms = (int) $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT COUNT(DISTINCT member_id) FROM workout_plans WHERE trainer_id = ?");
+            $stmt->execute([$trainerId]);
+            $assignedAthletes = (int) $stmt->fetchColumn();
+        } else {
+            $totalPrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans")->fetchColumn();
+            $activePrograms = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans WHERE end_date >= CURDATE() OR end_date IS NULL")->fetchColumn();
+            $assignedAthletes = (int) $this->db->query("SELECT COUNT(DISTINCT member_id) FROM workout_plans")->fetchColumn();
+        }
         $totalExercises = (int) $this->db->query("SELECT COUNT(*) FROM exercise_catalog")->fetchColumn();
 
         return [
@@ -1337,7 +1431,7 @@ class GymManagementService {
             'assigned_members_count' => $assignedAthletes,
             'total_exercises'        => $totalExercises,
             'exercise_library_count' => $totalExercises,
-            'workouts'               => $this->workouts()
+            'workouts'               => $this->workouts($trainerId)
         ];
     }
 

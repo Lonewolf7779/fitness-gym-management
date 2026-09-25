@@ -32,11 +32,11 @@ class AuthController {
             redirect('/login.php');
         }
 
-        $email    = sanitizeInput($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $identifier = sanitizeInput($_POST['identity'] ?? $_POST['email'] ?? $_POST['username'] ?? '');
+        $password   = $_POST['password'] ?? '';
 
         // Execute Authentication Service Logic
-        $result = $this->getAuthService()->login($email, $password);
+        $result = $this->getAuthService()->login($identifier, $password);
 
         if ($result['success']) {
             setFlash('success', 'Welcome back to IRONCORE!');
@@ -57,6 +57,43 @@ class AuthController {
         } else {
             setFlash('error', $result['message']);
             redirect('/login.php');
+        }
+    }
+
+    /**
+     * Process User Registration Request
+     */
+    public function processRegister(): void {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/register.php');
+        }
+
+        // Validate CSRF Security Token
+        if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            setFlash('error', 'Invalid security token. Please refresh and try again.');
+            redirect('/register.php');
+        }
+
+        $fullName = sanitizeInput($_POST['full_name'] ?? '');
+        $username = sanitizeInput($_POST['username'] ?? '');
+        $email    = sanitizeInput($_POST['email'] ?? '');
+        $phone    = sanitizeInput($_POST['phone'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        $result = $this->getAuthService()->registerUser([
+            'full_name' => $fullName,
+            'username'  => $username,
+            'email'     => $email,
+            'phone'     => $phone,
+            'password'  => $password
+        ]);
+
+        if ($result['success']) {
+            setFlash('success', $result['message']);
+            redirect('/member/index.php');
+        } else {
+            setFlash('error', $result['message']);
+            redirect('/register.php');
         }
     }
 

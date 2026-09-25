@@ -12,8 +12,8 @@ require_once __DIR__ . '/../../services/GymManagementService.php';
 // Execute Trainer Authorization Guard
 TrainerMiddleware::handle();
 
-$trainerName  = $_SESSION['full_name'] ?? 'Marcus Vance';
-$trainerEmail = $_SESSION['email'] ?? 'marcus@ironcore.com';
+$trainerName  = $_SESSION['full_name'] ?? 'Trainer';
+$trainerEmail = $_SESSION['email'] ?? '';
 $userId       = (int) ($_SESSION['user_id'] ?? 0);
 
 $svc = new GymManagementService();

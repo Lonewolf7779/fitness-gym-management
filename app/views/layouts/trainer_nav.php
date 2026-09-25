@@ -4,8 +4,8 @@
  */
 
 $currentSection = $currentSection ?? 'dashboard';
-$trainerName = $_SESSION['full_name'] ?? 'Marcus Vance';
-$trainerEmail = $_SESSION['email'] ?? 'marcus@ironcore.com';
+$trainerName = $_SESSION['full_name'] ?? 'Trainer';
+$trainerEmail = $_SESSION['email'] ?? '';
 $trainerInitial = strtoupper(substr($trainerName, 0, 1)) ?: 'T';
 $pageTitle = $pageHeading ?? 'TRAINER ATHLETE HUB';
 $pageSubtitle = $pageSubtitle ?? 'Live assigned athletes, weekly session metrics, & routine assignments';

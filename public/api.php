@@ -124,7 +124,12 @@ try {
                     echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
                     exit;
                 }
-                echo json_encode(['success' => true, 'data' => $svc->workouts()]);
+                $trainerFilterId = null;
+                if ($role === 'trainer') {
+                    $tr = $svc->getTrainerByUserId($userId);
+                    $trainerFilterId = $tr ? (int) $tr['id'] : -1;
+                }
+                echo json_encode(['success' => true, 'data' => $svc->workouts($trainerFilterId)]);
                 break;
 
             case 'workout_stats':
@@ -133,7 +138,12 @@ try {
                     echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
                     exit;
                 }
-                echo json_encode(['success' => true, 'data' => $svc->workoutModuleStats()]);
+                $trainerFilterId = null;
+                if ($role === 'trainer') {
+                    $tr = $svc->getTrainerByUserId($userId);
+                    $trainerFilterId = $tr ? (int) $tr['id'] : -1;
+                }
+                echo json_encode(['success' => true, 'data' => $svc->workoutModuleStats($trainerFilterId)]);
                 break;
 
             case 'workout_details':
@@ -143,7 +153,28 @@ try {
                     exit;
                 }
                 $wid = (int) ($_GET['id'] ?? 0);
-                echo json_encode(['success' => true, 'data' => $svc->getWorkoutDetails($wid)]);
+                $details = $svc->getWorkoutDetails($wid);
+                if (!$details) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'message' => 'Workout program not found.']);
+                    exit;
+                }
+                if ($role === 'member') {
+                    $mem = $svc->getMemberByUserId($userId);
+                    if (!$mem || (int) $details['member_id'] !== (int) $mem['id']) {
+                        http_response_code(403);
+                        echo json_encode(['success' => false, 'message' => 'Forbidden. You cannot view another athlete\'s workout protocol.']);
+                        exit;
+                    }
+                } elseif ($role === 'trainer') {
+                    $tr = $svc->getTrainerByUserId($userId);
+                    if (!$tr || ((int) $details['trainer_id'] !== (int) $tr['id'] && !$svc->isTrainerAuthorizedForMember($userId, (int) $details['member_id']))) {
+                        http_response_code(403);
+                        echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to view this workout program.']);
+                        exit;
+                    }
+                }
+                echo json_encode(['success' => true, 'data' => $details]);
                 break;
 
             case 'reports':
@@ -254,7 +285,13 @@ try {
 
         case 'check_in':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
-            $id = $svc->checkIn((int) $_POST['member_id'], $_POST['status'] ?? 'present');
+            $memberId = (int) ($_POST['member_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForMember($userId, $memberId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to check in this athlete.']);
+                exit;
+            }
+            $id = $svc->checkIn($memberId, $_POST['status'] ?? 'present');
             break;
 
         case 'check_out':
@@ -266,6 +303,11 @@ try {
         case 'check_out_member':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $memberId = (int) ($_POST['member_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForMember($userId, $memberId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to check out this athlete.']);
+                exit;
+            }
             $svc->checkOutByMemberId($memberId);
             $id = $memberId;
             break;
@@ -278,16 +320,30 @@ try {
         // Admin & Trainer Workout Management
         case 'create_workout':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $targetMemberId = (int) ($_POST['member_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForMember($userId, $targetMemberId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to assign workouts to this athlete.']);
+                exit;
+            }
             $id = $svc->createWorkout($_POST);
             break;
 
         case 'create_workout_plan':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $workoutData = $_POST;
-            if ($role === 'trainer' && empty($workoutData['trainer_id'])) {
-                $tr = $svc->getTrainerByUserId($userId);
-                if ($tr) {
-                    $workoutData['trainer_id'] = (int) $tr['id'];
+            $targetMemberId = (int) ($workoutData['member_id'] ?? 0);
+            if ($role === 'trainer') {
+                if (!$svc->isTrainerAuthorizedForMember($userId, $targetMemberId)) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to assign workouts to this athlete.']);
+                    exit;
+                }
+                if (empty($workoutData['trainer_id'])) {
+                    $tr = $svc->getTrainerByUserId($userId);
+                    if ($tr) {
+                        $workoutData['trainer_id'] = (int) $tr['id'];
+                    }
                 }
             }
             $planId = $svc->createWorkout($workoutData);
@@ -368,8 +424,14 @@ try {
 
         case 'delete_workout':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
-            $svc->deleteWorkout((int) $_POST['id']);
-            $id = (int) $_POST['id'];
+            $workoutId = (int) $_POST['id'];
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForWorkout($userId, $workoutId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to delete this workout program.']);
+                exit;
+            }
+            $svc->deleteWorkout($workoutId);
+            $id = $workoutId;
             break;
 
         case 'delete_attendance':

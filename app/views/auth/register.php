@@ -47,6 +47,11 @@ $selectedPlan = $_GET['plan'] ?? 'pro';
       </div>
 
       <div class="form-group">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="alex.rivera" pattern="[a-zA-Z0-9_.-]{3,30}" title="3-30 characters: letters, numbers, dots, underscores, or dashes" required>
+      </div>
+
+      <div class="form-group">
         <label for="email" class="form-label">Email Address</label>
         <input type="email" id="email" name="email" class="form-control" placeholder="alex@gmail.com" required>
       </div>

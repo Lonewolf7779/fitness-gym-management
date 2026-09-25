@@ -44,8 +44,8 @@ $s = array_merge([
     'timezone'      => 'Asia/Kolkata'
 ], $settings->all());
 
-$adminName = $_SESSION['full_name'] ?? 'System Admin';
-$adminEmail = $_SESSION['email'] ?? 'admin@ironcore.com';
+$adminName = $_SESSION['full_name'] ?? 'Admin';
+$adminEmail = $_SESSION['email'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -8,6 +8,7 @@ USE `ironcore_gym`;
 CREATE TABLE IF NOT EXISTS `users` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `full_name` VARCHAR(100) NOT NULL,
+    `username` VARCHAR(50) NOT NULL UNIQUE,
     `email` VARCHAR(150) NOT NULL UNIQUE,
     `password_hash` VARCHAR(255) NOT NULL,
     `role` ENUM('admin', 'trainer', 'member') NOT NULL DEFAULT 'member',
@@ -15,14 +16,29 @@ CREATE TABLE IF NOT EXISTS `users` (
     `status` ENUM('active', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_username` (`username`),
     INDEX `idx_email` (`email`),
     INDEX `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Members Table (Member profiles linked to users)
+-- 2. Trainers Table (Trainer profiles linked to users)
+CREATE TABLE IF NOT EXISTS `trainers` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL UNIQUE,
+    `phone` VARCHAR(20) NULL,
+    `specialization` VARCHAR(150) NOT NULL,
+    `experience_years` INT NOT NULL DEFAULT 0,
+    `bio` TEXT NULL,
+    `hourly_rate` DECIMAL(10,2) DEFAULT 0.00,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. Members Table (Member profiles linked to users)
 CREATE TABLE IF NOT EXISTS `members` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL UNIQUE,
+    `assigned_trainer_id` INT NULL,
     `phone` VARCHAR(20) NULL,
     `emergency_contact` VARCHAR(100) NULL,
     `gender` ENUM('male', 'female', 'other') NULL,
@@ -30,19 +46,9 @@ CREATE TABLE IF NOT EXISTS `members` (
     `address` TEXT NULL,
     `join_date` DATE NOT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 3. Trainers Table (Trainer profiles linked to users)
-CREATE TABLE IF NOT EXISTS `trainers` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `user_id` INT NOT NULL UNIQUE,
-    `specialization` VARCHAR(150) NOT NULL,
-    `experience_years` INT NOT NULL DEFAULT 0,
-    `bio` TEXT NULL,
-    `hourly_rate` DECIMAL(10,2) DEFAULT 0.00,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`assigned_trainer_id`) REFERENCES `trainers`(`id`) ON DELETE SET NULL,
+    INDEX `idx_assigned_trainer` (`assigned_trainer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Membership Plans
@@ -86,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `attendance` (
     `status` ENUM('present', 'late', 'excused') DEFAULT 'present',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`member_id`) REFERENCES `members`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `uq_member_date` (`member_id`, `date`),
     INDEX `idx_attendance_date` (`date`),
     INDEX `idx_attendance_member` (`member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -106,7 +113,9 @@ CREATE TABLE IF NOT EXISTS `workout_plans` (
     `member_id` INT NOT NULL,
     `trainer_id` INT NULL,
     `title` VARCHAR(150) NOT NULL,
+    `difficulty` ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL DEFAULT 'Intermediate',
     `goal` VARCHAR(255) NULL,
+    `description` TEXT NULL,
     `start_date` DATE NOT NULL,
     `end_date` DATE NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -6,10 +6,10 @@
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
-require_once __DIR__ . '/../../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../../middleware/MemberMiddleware.php';
 require_once __DIR__ . '/../../services/GymManagementService.php';
 
-AuthMiddleware::handle();
+MemberMiddleware::handle();
 
 $userId = (int) ($_SESSION['user_id'] ?? 0);
 $svc = new GymManagementService();

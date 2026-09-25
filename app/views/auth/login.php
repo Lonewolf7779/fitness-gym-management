@@ -3,7 +3,6 @@ require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../helpers/security.php';
 require_once __DIR__ . '/../../helpers/response.php';
 
-$isDevAuth = (defined('APP_ENV') && APP_ENV === 'local' && defined('AUTH_MODE') && AUTH_MODE === 'dev');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,7 +16,7 @@ $isDevAuth = (defined('APP_ENV') && APP_ENV === 'local' && defined('AUTH_MODE') 
 </head>
 <body class="auth-page">
 
-  <div class="auth-card" style="<?= $isDevAuth ? 'max-width: 480px;' : '' ?>">
+  <div class="auth-card">
     <div style="margin-bottom: 1rem;">
       <a href="/index.php" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--color-text-muted); text-decoration: none; font-weight: 700; transition: color var(--transition-fast);">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -42,23 +41,12 @@ $isDevAuth = (defined('APP_ENV') && APP_ENV === 'local' && defined('AUTH_MODE') 
       <div class="alert alert-success"><?= e($flashSuccess) ?></div>
     <?php endif; ?>
 
-    <?php if ($isDevAuth): ?>
-      <!-- Development-only helper banner. Must never be shown in production. -->
-      <div style="background: rgba(232, 255, 0, 0.08); border: 1px solid rgba(232, 255, 0, 0.3); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.5rem; font-size: 0.775rem; color: var(--color-text-muted);">
-        <div style="font-weight: 700; color: var(--color-accent); margin-bottom: 0.35rem; text-transform: uppercase;">⚡ DEV AUTH MODE ACTIVE</div>
-        <div>Admin: <code style="color:#FFF;">admin@ironcore.com</code> / <code style="color:#FFF;">Admin@123</code></div>
-        <div>Trainer: <code style="color:#FFF;">marcus@ironcore.com</code> / <code style="color:#FFF;">Trainer@123</code></div>
-        <div>Member: <code style="color:#FFF;">alex@gmail.com</code> / <code style="color:#FFF;">Member@123</code></div>
-        <div>Suspended: <code style="color:#FFF;">suspended@gmail.com</code> / <code style="color:#FFF;">Member@123</code></div>
-      </div>
-    <?php endif; ?>
-
     <form action="/login.php" method="POST" class="auth-form">
       <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
 
       <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required autofocus>
+        <label for="identity" class="form-label">Email Address or Username</label>
+        <input type="text" id="identity" name="identity" class="form-control" placeholder="Username or email address" required autofocus>
       </div>
 
       <div class="form-group">

@@ -56,7 +56,7 @@ $csrf = generateCsrfToken();
                 <span class="badge badge-primary">CERTIFIED TRAINER</span>
                 <span class="badge badge-success">ACTIVE</span>
               </div>
-              <p style="font-size: 14px; color: var(--color-text-muted); margin: 4px 0 0 0;"><?= htmlspecialchars($user['email'] ?? '') ?> • <?= htmlspecialchars($trainer['specialty'] ?? 'Strength & Conditioning') ?></p>
+              <p style="font-size: 14px; color: var(--color-text-muted); margin: 4px 0 0 0;"><?= htmlspecialchars($user['email'] ?? '') ?> • <?= htmlspecialchars($trainer['specialization'] ?? $trainer['specialty'] ?? 'Strength & Conditioning') ?></p>
             </div>
             <div style="display: flex; gap: var(--space-4); text-align: center;">
               <div style="padding: var(--space-3) var(--space-4); background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
@@ -107,7 +107,7 @@ $csrf = generateCsrfToken();
 
                 <div>
                   <label class="form-label" style="font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 6px; display: block;">Specialization / Specialty</label>
-                  <input type="text" name="specialty" class="form-input" value="<?= htmlspecialchars($trainer['specialty'] ?? '') ?>" placeholder="e.g., Hypertrophy, Strength, HIIT" style="width: 100%;">
+                  <input type="text" name="specialization" class="form-input" value="<?= htmlspecialchars($trainer['specialization'] ?? $trainer['specialty'] ?? '') ?>" placeholder="e.g., Hypertrophy, Strength, HIIT" style="width: 100%;">
                 </div>
 
                 <div>
