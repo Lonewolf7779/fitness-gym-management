@@ -15,6 +15,7 @@ $publicStats = [
     'monthly_revenue' => '0.00',
     'today_attendance' => 0
 ];
+$publicPlans = [];
 
 try {
     $publicService = new GymManagementService();
@@ -24,6 +25,7 @@ try {
     $publicStats['active_pct'] = (float) ($dashboardStats['active_pct'] ?? 0);
     $publicStats['monthly_revenue'] = (string) ($dashboardStats['monthly_revenue'] ?? '0.00');
     $publicStats['today_attendance'] = (int) ($dashboardStats['today_attendance'] ?? 0);
+    $publicPlans = $publicService->plans(true);
 } catch (Throwable $e) {
     if (APP_DEBUG) {
         error_log('Landing page live metrics unavailable: ' . $e->getMessage());
