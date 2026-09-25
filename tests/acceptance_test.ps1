@@ -406,7 +406,13 @@ try {
 # =========================================================================
 Write-Host "`n--- 9. Restoring Database Baseline Seed ---" -ForegroundColor Yellow
 try {
-    & "C:\Users\SantoshPrajapati-Tec\xampp\php\php.exe" "C:\Users\SantoshPrajapati-Tec\.gemini\antigravity\brain\619697cd-1349-4adb-bb6c-09ed0992b7d1\scratch\run_seed.php"
+    $projectRoot = Split-Path -Parent $PSScriptRoot
+    $phpCommand = Get-Command php -ErrorAction SilentlyContinue
+    if (-not $phpCommand) {
+        throw "PHP CLI was not found on PATH. Run the acceptance suite from a PHP-enabled environment."
+    }
+
+    & $phpCommand.Source "$projectRoot/tests/reset_database.php"
     Assert-Condition ($LASTEXITCODE -eq 0) "Database reset to pristine 1-record baseline"
 } catch {
     Assert-Condition $false "Baseline restore failed: $_"
