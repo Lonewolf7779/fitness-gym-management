@@ -232,6 +232,26 @@ $todaySchedule = $trainerData['today_schedule'];
             <textarea name="goal" rows="2" class="form-control" placeholder="Target muscle groups, recovery guidelines..." style="width: 100%; padding: 0.75rem; background: var(--color-bg); border: 1px solid var(--color-border); color: #FFF; border-radius: var(--radius-sm);"></textarea>
           </div>
 
+          <div style="margin-top: 1rem;">
+            <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Exercises</label>
+            <?php if (empty($assignedExercises)): ?>
+              <div style="padding: 0.85rem; border: 1px dashed var(--color-border); border-radius: var(--radius-sm); color: var(--color-text-muted); font-size: 0.78rem;">No exercises assigned by an administrator yet.</div>
+            <?php else: ?>
+              <div id="trainer-exercise-rows" style="display:grid;gap:.6rem;">
+                <div style="display:grid;grid-template-columns:minmax(0,2fr) 80px minmax(0,1fr) 80px;gap:.5rem;">
+                  <select name="exercises[0][exercise_id]" class="form-control" required>
+                    <?php foreach ($assignedExercises as $exercise): ?><option value="<?= (int)$exercise['exercise_id'] ?>"><?= e($exercise['name']) ?></option><?php endforeach; ?>
+                  </select>
+                  <input type="number" name="exercises[0][sets]" class="form-control" min="1" max="15" value="3" required>
+                  <input type="text" name="exercises[0][reps]" class="form-control" value="10-12" required>
+                  <select name="exercises[0][day_of_week]" class="form-control">
+                    <?php foreach (['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as $day): ?><option value="<?= $day ?>"><?= $day ?></option><?php endforeach; ?>
+                  </select>
+                </div>
+              </div>
+            <?php endif; ?>
+          </div>
+
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
             <div>
               <label class="form-label" style="display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">Start Date</label>
