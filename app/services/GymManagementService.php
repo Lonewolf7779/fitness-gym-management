@@ -53,6 +53,23 @@ class GymManagementService {
         ];
     }
 
+    public function adminOverviewStats(): array {
+        $stats = [];
+        $stats['total_members'] = (int) $this->db->query("SELECT COUNT(*) FROM members")->fetchColumn();
+        $stats['active_members'] = (int) $this->db->query("SELECT COUNT(*) FROM members m JOIN users u ON u.id = m.user_id WHERE u.status = 'active'")->fetchColumn();
+        $stats['total_trainers'] = (int) $this->db->query("SELECT COUNT(*) FROM trainers")->fetchColumn();
+        $stats['active_trainers'] = (int) $this->db->query("SELECT COUNT(*) FROM trainers t JOIN users u ON u.id = t.user_id WHERE u.status = 'active'")->fetchColumn();
+        $stats['active_subscriptions'] = (int) $this->db->query("SELECT COUNT(*) FROM subscriptions WHERE status = 'active' AND end_date >= CURDATE()")->fetchColumn();
+        $stats['today_checkins'] = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE()")->fetchColumn();
+        $stats['currently_in_gym'] = (int) $this->db->query("SELECT COUNT(*) FROM attendance WHERE date = CURDATE() AND check_out_time IS NULL")->fetchColumn();
+        $stats['workout_programs'] = (int) $this->db->query("SELECT COUNT(*) FROM workout_plans")->fetchColumn();
+        $stats['exercise_catalog'] = (int) $this->db->query("SELECT COUNT(*) FROM exercise_catalog")->fetchColumn();
+        $stats['monthly_revenue'] = (float) $this->db->query("SELECT COALESCE(SUM(amount),0) FROM payments WHERE status = 'paid' AND MONTH(payment_date)=MONTH(CURDATE()) AND YEAR(payment_date)=YEAR(CURDATE())")->fetchColumn();
+        $stats['pending_payments'] = (float) $this->db->query("SELECT COALESCE(SUM(amount),0) FROM payments WHERE status = 'pending'")->fetchColumn();
+        $stats['expiring_7d'] = (int) $this->db->query("SELECT COUNT(*) FROM subscriptions WHERE status='active' AND end_date >= CURDATE() AND end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)")->fetchColumn();
+        return $stats;
+    }
+
     public function recentMembers(int $limit = 5): array {
         $stmt = $this->db->prepare("
             SELECT m.id, m.user_id, m.phone, m.join_date, u.full_name, u.email, u.status,
