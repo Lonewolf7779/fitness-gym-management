@@ -73,11 +73,11 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
         </div>
         <div class="hero-stat-item">
           <span class="hero-stat-value" data-counter data-target="<?= $publicStats['trainer_count'] ?>">0</span>
-          <span class="hero-stat-label">Pro Trainers</span>
+          <span class="hero-stat-label">Active Trainers</span>
         </div>
         <div class="hero-stat-item">
           <span class="hero-stat-value" data-counter data-target="<?= $publicStats['active_pct'] ?>" data-suffix="%">0%</span>
-          <span class="hero-stat-label">Check-in Accuracy</span>
+          <span class="hero-stat-label">Active Member Rate</span>
         </div>
       </div>
     </div>
