@@ -136,7 +136,22 @@ CREATE TABLE IF NOT EXISTS `workout_plan_exercises` (
     FOREIGN KEY (`exercise_id`) REFERENCES `exercise_catalog`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 10. Payments
+-- 10. Trainer Exercise Assignments
+CREATE TABLE IF NOT EXISTS trainer_exercise_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id INT NOT NULL,
+    exercise_id INT NOT NULL,
+    assigned_by_user_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_trainer_exercise (trainer_id, exercise_id),
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    FOREIGN KEY (exercise_id) REFERENCES exercise_catalog(id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_tea_trainer (trainer_id),
+    INDEX idx_tea_exercise (exercise_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. Payments
 CREATE TABLE IF NOT EXISTS `payments` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `subscription_id` INT NULL,
@@ -151,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `payments` (
     INDEX `idx_payment_trans` (`transaction_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 11. Progress Logs
+-- 12. Progress Logs
 CREATE TABLE IF NOT EXISTS `progress_logs` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `member_id` INT NOT NULL,
@@ -166,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `progress_logs` (
     FOREIGN KEY (`member_id`) REFERENCES `members`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 12. System Settings
+-- 13. System Settings
 CREATE TABLE IF NOT EXISTS `system_settings` (
     `setting_key` VARCHAR(80) PRIMARY KEY,
     `setting_value` TEXT NULL,
