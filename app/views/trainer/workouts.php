@@ -233,7 +233,7 @@ $csrf = generateCsrfToken();
                 <select name="exercises[0][exercise_id]" class="form-select" required>
                   <option value="">-- Choose Exercise --</option>
                   <?php foreach ($allExercises as $ex): ?>
-                    <option value="<?= (int)$ex['id'] ?>"><?= htmlspecialchars($ex['name']) ?> (<?= htmlspecialchars($ex['category']) ?>)</option>
+                    <option value="<?= (int)$ex['exercise_id'] ?>"><?= htmlspecialchars($ex['name']) ?> (<?= htmlspecialchars($ex['category']) ?>)</option>
                   <?php endforeach; ?>
                 </select>
                 <input type="number" name="exercises[0][sets]" class="form-input" placeholder="Sets" value="3" min="1" required>
