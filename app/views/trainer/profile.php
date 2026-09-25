@@ -56,7 +56,7 @@ $csrf = generateCsrfToken();
                 <span class="badge badge-primary">CERTIFIED TRAINER</span>
                 <span class="badge badge-success">ACTIVE</span>
               </div>
-              <p style="font-size: 14px; color: var(--color-text-muted); margin: 4px 0 0 0;"><?= htmlspecialchars($user['email'] ?? '') ?> • <?= htmlspecialchars($trainer['specialization'] ?? $trainer['specialty'] ?? 'Strength & Conditioning') ?></p>
+              <p style="font-size: 14px; color: var(--color-text-muted); margin: 4px 0 0 0;"><?= htmlspecialchars($user['email'] ?? '') ?> • <?= htmlspecialchars($trainer['specialization'] ?? $trainer['specialty'] ?? 'Not specified') ?></p>
             </div>
             <div style="display: flex; gap: var(--space-4); text-align: center;">
               <div style="padding: var(--space-3) var(--space-4); background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
@@ -64,7 +64,7 @@ $csrf = generateCsrfToken();
                 <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase;">Athletes</div>
               </div>
               <div style="padding: var(--space-3) var(--space-4); background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
-                <div style="font-size: 20px; font-weight: 800; color: #34D399;"><?= (int)($trainer['experience_years'] ?? 3) ?> Yrs</div>
+                <div style="font-size: 20px; font-weight: 800; color: #34D399;"><?= (int)($trainer['experience_years'] ?? 0) ?> Yrs</div>
                 <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase;">Experience</div>
               </div>
             </div>
