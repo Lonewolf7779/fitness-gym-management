@@ -39,7 +39,7 @@ $csrf = generateCsrfToken();
     $currentSection = 'workouts';
     $pageHeading    = 'WORKOUT MANAGEMENT CENTER';
     $pageSubtitle   = 'Design training programs, exercise catalogs, routine schedules, and athlete assignments';
-    $extraHeaderAction = '<button class="btn btn-primary" id="open-assign-workout-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>+ ASSIGN WORKOUT</span></button>';
+    $extraHeaderAction = '<div style="display:flex;flex-wrap:wrap;gap:.5rem;"><button class="btn btn-secondary" id="open-assign-exercise-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg><span>+ ASSIGN EXERCISE</span></button><button class="btn btn-primary" id="open-assign-workout-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>+ ASSIGN WORKOUT</span></button></div>';
     require_once __DIR__ . '/../layouts/admin_nav.php';
     ?>
 
@@ -451,6 +451,44 @@ $csrf = generateCsrfToken();
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close="assign-workout-modal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="assign-workout-submit-btn">Assign Program</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ASSIGN EXERCISE TO TRAINER MODAL -->
+  <div class="modal-overlay" id="assign-exercise-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>ASSIGN EXERCISE TO TRAINER</h3>
+        <button type="button" class="modal-close" data-close="assign-exercise-modal">&times;</button>
+      </div>
+      <form id="assign-exercise-form">
+        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Trainer *</label>
+            <select name="trainer_id" class="form-control" required>
+              <option value="">Select trainer</option>
+              <?php foreach ($allTrainers as $trainer): ?>
+                <option value="<?= (int)$trainer['id'] ?>"><?= e($trainer['full_name']) ?> · <?= e($trainer['specialization']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Exercise *</label>
+            <select name="exercise_id" class="form-control" required>
+              <option value="">Select exercise</option>
+              <?php foreach ($allExercises as $exercise): ?>
+                <option value="<?= (int)$exercise['id'] ?>"><?= e($exercise['name']) ?> · <?= e($exercise['muscle_group']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <p style="color:var(--color-text-muted);font-size:.78rem;line-height:1.5;margin:0;">Only exercises assigned here can be used by that trainer when building member workout programs.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="assign-exercise-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Exercise</button>
         </div>
       </form>
     </div>
