@@ -599,7 +599,7 @@ class GymManagementService {
             LIMIT 1
         ");
         $popular = $popStmt->fetch();
-        $popularPlan = $popular ? $popular['title'] : 'PRO';
+        $popularPlan = $popular ? $popular['title'] : 'None yet';
 
         return [
             'total_plans'         => $totalPlans,
