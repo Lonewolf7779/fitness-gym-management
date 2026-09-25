@@ -687,3 +687,97 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ==========================================================================
+   IRONCORE Rotating Motivation Quotes
+   ========================================================================== */
+.quotes-section {
+  padding: var(--space-2xl) 0;
+  background: radial-gradient(circle at 50% 15%, rgba(232,255,0,0.08), transparent 34%), var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.quotes-shell {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 6vw, 5rem);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+  box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+.quotes-eyebrow {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1.25rem;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.quotes-mark {
+  position: relative;
+  z-index: 1;
+  height: 52px;
+  color: var(--color-accent);
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  line-height: 0.9;
+  opacity: 0.75;
+}
+.quote-display {
+  position: relative;
+  z-index: 1;
+  min-height: 5.8rem;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1.5rem;
+  max-width: 820px;
+  color: var(--color-text-main);
+  font-size: clamp(1.65rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.quote-display.is-changing {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.quote-author {
+  position: relative;
+  z-index: 1;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.quote-progress {
+  position: relative;
+  z-index: 1;
+  width: min(260px, 70%);
+  height: 2px;
+  margin: 2rem auto 0;
+  overflow: hidden;
+  background: rgba(255,255,255,0.1);
+}
+.quote-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--color-accent);
+}
+@media (max-width: 768px) {
+  .quotes-section { padding: 4rem 0; }
+  .quotes-shell { padding: 3.5rem 1.25rem; border-radius: var(--radius-md); }
+  .quote-display { min-height: 8.5rem; font-size: clamp(1.45rem, 7vw, 2.15rem); }
+  .quotes-mark { font-size: 4.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quote-display { transition: none; }
+}
