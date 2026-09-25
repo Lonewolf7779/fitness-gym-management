@@ -98,7 +98,7 @@ $csrf = generateCsrfToken();
               </div>
             </div>
             <div class="kpi-main-val" id="stat-popular-plan" style="color: #FBBF24; font-size: 1.45rem; text-transform: uppercase;">
-              <?= e($planStats['most_popular_plan'] ?: 'PRO') ?>
+              <?= e($planStats['most_popular_plan'] ?: 'None yet') ?>
             </div>
             <div class="kpi-sub-row">
               <span class="badge-trend warning">Highest Enrollment</span>
