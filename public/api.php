@@ -114,6 +114,21 @@ try {
                 echo json_encode(['success' => true, 'data' => $svc->membershipModuleStats()]);
                 break;
 
+            case 'trainer_exercises':
+                if ($role !== 'admin' && $role !== 'trainer') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
+                    exit;
+                }
+                if ($role === 'trainer') {
+                    $tr = $svc->getTrainerByUserId($userId);
+                    echo json_encode(['success' => true, 'data' => $tr ? $svc->trainerExercises((int)$tr['id']) : []]);
+                } else {
+                    $trainerId = !empty($_GET['trainer_id']) ? (int)$_GET['trainer_id'] : null;
+                    echo json_encode(['success' => true, 'data' => $svc->trainerExercises($trainerId)]);
+                }
+                break;
+
             case 'exercises':
                 echo json_encode(['success' => true, 'data' => $svc->exercises()]);
                 break;
@@ -324,6 +339,19 @@ try {
             break;
 
         // Admin & Trainer Workout Management
+        case 'assign_exercise_to_trainer':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Administrator privileges required.']); exit; }
+            $trainerId = (int) ($_POST['trainer_id'] ?? 0);
+            $exerciseId = (int) ($_POST['exercise_id'] ?? 0);
+            $id = $svc->assignExerciseToTrainer($trainerId, $exerciseId, $userId);
+            break;
+
+        case 'remove_exercise_from_trainer':
+            if ($role !== 'admin') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Administrator privileges required.']); exit; }
+            $svc->removeExerciseFromTrainer((int) ($_POST['trainer_id'] ?? 0), (int) ($_POST['exercise_id'] ?? 0));
+            $id = (int) ($_POST['trainer_id'] ?? 0);
+            break;
+
         case 'create_workout':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $targetMemberId = (int) ($_POST['member_id'] ?? 0);
