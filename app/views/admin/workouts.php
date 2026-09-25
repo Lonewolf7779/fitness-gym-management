@@ -151,7 +151,7 @@ $csrf = generateCsrfToken();
               $parts = explode(' ', trim($w['member_name'] ?? ''));
               foreach ($parts as $p) { if (!empty($p)) $initials .= strtoupper($p[0]); }
               $initials = substr($initials ?: 'MB', 0, 2);
-              $coachName = !empty($w['trainer_name']) ? $w['trainer_name'] : 'Head Coach';
+              $coachName = !empty($w['trainer_name']) ? $w['trainer_name'] : 'Not assigned';
               $goal = !empty($w['goal']) ? $w['goal'] : 'General athletic power & conditioning.';
               $startFmt = !empty($w['start_date']) ? date('M d, Y', strtotime($w['start_date'])) : 'Immediate';
               $endFmt = !empty($w['end_date']) ? date('M d, Y', strtotime($w['end_date'])) : 'Continuous';
@@ -233,7 +233,7 @@ $csrf = generateCsrfToken();
                 <tbody id="workouts-table-body">
                   <?php if (!empty($allWorkouts)): ?>
                     <?php foreach ($allWorkouts as $w): 
-                      $coachName = !empty($w['trainer_name']) ? $w['trainer_name'] : 'Head Coach';
+                      $coachName = !empty($w['trainer_name']) ? $w['trainer_name'] : 'Not assigned';
                       $startFmt = !empty($w['start_date']) ? date('M d, Y', strtotime($w['start_date'])) : 'Immediate';
                       $endFmt = !empty($w['end_date']) ? date('M d, Y', strtotime($w['end_date'])) : 'Continuous';
                     ?>
