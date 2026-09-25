@@ -1318,6 +1318,66 @@ class GymManagementService {
         return $this->db->query("SELECT * FROM exercise_catalog ORDER BY category, name")->fetchAll();
     }
 
+    public function trainerExercises(?int $trainerId = null): array {
+        $sql = "
+            SELECT tea.id as assignment_id, tea.trainer_id, tea.exercise_id,
+                   e.name, e.category, e.muscle_group, e.equipment, e.instructions,
+                   u.full_name as trainer_name
+            FROM trainer_exercise_assignments tea
+            JOIN exercise_catalog e ON e.id = tea.exercise_id
+            JOIN trainers t ON t.id = tea.trainer_id
+            JOIN users u ON u.id = t.user_id
+        ";
+        if ($trainerId !== null) {
+            $sql .= " WHERE tea.trainer_id = :tid ";
+        }
+        $sql .= " ORDER BY e.category, e.name";
+        $stmt = $this->db->prepare($sql);
+        if ($trainerId !== null) {
+            $stmt->execute(['tid' => $trainerId]);
+        } else {
+            $stmt->execute();
+        }
+        return $stmt->fetchAll();
+    }
+
+    public function assignExerciseToTrainer(int $trainerId, int $exerciseId, int $assignedByUserId): int {
+        $trainerCheck = $this->db->prepare("SELECT id FROM trainers WHERE id = :tid");
+        $trainerCheck->execute(['tid' => $trainerId]);
+        if (!$trainerCheck->fetchColumn()) {
+            throw new InvalidArgumentException('Trainer not found.');
+        }
+
+        $exerciseCheck = $this->db->prepare("SELECT id FROM exercise_catalog WHERE id = :eid");
+        $exerciseCheck->execute(['eid' => $exerciseId]);
+        if (!$exerciseCheck->fetchColumn()) {
+            throw new InvalidArgumentException('Exercise not found.');
+        }
+
+        $stmt = $this->db->prepare("
+            INSERT INTO trainer_exercise_assignments (trainer_id, exercise_id, assigned_by_user_id)
+            VALUES (:tid, :eid, :uid)
+            ON DUPLICATE KEY UPDATE assigned_by_user_id = VALUES(assigned_by_user_id)
+        ");
+        $stmt->execute(['tid' => $trainerId, 'eid' => $exerciseId, 'uid' => $assignedByUserId]);
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function removeExerciseFromTrainer(int $trainerId, int $exerciseId): void {
+        $stmt = $this->db->prepare("DELETE FROM trainer_exercise_assignments WHERE trainer_id = :tid AND exercise_id = :eid");
+        $stmt->execute(['tid' => $trainerId, 'eid' => $exerciseId]);
+    }
+
+    public function isExerciseAssignedToTrainer(int $trainerUserId, int $exerciseId): bool {
+        $trainer = $this->getTrainerByUserId($trainerUserId);
+        if (!$trainer) {
+            return false;
+        }
+        $stmt = $this->db->prepare("SELECT 1 FROM trainer_exercise_assignments WHERE trainer_id = :tid AND exercise_id = :eid LIMIT 1");
+        $stmt->execute(['tid' => (int)$trainer['id'], 'eid' => $exerciseId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
     public function workouts(?int $trainerId = null): array {
         $sql = "
             SELECT wp.*, u.full_name as member_name, tu.full_name as trainer_name 
