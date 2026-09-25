@@ -107,6 +107,29 @@ $todaySchedule = $trainerData['today_schedule'];
           </div>
         </section>
 
+        <section class="panel-card trainer-exercise-library">
+          <div class="panel-header">
+            <div>
+              <h3>APPROVED EXERCISE LIBRARY</h3>
+              <p style="margin-top:.25rem;color:var(--color-text-muted);font-size:.78rem;">Exercises assigned to you by an administrator.</p>
+            </div>
+            <span style="font-size:.78rem;color:var(--color-accent);font-weight:700;"><?= count($assignedExercises) ?> EXERCISES</span>
+          </div>
+          <?php if (empty($assignedExercises)): ?>
+            <div style="padding:1.5rem 0;color:var(--color-text-muted);font-size:.82rem;">No exercises assigned yet. Ask an administrator to grant exercise access.</div>
+          <?php else: ?>
+            <div class="trainer-exercise-grid">
+              <?php foreach ($assignedExercises as $exercise): ?>
+                <div class="trainer-exercise-card">
+                  <strong><?= e($exercise['name']) ?></strong>
+                  <span><?= e($exercise['muscle_group']) ?></span>
+                  <small><?= e($exercise['equipment'] ?: 'Bodyweight') ?></small>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </section>
+
         <!-- TWO COLUMN SPLIT GRID -->
         <div class="dashboard-split-grid">
 
