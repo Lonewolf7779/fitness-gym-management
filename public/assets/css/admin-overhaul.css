@@ -109,21 +109,23 @@
 
 .dashboard-shell .table-responsive {
   width: 100%;
-  overflow: visible !important;
-  -webkit-overflow-scrolling: auto;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dashboard-shell .data-table {
   width: 100%;
-  max-width: 100%;
-  table-layout: fixed;
+  min-width: 820px;
+  table-layout: auto !important;
 }
 
 .dashboard-shell .data-table th,
 .dashboard-shell .data-table td {
-  white-space: normal !important;
-  overflow-wrap: anywhere;
-  word-break: normal;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
   vertical-align: middle;
 }
 
@@ -562,28 +564,30 @@
   .trainer-exercise-grid { grid-template-columns: 1fr; }
 }
 
-/* Replace horizontal data-table scrolling with wrapped, fluid columns. */
+/* Enable clean, readable data tables with native touch horizontal scroll on mobile viewports */
 .dashboard-shell .table-glass-wrap {
   width: 100%;
-  overflow-x: visible !important;
-  overflow-y: visible !important;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
 }
 .dashboard-shell .module-data-table {
   width: 100%;
-  max-width: 100%;
-  table-layout: fixed;
+  min-width: 880px;
+  table-layout: auto !important;
 }
 .dashboard-shell .module-data-table th,
 .dashboard-shell .module-data-table td {
-  white-space: normal !important;
-  overflow-wrap: anywhere;
-  word-break: normal;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
 }
 .dashboard-shell .module-data-table th {
-  font-size: .66rem;
+  font-size: .725rem;
 }
 .dashboard-shell .module-data-table td {
-  font-size: .78rem;
+  font-size: .85rem;
 }
 .dashboard-shell .module-action-bar {
   flex-wrap: wrap;
@@ -591,4 +595,23 @@
 }
 .dashboard-shell .module-action-bar > * {
   min-width: 0;
+}
+
+.dashboard-shell .table-responsive::-webkit-scrollbar,
+.dashboard-shell .table-glass-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+.dashboard-shell .table-responsive::-webkit-scrollbar-track,
+.dashboard-shell .table-glass-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+.dashboard-shell .table-responsive::-webkit-scrollbar-thumb,
+.dashboard-shell .table-glass-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.dashboard-shell .table-responsive::-webkit-scrollbar-thumb:hover,
+.dashboard-shell .table-glass-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
