@@ -228,6 +228,17 @@ try {
                 echo json_encode(['success' => true, 'data' => $svc->weeklyAttendanceChart()]);
                 break;
 
+            case 'chart_trends':
+            case 'performance_trends':
+                if ($role !== 'admin') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Administrator privileges required.']);
+                    exit;
+                }
+                $range = isset($_GET['range']) ? (int)$_GET['range'] : 12;
+                echo json_encode(['success' => true, 'data' => $svc->performanceTrends($range)]);
+                break;
+
             default:
                 http_response_code(404);
                 echo json_encode(['success' => false, 'message' => 'Unknown action.']);

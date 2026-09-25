@@ -309,160 +309,319 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 5. SVG Revenue & Attendance Chart (Dashboard Home)
+  // 5. GYM PERFORMANCE TRENDS (Operational Multi-Series SVG Telemetry)
   // =========================================================================
-  const chartContainer = document.getElementById('admin-chart-svg');
-  const switchBtns = document.querySelectorAll('.switch-btn');
+  const trendsStage = document.getElementById('admin-trends-stage');
+  const legendChips = document.querySelectorAll('.legend-chip');
+  const rangeBtns = document.querySelectorAll('.trends-range-selector .range-btn');
 
-  const adminChartData = {
-    revenue: {
-      title: 'Monthly Revenue Stream',
-      labels: [],
-      values: [],
-      max: 100,
-      color: '#E8FF00',
-      prefix: '₹',
-      suffix: ''
-    },
-    attendance: {
-      title: 'Daily Member Check-ins',
-      labels: [],
-      values: [],
-      max: 10,
-      color: '#30D158',
-      prefix: '',
-      suffix: ''
-    }
+  let currentTrendsData = null;
+  let currentRange = 12;
+  const activeSeries = {
+    revenue: true,
+    checkins: true,
+    members: true
   };
 
-  const renderAdminSVGChart = (viewType = 'revenue') => {
-    if (!chartContainer) return;
-    const data = adminChartData[viewType];
-    
-    // Check if data is completely empty or all zeros
-    const hasData = Array.isArray(data.values) && data.values.length > 0 && data.values.some(v => Number(v) > 0);
-    if (!hasData) {
-      const isRevenue = viewType === 'revenue';
-      chartContainer.innerHTML = `
-        <div class="chart-empty-state">
-          <div class="chart-empty-icon">
+  const renderGymPerformanceTrends = (data) => {
+    if (!trendsStage) return;
+
+    if (!data || !data.has_any_data) {
+      trendsStage.innerHTML = `
+        <div class="trends-empty-state">
+          <div class="trends-empty-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              ${isRevenue 
-                ? '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
-                : '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/>'
-              }
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
             </svg>
           </div>
-          <h4>NO DATA RECORDED YET</h4>
-          <p>${isRevenue ? 'Revenue trends will appear here once payment transactions are recorded in the system.' : 'Check-in activity will appear here once members start checking in to the facility.'}</p>
+          <h4>NO PERFORMANCE DATA YET</h4>
+          <p>Revenue, attendance and membership trends will appear here as gym activity is recorded.</p>
         </div>
       `;
       return;
     }
 
-    const width = 850;
+    const width = 960;
     const height = 240;
-    const padding = 45;
-    const chartW = width - padding * 2;
-    const chartH = height - padding * 2;
+    const padding = { top: 25, right: 35, bottom: 35, left: 45 };
+    const chartW = width - padding.left - padding.right;
+    const chartH = height - padding.top - padding.bottom;
 
-    const numPoints = data.values.length;
+    const numPoints = (data.labels && data.labels.length) ? data.labels.length : 1;
     const step = numPoints > 1 ? chartW / (numPoints - 1) : 0;
-    const numericVals = data.values.map(v => Number(v) || 0);
-    const maxVal = Math.max(Number(data.max) || 1, Math.max(...numericVals), 1);
-    const points = numericVals.map((val, i) => {
-      const x = padding + i * step;
-      const y = height - padding - (val / maxVal) * chartH;
-      return { x, y, val, label: data.labels[i] || '' };
+
+    // Helper for smooth cubic Bezier paths
+    const getSmoothPath = (pts) => {
+      if (!pts || !pts.length) return '';
+      if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i === 0 ? 0 : i - 1];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[i + 2] || p2;
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+      }
+      return d;
+    };
+
+    // Calculate normalized point coordinates for each active series
+    const seriesRenderData = {};
+    const seriesKeys = ['revenue', 'checkins', 'members'];
+
+    seriesKeys.forEach(key => {
+      if (!activeSeries[key] || !data.series[key]) return;
+      const s = data.series[key];
+      const maxVal = s.max > 0 ? s.max : 1;
+      const pts = s.values.map((v, i) => {
+        const x = padding.left + i * step;
+        const pct = s.max > 0 ? (Number(v) / maxVal) : 0;
+        const y = padding.top + (1 - pct) * chartH;
+        return { x, y, val: v };
+      });
+      const pathD = getSmoothPath(pts);
+      const areaD = pts.length > 0 
+        ? `${pathD} L ${pts[pts.length - 1].x} ${padding.top + chartH} L ${pts[0].x} ${padding.top + chartH} Z`
+        : '';
+
+      seriesRenderData[key] = { s, pts, pathD, areaD };
     });
 
-    let pathD = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      pathD += ` L ${points[i].x} ${points[i].y}`;
-    }
+    // Generate grid lines
+    const gridYLevels = [0, 0.25, 0.5, 0.75, 1];
 
-    const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
+    let svgHtml = `
+      <div class="trends-svg-container" style="position: relative; width: 100%; height: 100%;">
+        <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="glow-revenue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E8FF00" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="#E8FF00" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="glow-checkins" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="glow-members" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#34D399" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="#34D399" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
 
-    chartContainer.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <linearGradient id="adminChartGlow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${data.color}" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="${data.color}" stop-opacity="0.0"/>
-          </linearGradient>
-        </defs>
-        <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${padding + chartH / 2}" x2="${width - padding}" y2="${padding + chartH / 2}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.12)" />
+          <!-- Horizontal Reference Grid Lines -->
+          ${gridYLevels.map((lvl, idx) => {
+            const y = padding.top + lvl * chartH;
+            const isBottom = idx === gridYLevels.length - 1;
+            const strokeColor = isBottom ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)';
+            const dash = isBottom ? '' : 'stroke-dasharray="4 4"';
+            const labelText = idx === 0 ? '100%' : (idx === 2 ? '50%' : (isBottom ? '0%' : ''));
+            return `
+              <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="${strokeColor}" ${dash} />
+              ${labelText ? `<text x="${padding.left - 10}" y="${y + 4}" fill="#6B7280" font-size="10" font-weight="700" text-anchor="end">${labelText}</text>` : ''}
+            `;
+          }).join('')}
 
-        <path d="${areaD}" fill="url(#adminChartGlow)" />
-        <path d="${pathD}" fill="none" stroke="${data.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <!-- Dynamic Vertical Guideline for Hover -->
+          <line id="trend-guide-line" x1="0" y1="${padding.top}" x2="0" y2="${padding.top + chartH}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="3 3" style="display: none;" />
 
-        ${points.map(p => `
-          <g class="chart-point-group">
-            <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${data.color}" stroke="#0B0B0B" stroke-width="2" />
-            <text x="${p.x}" y="${height - 14}" fill="#9CA3AF" font-size="11" font-weight="600" text-anchor="middle">${p.label}</text>
-            <text x="${p.x}" y="${p.y - 10}" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">${data.prefix}${p.val}${data.suffix}</text>
-          </g>
-        `).join('')}
-      </svg>
+          <!-- Render Area Glows -->
+          ${seriesKeys.map(key => {
+            if (!seriesRenderData[key]) return '';
+            return `<path d="${seriesRenderData[key].areaD}" fill="url(#glow-${key})" />`;
+          }).join('')}
+
+          <!-- Render Lines -->
+          ${seriesKeys.map(key => {
+            if (!seriesRenderData[key]) return '';
+            const item = seriesRenderData[key];
+            return `
+              <path d="${item.pathD}" fill="none" stroke="${item.s.color}" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" />
+            `;
+          }).join('')}
+
+          <!-- Render Point Circles -->
+          ${seriesKeys.map(key => {
+            if (!seriesRenderData[key]) return '';
+            const item = seriesRenderData[key];
+            return item.pts.map((p, i) => `
+              <circle class="trend-pt trend-pt-${key}" data-series="${key}" data-idx="${i}" cx="${p.x}" cy="${p.y}" r="3.5" fill="${item.s.color}" stroke="#121217" stroke-width="2" style="transition: r 0.15s ease;" />
+            `).join('');
+          }).join('')}
+
+          <!-- X-Axis Month Labels -->
+          ${data.labels.map((lbl, i) => {
+            const x = padding.left + i * step;
+            return `
+              <text x="${x}" y="${height - 12}" fill="#9CA3AF" font-size="11" font-weight="700" text-anchor="middle">${lbl}</text>
+            `;
+          }).join('')}
+
+          <!-- Invisible Hover Column Hitboxes -->
+          ${data.labels.map((_, i) => {
+            const x = padding.left + i * step;
+            const colW = numPoints > 1 ? step : chartW;
+            const startX = numPoints > 1 ? x - step / 2 : padding.left;
+            return `
+              <rect class="trend-hitbox" data-idx="${i}" data-x="${x}" x="${startX}" y="${padding.top}" width="${colW}" height="${chartH}" fill="transparent" style="cursor: crosshair;" />
+            `;
+          }).join('')}
+        </svg>
+
+        <!-- Floating Interactive Tooltip -->
+        <div class="trends-tooltip" id="trends-tooltip" role="tooltip" aria-hidden="true"></div>
+      </div>
     `;
+
+    trendsStage.innerHTML = svgHtml;
+
+    // Attach hover listeners for interactive tooltip and guide line
+    const hitboxes = trendsStage.querySelectorAll('.trend-hitbox');
+    const guideLine = trendsStage.querySelector('#trend-guide-line');
+    const tooltip = trendsStage.querySelector('#trends-tooltip');
+    const pts = trendsStage.querySelectorAll('.trend-pt');
+
+    hitboxes.forEach(hb => {
+      hb.addEventListener('mouseenter', (e) => {
+        const idx = Number(e.currentTarget.getAttribute('data-idx'));
+        const guideX = Number(e.currentTarget.getAttribute('data-x'));
+
+        if (guideLine) {
+          guideLine.setAttribute('x1', guideX);
+          guideLine.setAttribute('x2', guideX);
+          guideLine.style.display = 'block';
+        }
+
+        pts.forEach(p => {
+          const pIdx = Number(p.getAttribute('data-idx'));
+          p.setAttribute('r', pIdx === idx ? '6' : '3.5');
+        });
+
+        if (tooltip) {
+          const monthTitle = data.full_labels[idx] || data.labels[idx];
+          let rowsHtml = `<div class="tooltip-title">${monthTitle}</div>`;
+
+          if (activeSeries.revenue && data.series.revenue) {
+            const rVal = Number(data.series.revenue.values[idx] || 0);
+            const rFormatted = rVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            rowsHtml += `
+              <div class="tooltip-row">
+                <span class="tooltip-label"><span class="legend-dot dot-revenue"></span> Revenue</span>
+                <span class="tooltip-val val-revenue">₹${rFormatted}</span>
+              </div>
+            `;
+          }
+
+          if (activeSeries.checkins && data.series.checkins) {
+            const cVal = Number(data.series.checkins.values[idx] || 0);
+            rowsHtml += `
+              <div class="tooltip-row">
+                <span class="tooltip-label"><span class="legend-dot dot-checkins"></span> Check-ins</span>
+                <span class="tooltip-val val-checkins">${cVal}</span>
+              </div>
+            `;
+          }
+
+          if (activeSeries.members && data.series.members) {
+            const mVal = Number(data.series.members.values[idx] || 0);
+            rowsHtml += `
+              <div class="tooltip-row">
+                <span class="tooltip-label"><span class="legend-dot dot-members"></span> Active Members</span>
+                <span class="tooltip-val val-members">${mVal}</span>
+              </div>
+            `;
+          }
+
+          tooltip.innerHTML = rowsHtml;
+          const pctLeft = (guideX / width) * 100;
+          tooltip.style.left = `${pctLeft}%`;
+          tooltip.style.top = `${padding.top + 32}px`;
+          tooltip.classList.add('visible');
+          tooltip.setAttribute('aria-hidden', 'false');
+        }
+      });
+    });
+
+    const svgContainer = trendsStage.querySelector('.trends-svg-container');
+    svgContainer?.addEventListener('mouseleave', () => {
+      if (guideLine) guideLine.style.display = 'none';
+      if (tooltip) {
+        tooltip.classList.remove('visible');
+        tooltip.setAttribute('aria-hidden', 'true');
+      }
+      pts.forEach(p => p.setAttribute('r', '3.5'));
+    });
   };
 
-  // Asynchronously fetch live chart datasets from database
-  const fetchLiveChartData = async () => {
+  const fetchTrendsData = async (range = 12) => {
     try {
-      const [revRes, attRes] = await Promise.all([
-        fetch('/api.php?action=chart_revenue').then(r => r.json()).catch(() => null),
-        fetch('/api.php?action=chart_attendance').then(r => r.json()).catch(() => null)
-      ]);
-
-      if (revRes && revRes.success && revRes.data) {
-        if (Array.isArray(revRes.data.labels) && revRes.data.labels.length > 0) {
-          adminChartData.revenue.labels = revRes.data.labels;
-        }
-        if (Array.isArray(revRes.data.values) && revRes.data.values.length > 0) {
-          adminChartData.revenue.values = revRes.data.values;
-        }
-        if (revRes.data.max) {
-          adminChartData.revenue.max = revRes.data.max;
-        }
+      currentRange = range;
+      const res = await fetch(`/api.php?action=chart_trends&range=${range}`).then(r => r.json());
+      if (res && res.success && res.data) {
+        currentTrendsData = res.data;
+        renderGymPerformanceTrends(currentTrendsData);
       }
-
-      if (attRes && attRes.success && attRes.data) {
-        if (Array.isArray(attRes.data.labels) && attRes.data.labels.length > 0) {
-          adminChartData.attendance.labels = attRes.data.labels;
-        }
-        if (Array.isArray(attRes.data.values) && attRes.data.values.length > 0) {
-          adminChartData.attendance.values = attRes.data.values;
-        }
-        if (attRes.data.max) {
-          adminChartData.attendance.max = attRes.data.max;
-        }
-      }
-
-      const activeBtn = document.querySelector('.switch-btn.active');
-      const activeView = activeBtn ? activeBtn.getAttribute('data-view') : 'revenue';
-      renderAdminSVGChart(activeView);
     } catch (e) {}
   };
 
-  switchBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      switchBtns.forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      e.currentTarget.classList.add('active');
-      e.currentTarget.setAttribute('aria-selected', 'true');
-      const view = e.currentTarget.getAttribute('data-view');
-      renderAdminSVGChart(view);
+  // Legend Toggles
+  legendChips.forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      const sKey = e.currentTarget.getAttribute('data-series');
+      if (!sKey) return;
+
+      activeSeries[sKey] = !activeSeries[sKey];
+
+      // Keep at least one active
+      if (!activeSeries.revenue && !activeSeries.checkins && !activeSeries.members) {
+        activeSeries[sKey] = true;
+        return;
+      }
+
+      e.currentTarget.classList.toggle('active', activeSeries[sKey]);
+      e.currentTarget.classList.toggle('inactive', !activeSeries[sKey]);
+      e.currentTarget.setAttribute('aria-pressed', activeSeries[sKey] ? 'true' : 'false');
+
+      if (currentTrendsData) {
+        renderGymPerformanceTrends(currentTrendsData);
+      }
     });
   });
 
+  // Range Selector Buttons (12M, 6M, 3M)
+  rangeBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const range = Number(e.currentTarget.getAttribute('data-range')) || 12;
+      rangeBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      e.currentTarget.classList.add('active');
+      e.currentTarget.setAttribute('aria-pressed', 'true');
+      fetchTrendsData(range);
+    });
+  });
+
+  if (trendsStage) {
+    fetchTrendsData(12);
+  }
+
+  // Backward compatibility for any remaining legacy chart container
+  const chartContainer = document.getElementById('admin-chart-svg');
   if (chartContainer) {
-    renderAdminSVGChart('revenue');
-    fetchLiveChartData();
+    fetch('/api.php?action=chart_revenue')
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.success && res.data && chartContainer) {
+          chartContainer.innerHTML = `<div style="padding:1rem;color:#888;">Updated to Gym Performance Trends.</div>`;
+        }
+      })
+      .catch(() => {});
   }
 
   // =========================================================================

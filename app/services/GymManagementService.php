@@ -123,9 +123,8 @@ class GymManagementService {
             ");
             $stmt->execute(['m' => $m, 'y' => $y]);
             $sum = (float) $stmt->fetchColumn();
-            // Convert to Lakhs for chart scale if values are large
-            $valInLakhs = ($sum > 0) ? round($sum / 100000, 2) : 0;
-            $values[] = ($valInLakhs > 0) ? $valInLakhs : round($sum, 2);
+            // Store authentic currency amounts (do not divide < 100,000 by 100,000)
+            $values[] = round($sum, 2);
         }
 
         $max = !empty($values) ? max(max($values) * 1.25, 1.0) : 1.0;
@@ -133,6 +132,150 @@ class GymManagementService {
             'labels' => $labels,
             'values' => $values,
             'max'    => $max
+        ];
+    }
+
+    /**
+     * Operational Trend Telemetry for Admin Dashboard (12M, 6M, 3M)
+     * Tracks three real database series: Revenue (payments), Check-ins (attendance), Active Members (subscriptions)
+     */
+    public function performanceTrends(int $months = 12): array {
+        if (!in_array($months, [3, 6, 12], true)) {
+            $months = 12;
+        }
+
+        $monthKeys = [];
+        $labels = [];
+        $fullLabels = [];
+
+        // Generate dynamic chronological month sequence ending with current month
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $time = strtotime("-$i months");
+            $ym = date('Y-m', $time);
+            $monthKeys[] = $ym;
+            $labels[] = date('M', $time);
+            $fullLabels[] = date('F Y', $time);
+        }
+
+        $rangeStart = $monthKeys[0] . '-01 00:00:00';
+        $rangeEnd = date('Y-m-t 23:59:59', strtotime($monthKeys[count($monthKeys) - 1] . '-01'));
+
+        // Check if any activity records exist across the entire database
+        $hasPayments = (int) $this->db->query("SELECT COUNT(*) FROM payments WHERE status = 'paid'")->fetchColumn() > 0;
+        $hasAttendance = (int) $this->db->query("SELECT COUNT(*) FROM attendance")->fetchColumn() > 0;
+        $hasSubscriptions = (int) $this->db->query("SELECT COUNT(*) FROM subscriptions WHERE status IN ('active', 'expired')")->fetchColumn() > 0;
+        $hasAnyData = ($hasPayments || $hasAttendance || $hasSubscriptions);
+
+        // 1. Grouped Revenue Query (Single SQL query)
+        $revStmt = $this->db->prepare("
+            SELECT 
+                DATE_FORMAT(payment_date, '%Y-%m') AS ym,
+                COALESCE(SUM(amount), 0) AS total_revenue
+            FROM payments
+            WHERE status = 'paid'
+              AND payment_date >= :rangeStart AND payment_date <= :rangeEnd
+            GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+        ");
+        $revStmt->execute(['rangeStart' => $rangeStart, 'rangeEnd' => $rangeEnd]);
+        $revMap = $revStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+
+        // 2. Grouped Check-ins Query (Single SQL query)
+        $attStmt = $this->db->prepare("
+            SELECT 
+                DATE_FORMAT(date, '%Y-%m') AS ym,
+                COUNT(*) AS total_checkins
+            FROM attendance
+            WHERE date >= :rangeStartDate AND date <= :rangeEndDate
+            GROUP BY DATE_FORMAT(date, '%Y-%m')
+        ");
+        $attStmt->execute([
+            'rangeStartDate' => substr($rangeStart, 0, 10),
+            'rangeEndDate'   => substr($rangeEnd, 0, 10)
+        ]);
+        $attMap = $attStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+
+        // 3. Active Subscriptions Overlapping Range Query (Single SQL query)
+        $subStmt = $this->db->prepare("
+            SELECT 
+                s.member_id,
+                s.start_date,
+                s.end_date
+            FROM subscriptions s
+            JOIN members m ON m.id = s.member_id
+            JOIN users u ON u.id = m.user_id
+            WHERE u.status = 'active'
+              AND s.status IN ('active', 'expired')
+              AND s.start_date <= :rangeEndDate
+              AND s.end_date >= :rangeStartDate
+        ");
+        $subStmt->execute([
+            'rangeStartDate' => substr($rangeStart, 0, 10),
+            'rangeEndDate'   => substr($rangeEnd, 0, 10)
+        ]);
+        $subs = $subStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        $revenueValues = [];
+        $checkinValues = [];
+        $memberValues = [];
+
+        foreach ($monthKeys as $ym) {
+            $mStart = $ym . '-01';
+            $mEnd = date('Y-m-t', strtotime($mStart));
+
+            // Real monthly revenue
+            $revenueValues[] = isset($revMap[$ym]) ? round((float)$revMap[$ym], 2) : 0.0;
+
+            // Real monthly check-ins
+            $checkinValues[] = isset($attMap[$ym]) ? (int)$attMap[$ym] : 0;
+
+            // Real monthly active members
+            $activeSet = [];
+            foreach ($subs as $sub) {
+                if ($sub['start_date'] <= $mEnd && $sub['end_date'] >= $mStart) {
+                    $activeSet[$sub['member_id']] = true;
+                }
+            }
+            $memberValues[] = count($activeSet);
+        }
+
+        $maxRev = !empty($revenueValues) ? max($revenueValues) : 0.0;
+        $maxAtt = !empty($checkinValues) ? max($checkinValues) : 0;
+        $maxMem = !empty($memberValues) ? max($memberValues) : 0;
+
+        return [
+            'range'        => $months,
+            'has_any_data' => $hasAnyData,
+            'labels'       => $labels,
+            'full_labels'  => $fullLabels,
+            'series'       => [
+                'revenue' => [
+                    'key'         => 'revenue',
+                    'label'       => 'Revenue',
+                    'color'       => '#E8FF00',
+                    'unit'        => '₹',
+                    'is_currency' => true,
+                    'values'      => $revenueValues,
+                    'max'         => $maxRev
+                ],
+                'checkins' => [
+                    'key'         => 'checkins',
+                    'label'       => 'Check-ins',
+                    'color'       => '#38BDF8',
+                    'unit'        => '',
+                    'is_currency' => false,
+                    'values'      => $checkinValues,
+                    'max'         => $maxAtt
+                ],
+                'members' => [
+                    'key'         => 'members',
+                    'label'       => 'Active Members',
+                    'color'       => '#34D399',
+                    'unit'        => '',
+                    'is_currency' => false,
+                    'values'      => $memberValues,
+                    'max'         => $maxMem
+                ]
+            ]
         ];
     }
 

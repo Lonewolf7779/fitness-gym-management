@@ -289,21 +289,45 @@ $overview = $svc->adminOverviewStats();
           </div>
         </section>
 
-        <!-- 5. FINANCIAL & ATHLETE PERFORMANCE SECTION (CHART) -->
-        <section class="admin-chart-card" aria-label="Financial and Attendance Performance">
-          <div class="chart-header-row">
-            <div class="chart-title-group">
-              <h2>FINANCIAL & ATHLETE PERFORMANCE OVERVIEW</h2>
-              <p>Monthly revenue distribution & weekly check-in trends</p>
+        <!-- 5. GYM PERFORMANCE TRENDS (THREE-SERIES OPERATIONAL CHART) -->
+        <section class="admin-trends-card" aria-label="Gym Performance Trends">
+          <div class="trends-header-row">
+            <div class="trends-title-group">
+              <div class="trends-title-badge-wrap">
+                <h2 class="trends-title">GYM PERFORMANCE TRENDS</h2>
+                <span class="trends-badge">Live Operational Telemetry</span>
+              </div>
+              <p class="trends-subtitle">Revenue, attendance & active membership activity</p>
             </div>
-            <div class="chart-tabs" role="tablist">
-              <button class="chart-tab-btn switch-btn active" data-view="revenue" role="tab" aria-selected="true">REVENUE</button>
-              <button class="chart-tab-btn switch-btn" data-view="attendance" role="tab" aria-selected="false">CHECK-INS</button>
+
+            <div class="trends-controls">
+              <!-- Interactive Series Legend -->
+              <div class="trends-legend" role="toolbar" aria-label="Toggle trend series">
+                <button type="button" class="legend-chip active" data-series="revenue" aria-pressed="true" title="Toggle Revenue series">
+                  <span class="legend-dot dot-revenue"></span>
+                  <span class="legend-text">Revenue</span>
+                </button>
+                <button type="button" class="legend-chip active" data-series="checkins" aria-pressed="true" title="Toggle Check-ins series">
+                  <span class="legend-dot dot-checkins"></span>
+                  <span class="legend-text">Check-ins</span>
+                </button>
+                <button type="button" class="legend-chip active" data-series="members" aria-pressed="true" title="Toggle Active Members series">
+                  <span class="legend-dot dot-members"></span>
+                  <span class="legend-text">Active Members</span>
+                </button>
+              </div>
+
+              <!-- Time Range Selector -->
+              <div class="trends-range-selector" role="group" aria-label="Select trend period">
+                <button type="button" class="range-btn active" data-range="12" aria-pressed="true">12M</button>
+                <button type="button" class="range-btn" data-range="6" aria-pressed="false">6M</button>
+                <button type="button" class="range-btn" data-range="3" aria-pressed="false">3M</button>
+              </div>
             </div>
           </div>
 
-          <!-- SVG Visual Render Box -->
-          <div class="admin-chart-stage svg-chart-wrapper" id="admin-chart-svg">
+          <!-- Dynamic SVG Trend Visualization Stage -->
+          <div class="trends-chart-stage" id="admin-trends-stage" aria-live="polite">
             <!-- Rendered dynamically by dashboard.js using live API data -->
           </div>
         </section>

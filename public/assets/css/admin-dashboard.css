@@ -14,6 +14,9 @@
   --admin-accent: #E8FF00;
   --admin-accent-rgb: 232, 255, 0;
   --admin-accent-glow: rgba(232, 255, 0, 0.12);
+  --trend-revenue: #E8FF00;
+  --trend-checkins: #38BDF8;
+  --trend-members: #34D399;
   --admin-text-main: #FFFFFF;
   --admin-text-muted: #9CA3AF;
   --admin-text-dim: #6B7280;
@@ -582,29 +585,49 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. FINANCIAL & ATHLETE PERFORMANCE SECTION & CHART
+   6. GYM PERFORMANCE TRENDS (THREE-SERIES OPERATIONAL CHART)
    -------------------------------------------------------------------------- */
+.admin-trends-card,
 .admin-chart-card {
   background: linear-gradient(180deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
-  padding: 1.5rem 1.75rem;
+  padding: 1.35rem 1.65rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
+  position: relative;
+  overflow: hidden;
 }
 
+.trends-header-row,
 .chart-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-wrap: wrap;
 }
 
+.trends-title-group,
+.chart-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.trends-title-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.trends-title,
 .chart-title-group h2 {
   font-size: 1.05rem;
   font-weight: 900;
@@ -612,26 +635,122 @@
   text-transform: uppercase;
   color: #FFFFFF;
   margin: 0;
+  line-height: 1.2;
 }
 
+.trends-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(232, 255, 0, 0.1);
+  color: var(--admin-accent);
+  border: 1px solid rgba(232, 255, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+}
+
+.trends-subtitle,
 .chart-title-group p {
   font-size: 0.775rem;
   color: var(--admin-text-muted);
-  margin: 0.2rem 0 0;
+  margin: 0;
+  line-height: 1.35;
 }
 
+.trends-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  flex-wrap: wrap;
+}
+
+/* Interactive Series Legend */
+.trends-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.725rem;
+  font-weight: 700;
+  background: transparent;
+  color: #D1D5DB;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--admin-transition);
+  user-select: none;
+}
+
+.legend-chip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+.legend-chip.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.legend-chip.inactive {
+  opacity: 0.35;
+  text-decoration: line-through;
+  background: transparent;
+  border-color: transparent;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.legend-dot.dot-revenue {
+  background: var(--trend-revenue);
+  box-shadow: 0 0 6px rgba(232, 255, 0, 0.6);
+}
+
+.legend-dot.dot-checkins {
+  background: var(--trend-checkins);
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+}
+
+.legend-dot.dot-members {
+  background: var(--trend-members);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+}
+
+/* Time Range Selector */
+.trends-range-selector,
 .chart-tabs {
   display: inline-flex;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--admin-radius-sm);
-  padding: 0.25rem;
-  gap: 0.25rem;
+  padding: 0.2rem;
+  gap: 0.2rem;
 }
 
+.range-btn,
 .chart-tab-btn {
-  padding: 0.45rem 1rem;
-  font-size: 0.75rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.725rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   border-radius: 6px;
@@ -642,18 +761,23 @@
   transition: var(--admin-transition);
 }
 
+.range-btn:hover,
 .chart-tab-btn:hover {
   color: #FFFFFF;
 }
 
+.range-btn.active,
 .chart-tab-btn.active {
   background: var(--admin-accent);
   color: #000000;
   box-shadow: 0 2px 8px var(--admin-accent-glow);
 }
 
+/* Trends Chart Stage */
+.trends-chart-stage,
 .admin-chart-stage {
-  min-height: 220px;
+  min-height: 240px;
+  max-height: 270px;
   width: 100%;
   position: relative;
   display: flex;
@@ -661,21 +785,91 @@
   justify-content: center;
 }
 
-/* Polished Chart Empty State */
+/* Responsive SVG Chart Container */
+.trends-svg-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Interactive Floating Tooltip */
+.trends-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  background: rgba(14, 14, 20, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  min-width: 170px;
+  backdrop-filter: blur(8px);
+}
+
+.trends-tooltip.visible {
+  opacity: 1;
+}
+
+.trends-tooltip .tooltip-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.15rem;
+}
+
+.trends-tooltip .tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.725rem;
+}
+
+.trends-tooltip .tooltip-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #9CA3AF;
+  font-weight: 600;
+}
+
+.trends-tooltip .tooltip-val {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.trends-tooltip .tooltip-val.val-revenue { color: var(--trend-revenue); }
+.trends-tooltip .tooltip-val.val-checkins { color: var(--trend-checkins); }
+.trends-tooltip .tooltip-val.val-members { color: var(--trend-members); }
+
+/* Polished Trends Empty State */
+.trends-empty-state,
 .chart-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2.5rem 1.5rem;
-  gap: 0.65rem;
+  padding: 2.25rem 1.5rem;
+  gap: 0.55rem;
   width: 100%;
 }
 
+.trends-empty-icon,
 .chart-empty-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -683,19 +877,21 @@
   align-items: center;
   justify-content: center;
   color: var(--admin-text-dim);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
+.trends-empty-state h4,
 .chart-empty-state h4 {
-  font-size: 0.95rem;
+  font-size: 0.925rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: #FFFFFF;
   margin: 0;
 }
 
+.trends-empty-state p,
 .chart-empty-state p {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--admin-text-muted);
   margin: 0;
   max-width: 380px;
@@ -1095,17 +1291,39 @@
     justify-content: center;
   }
 
+  .trends-header-row,
   .chart-header-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
 
+  .trends-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .trends-legend {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .legend-chip {
+    flex: 1;
+    justify-content: center;
+    padding: 0.35rem 0.4rem;
+    font-size: 0.68rem;
+  }
+
+  .trends-range-selector,
   .chart-tabs {
     width: 100%;
     display: flex;
   }
 
+  .range-btn,
   .chart-tab-btn {
     flex: 1;
     text-align: center;
