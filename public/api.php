@@ -296,7 +296,13 @@ try {
 
         case 'check_out':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
-            $svc->checkOut((int) $_POST['attendance_id']);
+            $attendanceId = (int) ($_POST['attendance_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForAttendance($userId, $attendanceId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to check out this attendance record.']);
+                exit;
+            }
+            $svc->checkOut($attendanceId);
             $id = (int) $_POST['attendance_id'];
             break;
 
@@ -366,6 +372,12 @@ try {
 
         case 'add_workout_exercise':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
+            $planId = (int) ($_POST['plan_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForWorkout($userId, $planId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to modify this workout program.']);
+                exit;
+            }
             $id = $svc->addWorkoutExercise($_POST);
             break;
 
@@ -436,7 +448,13 @@ try {
 
         case 'delete_attendance':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
-            $svc->deleteAttendance((int) $_POST['id']);
+            $attendanceId = (int) ($_POST['id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isTrainerAuthorizedForAttendance($userId, $attendanceId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to delete this attendance record.']);
+                exit;
+            }
+            $svc->deleteAttendance($attendanceId);
             $id = (int) $_POST['id'];
             break;
 
