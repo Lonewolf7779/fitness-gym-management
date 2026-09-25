@@ -242,143 +242,50 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
 <!-- ==========================================================================
      DASHBOARD PREVIEW SECTION
      ========================================================================== -->
-<section class="dashboard-preview-section">
+<section class="quotes-section" id="motivation">
   <div class="container">
-    <div class="section-header reveal text-center" style="margin-bottom: 2.5rem;">
-      <span class="section-tag">LIVE PLATFORM PREVIEW</span>
-      <h2 class="section-title">CONTROL AT YOUR FINGERTIPS</h2>
-    </div>
-
-    <div class="preview-container reveal">
-      <div class="preview-top-bar">
-        <div class="preview-title-wrap">
-          <h3>IRONCORE CENTRAL COMMAND</h3>
-          <p>Real-Time Operations & Metric Monitoring</p>
-        </div>
-        <div class="chart-tab-group">
-          <button class="chart-tab active" data-view="attendance">ATTENDANCE</button>
-          <button class="chart-tab" data-view="revenue">REVENUE</button>
-        </div>
-      </div>
-
-      <div class="metrics-row">
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-label">Active Members</span>
-            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          </div>
-          <div class="metric-value" data-counter data-target="<?= $publicStats['active_members'] ?>">0</div>
-          <div class="metric-trend">Live database count</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-label">Trainers</span>
-            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
-          </div>
-          <div class="metric-value" data-counter data-target="<?= $publicStats['trainer_count'] ?>">0</div>
-          <div class="metric-trend" style="color: var(--color-accent);">Active trainers</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-label">Monthly Revenue</span>
-            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <div class="metric-value">₹<?= e($publicStats['monthly_revenue']) ?></div>
-          <div class="metric-trend">Current month</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-label">Today's Check-ins</span>
-            <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          </div>
-          <div class="metric-value" data-counter data-target="<?= $publicStats['today_attendance'] ?>">0</div>
-          <div class="metric-trend">Today</div>
-        </div>
-      </div>
-
-      <!-- Interactive Dynamic SVG Chart Render Container -->
-      <div class="preview-chart-box" id="preview-chart-svg">
-        <!-- SVG Injected dynamically via landing.js -->
-      </div>
-
-      <div class="preview-caption">"A COMPLETE VIEW OF YOUR GYM OPERATIONAL HEALTH"</div>
+    <div class="quotes-shell reveal">
+      <div class="quotes-eyebrow">IRONCORE MINDSET</div>
+      <div class="quotes-mark" aria-hidden="true">“</div>
+      <blockquote class="quote-display" id="quote-display">Discipline is built one decision at a time.</blockquote>
+      <div class="quote-author" id="quote-author">IRONCORE</div>
+      <div class="quote-progress" aria-hidden="true"><span id="quote-progress-bar"></span></div>
     </div>
   </div>
 </section>
 
-<!-- ==========================================================================
-     MEMBERSHIP / PRICING SECTION
-     ========================================================================== -->
 <section class="pricing-section" id="membership">
   <div class="container">
-    <div class="section-header reveal text-center" style="text-align: center;">
-      <span class="section-tag">PRICING TIERS</span>
-      <h2 class="section-title">CHOOSE YOUR MEMBERSHIP PLAN</h2>
+    <div class="section-header reveal text-center" style="text-align:center;">
+      <span class="section-tag">MEMBERSHIP</span>
+      <h2 class="section-title">PLANS CREATED BY YOUR GYM</h2>
     </div>
-
-    <div class="pricing-grid">
-      <!-- Starter Plan -->
-      <div class="pricing-card reveal">
-        <h3 class="plan-title">STARTER</h3>
-        <p class="plan-tag">Essential Facility Access</p>
-        <div class="plan-price-wrap">
-          <span class="plan-price">₹999</span>
-          <span class="plan-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Full Gym Floor Access</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Digital Attendance Tracking</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Member Dashboard</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Standard Locker Access</li>
-        </ul>
-        <a href="/register.php?plan=starter" class="btn btn-secondary btn-block">CHOOSE PLAN</a>
+    <?php if (empty($publicPlans)): ?>
+      <div class="empty-public-data reveal">
+        <strong>No membership plans published yet.</strong>
+        <span>An administrator can create plans from the Memberships module. Published plans will appear here automatically.</span>
+        <a href="/login.php" class="btn btn-secondary">ADMIN SIGN IN</a>
       </div>
-
-      <!-- Pro Plan (Recommended) -->
-      <div class="pricing-card recommended reveal">
-        <div class="recommended-badge">RECOMMENDED</div>
-        <h3 class="plan-title">PRO</h3>
-        <p class="plan-tag">For Dedicated Athletes</p>
-        <div class="plan-price-wrap">
-          <span class="plan-price" style="color: var(--color-accent);">₹1,999</span>
-          <span class="plan-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Everything in Starter</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Personalized Workout Plans</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Trainer Assistance & Support</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Body Progress & Metrics Tracking</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Group Fitness Sessions</li>
-        </ul>
-        <a href="/register.php?plan=pro" class="btn btn-primary btn-block">CHOOSE PLAN</a>
+    <?php else: ?>
+      <div class="pricing-grid">
+        <?php foreach ($publicPlans as $plan): ?>
+          <article class="pricing-card reveal <?= !empty($plan['is_recommended']) ? 'recommended' : '' ?>">
+            <?php if (!empty($plan['is_recommended'])): ?><div class="recommended-badge">RECOMMENDED</div><?php endif; ?>
+            <h3 class="plan-title"><?= e(strtoupper($plan['title'])) ?></h3>
+            <?php if (!empty($plan['tag'])): ?><p class="plan-tag"><?= e($plan['tag']) ?></p><?php endif; ?>
+            <div class="plan-price-wrap">
+              <span class="plan-price">₹<?= number_format((float)$plan['price'], 0) ?></span>
+              <span class="plan-period">/ <?= e($plan['billing_cycle']) ?></span>
+            </div>
+            <?php if (!empty($plan['description'])): ?><p class="plan-tag"><?= e($plan['description']) ?></p><?php endif; ?>
+            <a href="/register.php?plan=<?= (int)$plan['id'] ?>" class="btn btn-primary btn-block">CHOOSE PLAN</a>
+          </article>
+        <?php endforeach; ?>
       </div>
-
-      <!-- Elite Plan -->
-      <div class="pricing-card reveal">
-        <h3 class="plan-title">ELITE</h3>
-        <p class="plan-tag">All-Inclusive VIP Experience</p>
-        <div class="plan-price-wrap">
-          <span class="plan-price">₹2,999</span>
-          <span class="plan-period">/ month</span>
-        </div>
-        <ul class="plan-features">
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Everything in Pro</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dedicated 1-on-1 Personal Trainer</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Custom Nutrition & Meal Specs</li>
-          <li class="included"><svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Priority Locker & Recovery Lounge</li>
-        </ul>
-        <a href="/register.php?plan=elite" class="btn btn-secondary btn-block">CHOOSE PLAN</a>
-      </div>
-    </div>
+    <?php endif; ?>
   </div>
 </section>
 
-<!-- ==========================================================================
-     FINAL CTA SECTION
-     ========================================================================== -->
 <section class="cta-section">
   <div class="container">
     <div class="cta-box reveal">
