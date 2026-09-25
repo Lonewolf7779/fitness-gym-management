@@ -1339,6 +1339,27 @@ class GymManagementService {
         return (bool) $stmt->fetchColumn();
     }
 
+    public function isTrainerAuthorizedForAttendance(int $trainerUserId, int $attendanceId): bool {
+        $trainer = $this->getTrainerByUserId($trainerUserId);
+        if (!$trainer) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT 1
+            FROM attendance a
+            INNER JOIN members m ON m.id = a.member_id
+            WHERE a.id = :aid
+              AND m.assigned_trainer_id = :tid
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'aid' => $attendanceId,
+            'tid' => (int) $trainer['id']
+        ]);
+        return (bool) $stmt->fetchColumn();
+    }
+
     public function isTrainerAuthorizedForWorkout(int $trainerUserId, int $workoutId): bool {
         $trainer = $this->getTrainerByUserId($trainerUserId);
         if (!$trainer) {
