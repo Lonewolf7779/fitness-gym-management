@@ -372,14 +372,14 @@ $csrf = generateCsrfToken();
         
         <!-- Athlete Hero -->
         <div class="profile-modal-hero">
-          <div class="profile-hero-avatar" id="modal-avatar">AR</div>
+          <div class="profile-hero-avatar" id="modal-avatar">--</div>
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.25rem;">
               <h2 id="modal-name" style="font-size: 1.25rem; font-weight: 800; color: #FFF; margin: 0;">No member selected</h2>
-              <span id="modal-status-pill" class="status-pill active"><span class="status-dot-sm"></span> Active</span>
+              <span id="modal-status-pill" class="status-pill"><span class="status-dot-sm"></span> —</span>
             </div>
-            <div id="modal-email" style="font-size: 0.825rem; color: #9CA3AF; margin-bottom: 0.2rem;">Not available</div>
-            <div id="modal-phone" style="font-size: 0.825rem; color: #38BDF8; font-family: monospace;">Not available</div>
+            <div id="modal-email" style="font-size: 0.825rem; color: #9CA3AF; margin-bottom: 0.2rem;">—</div>
+            <div id="modal-phone" style="font-size: 0.825rem; color: #38BDF8; font-family: monospace;">—</div>
           </div>
         </div>
 
@@ -387,15 +387,15 @@ $csrf = generateCsrfToken();
         <div class="profile-stat-strip">
           <div class="profile-strip-card">
             <div class="strip-lbl">Active Plan</div>
-            <div class="strip-val" id="modal-plan" style="color: #FF4D4D; font-size: 0.95rem;">Not assigned</div>
+            <div class="strip-val" id="modal-plan" style="color: #FF4D4D; font-size: 0.95rem;">Not specified</div>
           </div>
           <div class="profile-strip-card">
             <div class="strip-lbl">Days Left</div>
-            <div class="strip-val" id="modal-days-left" style="color: #34D399;">Not available</div>
+            <div class="strip-val" id="modal-days-left" style="color: #34D399;">—</div>
           </div>
           <div class="profile-strip-card">
             <div class="strip-lbl">Total Check-ins</div>
-            <div class="strip-val" id="modal-checkins" style="color: #38BDF8;">0 Visits</div>
+            <div class="strip-val" id="modal-checkins" style="color: #38BDF8;">—</div>
           </div>
         </div>
 
@@ -411,15 +411,15 @@ $csrf = generateCsrfToken();
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Member Since</span>
-            <div id="modal-joined" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not available</div>
+            <div id="modal-joined" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">—</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Plan Expiry Date</span>
-            <div id="modal-expiry" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not available</div>
+            <div id="modal-expiry" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">—</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Last Check-In</span>
-            <div id="modal-last-checkin" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Never</div>
+            <div id="modal-last-checkin" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">—</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Emergency Contact</span>
@@ -455,17 +455,17 @@ $csrf = generateCsrfToken();
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div>
               <label class="form-label">First Name *</label>
-              <input type="text" id="add-first-name" name="first_name" class="form-control" required placeholder="Alex">
+              <input type="text" id="add-first-name" name="first_name" class="form-control" required placeholder="First Name">
             </div>
             <div>
               <label class="form-label">Last Name *</label>
-              <input type="text" id="add-last-name" name="last_name" class="form-control" required placeholder="Rivera">
+              <input type="text" id="add-last-name" name="last_name" class="form-control" required placeholder="Last Name">
             </div>
           </div>
 
           <div style="margin-top: 1rem;">
             <label class="form-label">Email Address *</label>
-            <input type="email" id="add-email" name="email" class="form-control" required placeholder="alex@gmail.com">
+            <input type="email" id="add-email" name="email" class="form-control" required placeholder="member@example.com">
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">

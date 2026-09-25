@@ -470,15 +470,29 @@ class GymManagementService {
 
         $fullName = trim($d['full_name'] ?? $user['full_name']);
         $email = trim($d['email'] ?? $user['email']);
+        $username = trim($d['username'] ?? $user['username'] ?? '');
 
         if (empty($fullName) || empty($email)) {
             throw new InvalidArgumentException('Name and email cannot be empty.');
         }
 
+        if (!empty($username) && $username !== ($user['username'] ?? '')) {
+            if (!preg_match('/^[a-zA-Z0-9_.-]{3,30}$/', $username)) {
+                throw new InvalidArgumentException('Username must be 3-30 characters (alphanumeric, dots, underscores, dashes).');
+            }
+            $check = $this->db->prepare("SELECT id FROM users WHERE username = :u AND id != :id");
+            $check->execute(['u' => $username, 'id' => $userId]);
+            if ($check->fetchColumn()) {
+                throw new RuntimeException("Username '{$username}' is already taken.");
+            }
+        } else {
+            $username = $user['username'] ?? null;
+        }
+
         $this->db->beginTransaction();
         try {
-            $stmt = $this->db->prepare("UPDATE users SET full_name = :name, email = :email WHERE id = :id");
-            $stmt->execute(['name' => $fullName, 'email' => $email, 'id' => $userId]);
+            $stmt = $this->db->prepare("UPDATE users SET full_name = :name, email = :email, username = :username WHERE id = :id");
+            $stmt->execute(['name' => $fullName, 'email' => $email, 'username' => $username, 'id' => $userId]);
 
             if ($user['role'] === 'trainer') {
                 $spec = $d['specialization'] ?? $d['specialty'] ?? null;
@@ -497,13 +511,16 @@ class GymManagementService {
             } elseif ($user['role'] === 'member') {
                 $stmt = $this->db->prepare("
                     UPDATE members 
-                    SET phone = :phone, address = :address, emergency_contact = :emergency 
+                    SET phone = :phone, address = :address, emergency_contact = :emergency,
+                        gender = COALESCE(:gender, gender), dob = COALESCE(:dob, dob)
                     WHERE user_id = :uid
                 ");
                 $stmt->execute([
                     'phone'     => $d['phone'] ?? null,
                     'address'   => $d['address'] ?? null,
                     'emergency' => $d['emergency_contact'] ?? null,
+                    'gender'    => !empty($d['gender']) ? $d['gender'] : null,
+                    'dob'       => !empty($d['dob']) ? $d['dob'] : null,
                     'uid'       => $userId
                 ]);
             }

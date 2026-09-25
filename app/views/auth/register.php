@@ -58,7 +58,7 @@ $selectedPlan = trim($_GET['plan'] ?? '');
 
       <div class="form-group">
         <label for="phone" class="form-label">Phone Number</label>
-        <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 9876543210">
+        <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. +91 98765 43210">
       </div>
 
       <div class="form-group">

@@ -430,6 +430,7 @@ try {
             $svc->updateUserProfile($userId, $_POST);
             if (!empty($_POST['full_name'])) $_SESSION['full_name'] = trim($_POST['full_name']);
             if (!empty($_POST['email'])) $_SESSION['email'] = trim($_POST['email']);
+            if (!empty($_POST['username'])) $_SESSION['username'] = trim($_POST['username']);
             $id = $userId;
             break;
 
@@ -517,6 +518,15 @@ try {
     echo json_encode(['success' => true, 'id' => $id, 'message' => 'Operation completed successfully.']);
 
 } catch (Throwable $e) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    if (defined('STORAGE_PATH')) {
+        error_log("[" . date('Y-m-d H:i:s') . "] API Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine() . "\n", 3, STORAGE_PATH . '/logs/app.log');
+    }
+    $status = 400;
+    $msg = $e->getMessage();
+    if (!APP_DEBUG && ($e instanceof PDOException || strpos($msg, 'SQLSTATE') !== false)) {
+        $msg = 'A database error occurred. Please contact system administrator.';
+        $status = 500;
+    }
+    http_response_code($status);
+    echo json_encode(['success' => false, 'message' => $msg]);
 }

@@ -152,7 +152,7 @@ $csrf = generateCsrfToken();
               foreach ($parts as $p) { if (!empty($p)) $initials .= strtoupper($p[0]); }
               $initials = substr($initials ?: 'MB', 0, 2);
               $coachName = !empty($w['trainer_name']) ? $w['trainer_name'] : 'Not assigned';
-              $goal = !empty($w['goal']) ? $w['goal'] : 'General athletic power & conditioning.';
+              $goal = !empty($w['goal']) ? $w['goal'] : 'Not specified';
               $startFmt = !empty($w['start_date']) ? date('M d, Y', strtotime($w['start_date'])) : 'Immediate';
               $endFmt = !empty($w['end_date']) ? date('M d, Y', strtotime($w['end_date'])) : 'Continuous';
             ?>

@@ -1,7 +1,9 @@
-# IRONCORE Gym Management System - Comprehensive Final Acceptance Test Suite
-# Tests All Roles, Portals, All Routes, APIs, Role Security, Cross-Ownership Boundaries,
-# Data Integrity, Username & Email Authentication, Member Registration, and Dynamic Reset
+# IRONCORE Gym Management System - Comprehensive Final Acceptance & Security Test Suite
+# Portable, repeatable verification of Portals, Routes, APIs, Role Boundaries,
+# Trainer Ownership Isolation, Member Isolation, CSRF, Data Integrity, and Baseline Reset.
 
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$phpBin = if (Get-Command "php" -ErrorAction SilentlyContinue) { "php" } elseif (Test-Path "$env:SystemDrive\xampp\php\php.exe") { "$env:SystemDrive\xampp\php\php.exe" } else { "php" }
 $baseUrl = "http://localhost:8000"
 $script:errors = @()
 
@@ -17,6 +19,11 @@ function Assert-Condition($condition, $testName) {
         $script:errors += $testName
     }
 }
+
+# Initial Baseline Reset to Guarantee Deterministic State
+Write-Host "`n--- Initializing Baseline Database ---" -ForegroundColor Yellow
+& $phpBin "$projectRoot/tests/reset_database.php"
+Assert-Condition ($LASTEXITCODE -eq 0) "Pre-test database reset succeeded"
 
 # =========================================================================
 # 1. Public Frontend Pages
@@ -72,8 +79,8 @@ Write-Host "`n--- 3. Testing Dual-Identity Authentication (Username & Email) ---
 $identities = @(
     @{ identity = "admin"; password = "Admin@123"; role = "admin"; name = "Admin by Username" },
     @{ identity = "admin@ironcore.com"; password = "Admin@123"; role = "admin"; name = "Admin by Email" },
-    @{ identity = "marcus.vance"; password = "Trainer@123"; role = "trainer"; name = "Trainer by Username" },
-    @{ identity = "marcus@ironcore.com"; password = "Trainer@123"; role = "trainer"; name = "Trainer by Email" },
+    @{ identity = "neeraj.demo"; password = "Trainer@123"; role = "trainer"; name = "Trainer by Username" },
+    @{ identity = "neeraj.demo@ironcore.com"; password = "Trainer@123"; role = "trainer"; name = "Trainer by Email" },
     @{ identity = "alex.rivera"; password = "Member@123"; role = "member"; name = "Member by Username" },
     @{ identity = "alex@gmail.com"; password = "Member@123"; role = "member"; name = "Member by Email" }
 )
@@ -171,7 +178,7 @@ try {
     $tLoginCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
 
     $tLoginBody = @{
-        identity = "marcus@ironcore.com"
+        identity = "neeraj.demo@ironcore.com"
         password = "Trainer@123"
         csrf_token = $tLoginCsrf
     }
@@ -195,21 +202,21 @@ try {
     $csrfMatch = [regex]::Match($trainerProfilePage.Content, 'name="csrf_token"\s+value="([^"]+)"')
     $trainerCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
 
-    # Trainer Assign Workout Routine for Assigned Athlete (Member 1 = Alex Rivera, assigned to Marcus)
+    # Trainer Assign Workout Routine for Assigned Athlete (Member 1 = Alex Rivera, assigned to Neeraj)
     $workoutBody = @{
         csrf_token = $trainerCsrf
         member_id = "1"
-        title = "Marcus Hypertrophy Protocol"
-        goal = "Hypertrophy"
+        title = "Athletic Conditioning Protocol"
+        goal = "Power & Agility"
         difficulty = "Intermediate"
-        description = "4-week progressive overload protocol"
+        description = "4-week progressive athletic conditioning protocol"
     }
     $woAssignRes = Invoke-WebRequest -Uri "$baseUrl/api.php?action=create_workout_plan" -Method Post -Body $workoutBody -WebSession $trainerSession -UseBasicParsing
     $woAssignJson = $woAssignRes.Content | ConvertFrom-Json
-    $marcusPlanId = $woAssignJson.id
-    Assert-Condition ($woAssignJson.success -eq $true -and $marcusPlanId -gt 0) "POST /api.php?action=create_workout_plan assigns workout to assigned athlete"
+    $trainerPlanId = $woAssignJson.id
+    Assert-Condition ($woAssignJson.success -eq $true -and $trainerPlanId -gt 0) "POST /api.php?action=create_workout_plan assigns workout to assigned athlete"
 
-    # Admin creates a second trainer and an unassigned member
+    # Admin creates an unassigned member for cross-trainer testing
     $membersPage = Invoke-WebRequest -Uri "$baseUrl/admin/members.php" -WebSession $adminSession -UseBasicParsing
     $csrfMatch = [regex]::Match($membersPage.Content, 'name="csrf_token"\s+value="([^"]+)"')
     $adminCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
@@ -230,7 +237,7 @@ try {
     $unassignedMemberId = $unassignedJson.id
 
     # CROSS-TRAINER SECURITY TEST:
-    # Marcus attempts to assign workout to Unassigned Athlete (should be 403 Forbidden!)
+    # Trainer attempts to assign workout to Unassigned Athlete (should be 403 Forbidden!)
     $crossWorkoutBody = @{
         csrf_token = $trainerCsrf
         member_id = "$unassignedMemberId"
@@ -299,66 +306,218 @@ try {
     # Member Log Progress
     $progressBody = @{
         csrf_token = $memberCsrf
-        log_date = (Get-Date).ToString("yyyy-MM-dd")
-        weight_kg = "78.2"
-        body_fat_pct = "14.0"
-        chest_cm = "104.5"
+        weight_kg = "79.2"
+        body_fat_pct = "17.8"
+        chest_cm = "104.0"
         waist_cm = "81.5"
-        arms_cm = "38.5"
-        notes = "Acceptance test verified biometric checkpoint"
+        biceps_cm = "36.5"
+        notes = "Acceptance test automated progress tracking entry."
     }
     $progressRes = Invoke-WebRequest -Uri "$baseUrl/api.php?action=member_add_progress" -Method Post -Body $progressBody -WebSession $memberSession -UseBasicParsing
     $progressJson = $progressRes.Content | ConvertFrom-Json
     Assert-Condition ($progressJson.success -eq $true -and $progressJson.id -gt 0) "POST /api.php?action=member_add_progress logs body metrics"
 } catch {
-    Assert-Condition $false "Member portal tests failed: $_"
+    Assert-Condition $false "Member self-service failed: $_"
 }
 
 # =========================================================================
-# 7. Role Security & Boundary Guards
+# 7. Comprehensive Security & Boundary Audit (Phase 20)
 # =========================================================================
-Write-Host "`n--- 7. Testing Strict Role Security & Route Protection ---" -ForegroundColor Yellow
-try {
-    # 1. Member blocked from Admin dashboard
-    $memberAccessAdmin = Invoke-WebRequest -Uri "$baseUrl/admin/index.php" -WebSession $memberSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    Assert-Condition ($memberAccessAdmin.StatusCode -eq 302 -or $memberAccessAdmin.Headers.Location -like "*/index.php*") "Member blocked from /admin/index.php via redirect"
+Write-Host "`n--- 7. Testing Comprehensive Security, CSRF & Role Boundaries (Phase 20) ---" -ForegroundColor Yellow
 
-    # 2. Member blocked from Trainer dashboard
-    $memberAccessTrainer = Invoke-WebRequest -Uri "$baseUrl/trainer/index.php" -WebSession $memberSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    Assert-Condition ($memberAccessTrainer.StatusCode -eq 302 -or $memberAccessTrainer.Headers.Location -like "*/index.php*") "Member blocked from /trainer/index.php via redirect"
-
-    # 3. Trainer blocked from Admin dashboard
-    $trainerAccessAdmin = Invoke-WebRequest -Uri "$baseUrl/admin/index.php" -WebSession $trainerSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    Assert-Condition ($trainerAccessAdmin.StatusCode -eq 302 -or $trainerAccessAdmin.Headers.Location -like "*/index.php*") "Trainer blocked from /admin/index.php via redirect"
-
-    # 4. Member API call to admin action returns 403 Forbidden
-    $memberApiCall = $null
+# Helper to catch HTTP error responses and return status code
+function Invoke-ApiExpectStatus($uri, $body, $session, $method = "Post") {
     try {
-        $memberApiCall = Invoke-WebRequest -Uri "$baseUrl/api.php?action=dashboard_stats" -WebSession $memberSession -UseBasicParsing
+        if ($method -eq "Post") {
+            $r = Invoke-WebRequest -Uri $uri -Method Post -Body $body -WebSession $session -UseBasicParsing
+        } else {
+            $r = Invoke-WebRequest -Uri $uri -Method Get -WebSession $session -UseBasicParsing
+        }
+        return [int]$r.StatusCode
     } catch {
-        $memberApiCall = $_.Exception.Response
+        if ($_.Exception.Response) {
+            return [int]$_.Exception.Response.StatusCode
+        }
+        return 500
     }
-    $code = if ($memberApiCall -ne $null) { [int]$memberApiCall.StatusCode } else { 0 }
-    Assert-Condition ($code -eq 403) "Member API call to admin action returns 403 Forbidden (Got: $code)"
+}
 
-    # 5. Unauthenticated user blocked from portals
-    $unauthSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-    $unauthAccess = Invoke-WebRequest -Uri "$baseUrl/admin/index.php" -WebSession $unauthSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    Assert-Condition ($unauthAccess.StatusCode -eq 302 -or $unauthAccess.Headers.Location -ne $null) "Unauthenticated user blocked from /admin/index.php"
+# 1. Unauthenticated access blocked
+$unauthSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+$unauthAdmin = Invoke-WebRequest -Uri "$baseUrl/admin/index.php" -WebSession $unauthSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
+Assert-Condition ($unauthAdmin.StatusCode -eq 302) "Unauthenticated user blocked from /admin/index.php (Redirect)"
+
+$unauthApiStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=members" @{} $unauthSession "Get"
+Assert-Condition ($unauthApiStatus -eq 401) "Unauthenticated API request returns 401 Unauthorized"
+
+# 2. Member -> Admin blocked
+$memberAdminStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=create_member" @{ csrf_token = $memberCsrf } $memberSession "Post"
+Assert-Condition ($memberAdminStatus -eq 403) "Member blocked from admin API action (403 Forbidden)"
+
+# 3. Member -> Trainer view blocked
+$memberTrainer = Invoke-WebRequest -Uri "$baseUrl/trainer/index.php" -WebSession $memberSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
+Assert-Condition ($memberTrainer.StatusCode -eq 302) "Member blocked from trainer portal (Redirect)"
+
+# 4. Trainer -> Admin view blocked
+$trainerAdmin = Invoke-WebRequest -Uri "$baseUrl/admin/index.php" -WebSession $trainerSession -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
+Assert-Condition ($trainerAdmin.StatusCode -eq 302) "Trainer blocked from admin portal (Redirect)"
+
+$trainerAdminApi = Invoke-ApiExpectStatus "$baseUrl/api.php?action=create_payment" @{ csrf_token = $trainerCsrf; member_id = "1"; amount = "100" } $trainerSession "Post"
+Assert-Condition ($trainerAdminApi -eq 403) "Trainer blocked from admin API action (403 Forbidden)"
+
+# 5. Trainer -> Non-assigned athlete operations blocked (403)
+$crossTrainerPlan = Invoke-ApiExpectStatus "$baseUrl/api.php?action=create_workout_plan" @{
+    csrf_token = $trainerCsrf
+    member_id = "9999"
+    title = "Unauthorized Workout"
+} $trainerSession "Post"
+Assert-Condition ($crossTrainerPlan -eq 403) "Trainer blocked from assigning workout to non-assigned athlete (403 Forbidden)"
+
+$crossTrainerCheckin = Invoke-ApiExpectStatus "$baseUrl/api.php?action=check_in" @{
+    csrf_token = $trainerCsrf
+    member_id = "9999"
+} $trainerSession "Post"
+Assert-Condition ($crossTrainerCheckin -eq 403) "Trainer blocked from checking in non-assigned athlete (403 Forbidden)"
+
+# 6. Trainer -> Non-assigned workout operations blocked (403)
+$crossWorkoutDelete = Invoke-ApiExpectStatus "$baseUrl/api.php?action=delete_workout" @{
+    csrf_token = $trainerCsrf
+    id = "9999"
+} $trainerSession "Post"
+Assert-Condition ($crossWorkoutDelete -eq 403) "Trainer blocked from deleting non-owned workout (403 Forbidden)"
+
+$crossWorkoutExercise = Invoke-ApiExpectStatus "$baseUrl/api.php?action=add_workout_exercise" @{
+    csrf_token = $trainerCsrf
+    plan_id = "9999"
+    exercise_id = "1"
+} $trainerSession "Post"
+Assert-Condition ($crossWorkoutExercise -eq 403) "Trainer blocked from modifying non-owned workout exercises (403 Forbidden)"
+
+# 7. Trainer -> Non-assigned attendance operations blocked (403)
+$crossAttCheckout = Invoke-ApiExpectStatus "$baseUrl/api.php?action=check_out" @{
+    csrf_token = $trainerCsrf
+    attendance_id = "9999"
+} $trainerSession "Post"
+Assert-Condition ($crossAttCheckout -eq 403) "Trainer blocked from checking out non-owned attendance (403 Forbidden)"
+
+$crossAttDelete = Invoke-ApiExpectStatus "$baseUrl/api.php?action=delete_attendance" @{
+    csrf_token = $trainerCsrf
+    id = "9999"
+} $trainerSession "Post"
+Assert-Condition ($crossAttDelete -eq 403) "Trainer blocked from deleting non-owned attendance (403 Forbidden)"
+
+# 8. Member -> Another member's workout protocol blocked (404/403)
+$crossMemberWorkout = Invoke-ApiExpectStatus "$baseUrl/api.php?action=workout_details&id=9999" @{} $memberSession "Get"
+Assert-Condition ($crossMemberWorkout -eq 404 -or $crossMemberWorkout -eq 403) "Member cannot access unauthorized workout protocol (Got: $crossMemberWorkout)"
+
+# 9. Invalid CSRF Token
+$invalidCsrfStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=create_member" @{
+    csrf_token = "invalid_token_xyz"
+    first_name = "Tamper"
+    last_name = "User"
+    email = "tamper@example.com"
+} $adminSession "Post"
+Assert-Condition ($invalidCsrfStatus -eq 419) "Invalid CSRF token returns 419 Authentication Timeout"
+
+# 10. Missing CSRF Token
+$missingCsrfStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=create_member" @{
+    first_name = "Tamper"
+    last_name = "User"
+    email = "tamper@example.com"
+} $adminSession "Post"
+Assert-Condition ($missingCsrfStatus -eq 419) "Missing CSRF token returns 419 Authentication Timeout"
+
+# 11. Invalid Non-Numeric IDs
+$invalidIdStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=workout_details&id=abc" @{} $adminSession "Get"
+Assert-Condition ($invalidIdStatus -eq 404 -or $invalidIdStatus -eq 400) "Non-numeric ID safely handled (Got: $invalidIdStatus)"
+
+# 12. Nonexistent Records
+$nonexistentStatus = Invoke-ApiExpectStatus "$baseUrl/api.php?action=workout_details&id=999999" @{} $adminSession "Get"
+Assert-Condition ($nonexistentStatus -eq 404) "Nonexistent record lookup returns 404 Not Found"
+
+# 13. Suspended User Authentication Blocked
+try {
+    # Member Alex Rivera is user_id 8 in seed
+    $suspBody = @{
+        csrf_token = $adminCsrf
+        user_id = "8"
+        status = "suspended"
+    }
+    Invoke-WebRequest -Uri "$baseUrl/api.php?action=set_user_status" -Method Post -Body $suspBody -WebSession $adminSession -UseBasicParsing | Out-Null
+
+    # Attempt login as suspended member using clean session
+    $suspSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $suspPage = Invoke-WebRequest -Uri "$baseUrl/login.php" -WebSession $suspSession -UseBasicParsing
+    $csrfMatch = [regex]::Match($suspPage.Content, 'name="csrf_token"\s+value="([^"]+)"')
+    $sCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
+
+    $suspSubmit = Invoke-WebRequest -Uri "$baseUrl/login.php" -Method Post -Body @{
+        identity = "alex.rivera"
+        password = "Member@123"
+        csrf_token = $sCsrf
+    } -WebSession $suspSession -UseBasicParsing
+    Assert-Condition ($suspSubmit.Content -like "*suspended*") "Suspended user cannot authenticate and receives suspension alert"
+
+    # Restore user to active
+    $activeBody = @{
+        csrf_token = $adminCsrf
+        user_id = "8"
+        status = "active"
+    }
+    Invoke-WebRequest -Uri "$baseUrl/api.php?action=set_user_status" -Method Post -Body $activeBody -WebSession $adminSession -UseBasicParsing | Out-Null
 } catch {
-    Assert-Condition $false "Security enforcement test failed: $_"
+    Assert-Condition $false "Suspended user test failed: $_"
+}
+
+# 14. Duplicate Username Rejection
+try {
+    $dupUserSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $dupUserPage = Invoke-WebRequest -Uri "$baseUrl/register.php" -WebSession $dupUserSession -UseBasicParsing
+    $csrfMatch = [regex]::Match($dupUserPage.Content, 'name="csrf_token"\s+value="([^"]+)"')
+    $tCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
+
+    $dupUserBody = @{
+        full_name = "Duplicate Username Test"
+        username = "admin"
+        email = "unique_email_123@example.com"
+        password = "Password@123"
+        csrf_token = $tCsrf
+    }
+    $dupUserRes = Invoke-WebRequest -Uri "$baseUrl/register.php" -Method Post -Body $dupUserBody -WebSession $dupUserSession -UseBasicParsing
+    Assert-Condition ($dupUserRes.Content -like "*username is already taken*") "Registration rejects duplicate username"
+} catch {
+    Assert-Condition $false "Duplicate username test failed: $_"
+}
+
+# 15. Duplicate Email Rejection
+try {
+    $dupEmailSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $dupEmailPage = Invoke-WebRequest -Uri "$baseUrl/register.php" -WebSession $dupEmailSession -UseBasicParsing
+    $csrfMatch = [regex]::Match($dupEmailPage.Content, 'name="csrf_token"\s+value="([^"]+)"')
+    $eCsrf = if ($csrfMatch.Success) { $csrfMatch.Groups[1].Value } else { "" }
+
+    $dupEmailBody = @{
+        full_name = "Duplicate Email Test"
+        username = "unique_user_987"
+        email = "alex@gmail.com"
+        password = "Password@123"
+        csrf_token = $eCsrf
+    }
+    $dupEmailRes = Invoke-WebRequest -Uri "$baseUrl/register.php" -Method Post -Body $dupEmailBody -WebSession $dupEmailSession -UseBasicParsing
+    Assert-Condition ($dupEmailRes.Content -like "*already exists*") "Registration rejects duplicate email"
+} catch {
+    Assert-Condition $false "Duplicate email test failed: $_"
 }
 
 # =========================================================================
-# 8. Business Logic & Data Integrity Verification
+# 8. Business Logic & Relational Integrity
 # =========================================================================
-Write-Host "`n--- 8. Testing Business Data Integrity ---" -ForegroundColor Yellow
+Write-Host "`n--- 8. Testing Business & Data Integrity ---" -ForegroundColor Yellow
 try {
     # 1. Duplicate Attendance Check-In on same day
     $dupAttendanceBody = @{
         csrf_token = $adminCsrf
         member_id = "1"
-        status = "present"
     }
     $dupAttRes = $null
     try {
@@ -366,7 +525,6 @@ try {
     } catch {
         $dupAttRes = $_.Exception.Response
     }
-    # Member 1 was already checked in in seed -> should fail (500 with message or 400)
     $dupJson = if ($dupAttRes -is [System.Net.HttpWebResponse]) {
         $reader = New-Object System.IO.StreamReader($dupAttRes.GetResponseStream())
         $reader.ReadToEnd() | ConvertFrom-Json
@@ -376,13 +534,12 @@ try {
     Assert-Condition ($dupJson.success -eq $false -or $dupJson.message -like "*already*") "Duplicate same-day check-in is rejected"
 
     # 2. Payment Subscription Ownership Integrity
-    # Attempting to assign subscription 1 to an unrelated member ID (e.g. member 999)
     $badPaymentBody = @{
         csrf_token = $adminCsrf
         subscription_id = "1"
         member_id = "999"
-        amount = "1999"
-        payment_method = "UPI"
+        amount = "1999.00"
+        payment_method = "Card"
     }
     $badPayRes = $null
     try {
@@ -397,33 +554,28 @@ try {
         $badPayRes.Content | ConvertFrom-Json
     }
     Assert-Condition ($badPayJson.success -eq $false) "Payment rejected when subscription belongs to different member"
+
 } catch {
-    Assert-Condition $false "Data integrity tests failed: $_"
+    Assert-Condition $false "Data integrity test failed: $_"
 }
 
 # =========================================================================
-# 9. Test Cleanup: Restore Pristine Baseline Seed
+# 9. Restoring Database Baseline Seed
 # =========================================================================
 Write-Host "`n--- 9. Restoring Database Baseline Seed ---" -ForegroundColor Yellow
 try {
-    $projectRoot = Split-Path -Parent $PSScriptRoot
-    $phpCommand = Get-Command php -ErrorAction SilentlyContinue
-    if (-not $phpCommand) {
-        throw "PHP CLI was not found on PATH. Run the acceptance suite from a PHP-enabled environment."
-    }
-
-    & $phpCommand.Source "$projectRoot/tests/reset_database.php"
+    & $phpBin "$projectRoot/tests/reset_database.php"
     Assert-Condition ($LASTEXITCODE -eq 0) "Database reset to pristine 1-record baseline"
 } catch {
     Assert-Condition $false "Baseline restore failed: $_"
 }
 
 # =========================================================================
-# Final Summary
+# Summary
 # =========================================================================
 Write-Host "`n====================================================" -ForegroundColor Cyan
 if ($script:errors.Count -eq 0) {
-    Write-Host " ALL ACCEPTANCE TESTS PASSED SUCCESSFULLY! (0 Failures)" -ForegroundColor Green
+    Write-Host " ALL ACCEPTANCE & SECURITY TESTS PASSED! (0 Failures)" -ForegroundColor Green
     Write-Host "====================================================" -ForegroundColor Cyan
     exit 0
 } else {

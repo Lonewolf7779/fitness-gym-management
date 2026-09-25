@@ -103,15 +103,20 @@ Then open `http://localhost:8000`.
 
 ## Test accounts
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@ironcore.com | Admin@123 |
-| Trainer | marcus@ironcore.com | Trainer@123 |
-| Member | alex@gmail.com | Member@123 |
-| Suspended test | suspended@gmail.com | Member@123 |
-| Inactive test | inactive@gmail.com | Member@123 |
+Dual-identity authentication supports both username and email:
 
-The suspended and inactive accounts are intentionally rejected by the authentication flow.
+| Role | Username | Email | Password |
+|---|---|---|---|
+| Admin | `admin` | `admin@ironcore.com` | `Admin@123` |
+| Trainer | `neeraj.demo` | `neeraj.demo@ironcore.com` | `Trainer@123` |
+| Member | `alex.rivera` | `alex@gmail.com` | `Member@123` |
+
+Additional demo trainer profiles: `mirabai.demo`, `pvsindhu.demo`, `lovlina.demo`, `manu.demo`, `sreejesh.demo` (all with `Trainer@123`).
+
+To reset the database back to the canonical baseline:
+```bash
+php tests/reset_database.php
+```
 
 ## Recommended first-run test
 
