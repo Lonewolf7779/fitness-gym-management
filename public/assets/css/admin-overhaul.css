@@ -354,3 +354,12 @@
     padding: 0.55rem 0.4rem;
   }
 }
+
+/* Keep the admin navigation compact enough to fit without an inner scrollbar. */
+.dashboard-shell .sidebar-nav {
+  overflow: visible !important;
+  scrollbar-width: none;
+}
+.dashboard-shell .sidebar-nav::-webkit-scrollbar {
+  display: none;
+}
