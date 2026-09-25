@@ -66,7 +66,7 @@ $csrf = generateCsrfToken();
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                 </div>
               </div>
-              <div class="kpi-main-val" style="font-size: 20px;"><?= htmlspecialchars($workoutPlan['goal'] ?? 'Strength') ?></div>
+              <div class="kpi-main-val" style="font-size: 20px;"><?= htmlspecialchars($workoutPlan['goal'] ?? 'Not specified') ?></div>
               <div class="kpi-sub-row">
                 <span class="badge-trend positive">Target Objective</span>
               </div>
@@ -92,7 +92,7 @@ $csrf = generateCsrfToken();
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
               </div>
-              <div class="kpi-main-val" style="font-size: 18px; color: #38BDF8;"><?= htmlspecialchars($workoutPlan['trainer_name'] ?? 'Head Coach') ?></div>
+              <div class="kpi-main-val" style="font-size: 18px; color: #38BDF8;"><?= htmlspecialchars($workoutPlan['trainer_name'] ?? 'Not assigned') ?></div>
               <div class="kpi-sub-row">
                 <span class="badge-trend positive">Trainer</span>
               </div>
@@ -105,7 +105,7 @@ $csrf = generateCsrfToken();
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 </div>
               </div>
-              <div class="kpi-main-val" style="font-size: 18px; color: #A78BFA;"><?= htmlspecialchars($workoutPlan['difficulty'] ?? 'Intermediate') ?></div>
+              <div class="kpi-main-val" style="font-size: 18px; color: #A78BFA;"><?= htmlspecialchars($workoutPlan['difficulty'] ?? 'Not specified') ?></div>
               <div class="kpi-sub-row">
                 <span class="badge-trend neutral">Program Intensity</span>
               </div>
