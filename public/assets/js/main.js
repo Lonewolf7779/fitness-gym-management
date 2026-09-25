@@ -9,13 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const navBackdrop = document.getElementById('nav-backdrop') || document.querySelector('.nav-backdrop');
 
   // Sticky Glassmorphic Navbar on Scroll
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 20) {
-      navbar?.classList.add('scrolled');
-    } else {
-      navbar?.classList.remove('scrolled');
-    }
-  });
+  const syncNavbarState = () => {
+    if (window.scrollY > 20) navbar?.classList.add('scrolled');
+    else navbar?.classList.remove('scrolled');
+  };
+  syncNavbarState();
+  window.addEventListener('scroll', syncNavbarState, { passive: true });
 
   // Mobile Landing Menu Drawer Toggle
   if (mobileToggle && navMenu) {
