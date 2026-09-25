@@ -62,6 +62,12 @@ $expiries          = $expiries ?? [];
       </a>
     </li>
     <li>
+      <a href="/admin/revenue.php" class="nav-item-link <?= $currentSection === 'revenue' ? 'active' : '' ?>">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7h-3.5"/></svg>
+        <span>Revenue</span>
+      </a>
+    </li>
+    <li>
       <a href="/admin/payments.php" class="nav-item-link <?= $currentSection === 'payments' ? 'active' : '' ?>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         <span>Payments</span>
