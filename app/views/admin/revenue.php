@@ -111,7 +111,7 @@ require_once __DIR__ . '/../layouts/admin_nav.php';
         <?php foreach ($payments as $payment): ?>
           <div class="revenue-transaction">
             <div>
-              <strong><?= e($payment['member_name'] ?? 'Member') ?></strong>
+              <strong><?= e($payment['full_name'] ?? 'Member') ?></strong>
               <span><?= e($payment['transaction_id'] ?? 'No transaction ID') ?></span>
             </div>
             <div class="revenue-transaction-right">
