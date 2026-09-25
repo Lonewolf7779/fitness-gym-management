@@ -70,89 +70,49 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statsSection) counterObserver.observe(statsSection);
   }
 
-  // 3. Interactive SVG Chart Switcher (Attendance vs Revenue)
-  const chartContainer = document.getElementById('preview-chart-svg');
-  const chartTabs = document.querySelectorAll('.chart-tab');
+  // 3. Rotating Motivation Quotes
+  const quoteDisplay = document.getElementById('quote-display');
+  const quoteAuthor = document.getElementById('quote-author');
+  const quoteProgress = document.getElementById('quote-progress-bar');
 
-  const chartData = {
-    attendance: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      values: [140, 165, 183, 172, 195, 210, 155],
-      max: 250,
-      color: '#E8FF00',
-      title: 'Weekly Member Attendance'
-    },
-    revenue: {
-      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-      values: [62, 74, 81, 67], // in thousands (k)
-      max: 100,
-      color: '#30D158',
-      title: 'Monthly Revenue Stream (₹ In Thousands)'
-    }
+  const quotes = [
+    { text: 'Discipline is built one decision at a time.', author: 'IRONCORE' },
+    { text: 'You do not need a perfect day. You need another honest rep.', author: 'IRONCORE' },
+    { text: 'Strength grows where consistency refuses to leave.', author: 'IRONCORE' },
+    { text: 'Train with purpose. Recover with intention. Return stronger.', author: 'IRONCORE' },
+    { text: 'The work nobody sees is the work that changes you.', author: 'IRONCORE' },
+    { text: 'Progress is quiet. Keep showing up.', author: 'IRONCORE' }
+  ];
+
+  let quoteIndex = 0;
+  const quoteInterval = 5200;
+
+  const showNextQuote = () => {
+    if (!quoteDisplay || quotes.length < 2) return;
+    quoteDisplay.classList.add('is-changing');
+    window.setTimeout(() => {
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+      quoteDisplay.textContent = quotes[quoteIndex].text;
+      if (quoteAuthor) quoteAuthor.textContent = quotes[quoteIndex].author;
+      quoteDisplay.classList.remove('is-changing');
+      if (quoteProgress) {
+        quoteProgress.style.transition = 'none';
+        quoteProgress.style.width = '0%';
+        requestAnimationFrame(() => {
+          quoteProgress.style.transition = `width ${quoteInterval}ms linear`;
+          quoteProgress.style.width = '100%';
+        });
+      }
+    }, 180);
   };
 
-  const renderSVGChart = (type = 'attendance') => {
-    if (!chartContainer) return;
-    const data = chartData[type];
-    const width = 800;
-    const height = 240;
-    const padding = 40;
-    const chartW = width - padding * 2;
-    const chartH = height - padding * 2;
-
-    const step = chartW / (data.values.length - 1);
-    const points = data.values.map((val, i) => {
-      const x = padding + i * step;
-      const y = height - padding - (val / data.max) * chartH;
-      return { x, y, val, label: data.labels[i] };
-    });
-
-    let pathD = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      pathD += ` L ${points[i].x} ${points[i].y}`;
+  if (quoteDisplay) {
+    if (quoteProgress) {
+      quoteProgress.style.transition = `width ${quoteInterval}ms linear`;
+      requestAnimationFrame(() => { quoteProgress.style.width = '100%'; });
     }
-
-    const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
-
-    chartContainer.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">
-        <defs>
-          <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${data.color}" stop-opacity="0.35"/>
-            <stop offset="100%" stop-color="${data.color}" stop-opacity="0.0"/>
-          </linearGradient>
-        </defs>
-        <!-- Grid Lines -->
-        <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="#292929" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${padding + chartH / 2}" x2="${width - padding}" y2="${padding + chartH / 2}" stroke="#292929" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#292929" />
-
-        <!-- Area Fill -->
-        <path d="${areaD}" fill="url(#chartGlow)" />
-
-        <!-- Line -->
-        <path d="${pathD}" fill="none" stroke="${data.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-
-        <!-- Data Points & Labels -->
-        ${points.map(p => `
-          <circle cx="${p.x}" cy="${p.y}" r="5" fill="${data.color}" stroke="#0B0B0B" stroke-width="2" />
-          <text x="${p.x}" y="${height - 12}" fill="#9A9A9A" font-size="12" font-weight="600" text-anchor="middle">${p.label}</text>
-          <text x="${p.x}" y="${p.y - 12}" fill="#FFFFFF" font-size="11" font-weight="700" text-anchor="middle">${p.val}</text>
-        `).join('')}
-      </svg>
-    `;
-  };
-
-  if (chartTabs.length > 0) {
-    chartTabs.forEach(tab => {
-      tab.addEventListener('click', (e) => {
-        chartTabs.forEach(t => t.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        const view = e.currentTarget.getAttribute('data-view');
-        renderSVGChart(view);
-      });
-    });
-    // Initial Render
-    renderSVGChart('attendance');
+    if (!prefersReducedMotion) {
+      window.setInterval(showNextQuote, quoteInterval);
+    }
   }
 });
