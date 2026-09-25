@@ -1,0 +1,1200 @@
+/* ==========================================================================
+   IRONCORE ADMIN DASHBOARD — PREMIUM UI/UX & RESPONSIVE ARCHITECTURE
+   Industrial Gym Command Center Aesthetics
+   ========================================================================== */
+
+:root {
+  --admin-bg: #0A0A0E;
+  --admin-surface: #121217;
+  --admin-card: #16161E;
+  --admin-card-hover: #1A1A24;
+  --admin-elevated: #1E1E28;
+  --admin-border: rgba(255, 255, 255, 0.07);
+  --admin-border-hover: rgba(232, 255, 0, 0.25);
+  --admin-accent: #E8FF00;
+  --admin-accent-rgb: 232, 255, 0;
+  --admin-accent-glow: rgba(232, 255, 0, 0.12);
+  --admin-text-main: #FFFFFF;
+  --admin-text-muted: #9CA3AF;
+  --admin-text-dim: #6B7280;
+  --admin-radius: 12px;
+  --admin-radius-sm: 8px;
+  --admin-transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   1. DASHBOARD SHELL & MAIN CONTAINER RESET
+   -------------------------------------------------------------------------- */
+.dashboard-shell {
+  min-height: 100vh;
+  background-color: var(--admin-bg);
+  color: var(--admin-text-main);
+  overflow-x: hidden;
+}
+
+.dashboard-shell .dashboard-body {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 2vw, 2rem) 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   2. COMMAND CENTER HERO BANNER
+   -------------------------------------------------------------------------- */
+.admin-command-hero {
+  background: linear-gradient(135deg, rgba(26, 26, 36, 0.95) 0%, rgba(18, 18, 24, 0.98) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.admin-command-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--admin-accent);
+  box-shadow: 0 0 12px var(--admin-accent-glow);
+}
+
+.hero-content {
+  min-width: 0;
+}
+
+.hero-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.hero-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #34D399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #34D399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34D399;
+  animation: pulseBeacon 2s infinite ease-in-out;
+}
+
+@keyframes pulseBeacon {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.hero-subtag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+}
+
+.hero-title {
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 0.825rem;
+  color: var(--admin-text-muted);
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+.hero-meta-strip {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.65rem 1.15rem;
+  flex-shrink: 0;
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hero-meta-item .meta-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-text-dim);
+}
+
+.hero-meta-item .meta-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  white-space: nowrap;
+}
+
+.hero-meta-item .meta-value.text-accent { color: var(--admin-accent); }
+.hero-meta-item .meta-value.text-success { color: #34D399; }
+
+.hero-meta-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   3. PRIMARY KPI METRICS (4 DOMINANT CARDS)
+   -------------------------------------------------------------------------- */
+.admin-primary-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.primary-kpi-card {
+  background: linear-gradient(180deg, rgba(24, 24, 32, 0.95) 0%, rgba(18, 18, 24, 0.98) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+  position: relative;
+  transition: var(--admin-transition);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.primary-kpi-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+.primary-kpi-card.accent-glow {
+  border-color: rgba(232, 255, 0, 0.2);
+}
+
+.primary-kpi-card.accent-glow:hover {
+  border-color: var(--admin-accent);
+  box-shadow: 0 8px 30px var(--admin-accent-glow);
+}
+
+.kpi-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.kpi-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.kpi-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-dim);
+}
+
+.kpi-heading {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.kpi-icon-bubble {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--admin-radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-icon-bubble svg {
+  width: 20px;
+  height: 20px;
+}
+
+.kpi-icon-bubble.accent-bg {
+  background: var(--admin-accent-glow);
+  border-color: rgba(232, 255, 0, 0.3);
+  color: var(--admin-accent);
+}
+
+.kpi-body {
+  margin-top: 1rem;
+}
+
+.kpi-main-number {
+  font-size: clamp(2rem, 2.5vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-main-number.text-accent {
+  color: var(--admin-accent);
+}
+
+.kpi-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.65rem;
+  gap: 0.5rem;
+}
+
+.kpi-detail-text {
+  font-size: 0.775rem;
+  color: var(--admin-text-muted);
+}
+
+.kpi-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.kpi-pill-accent {
+  background: rgba(232, 255, 0, 0.12);
+  color: var(--admin-accent);
+  border: 1px solid rgba(232, 255, 0, 0.25);
+}
+
+.kpi-pill-neutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: #D1D5DB;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kpi-pill-cyan {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.kpi-pill-emerald {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+.kpi-accent-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: var(--admin-transition);
+}
+
+.primary-kpi-card:hover .kpi-accent-bar {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.primary-kpi-card.accent-glow .kpi-accent-bar {
+  background: var(--admin-accent);
+  box-shadow: 0 0 10px var(--admin-accent);
+}
+
+/* --------------------------------------------------------------------------
+   4. SECONDARY METRICS (6 COMPACT CARDS)
+   -------------------------------------------------------------------------- */
+.admin-secondary-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.secondary-metric-card {
+  background: rgba(22, 22, 28, 0.7);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+  transition: var(--admin-transition);
+  box-sizing: border-box;
+}
+
+.secondary-metric-card:hover {
+  background: rgba(28, 28, 36, 0.9);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.sec-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sec-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-dim);
+}
+
+.sec-icon {
+  color: var(--admin-text-dim);
+  display: flex;
+  align-items: center;
+}
+
+.sec-val {
+  display: block;
+  font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+  font-weight: 900;
+  color: #FFFFFF;
+  margin: 0.35rem 0 0.15rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.sec-dim {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--admin-text-dim);
+}
+
+.sec-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sec-val.text-warning {
+  color: #FBBF24;
+}
+
+/* --------------------------------------------------------------------------
+   5. LIVE ADMIN TELEMETRY & COMMAND SHORTCUTS
+   -------------------------------------------------------------------------- */
+.admin-telemetry-panel {
+  background: linear-gradient(135deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 1.35rem 1.65rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.telemetry-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.telemetry-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.telemetry-beacon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34D399;
+  flex-shrink: 0;
+}
+
+.telemetry-header-text h3 {
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.telemetry-header-text p {
+  font-size: 0.775rem;
+  color: var(--admin-text-muted);
+  margin: 0.15rem 0 0;
+}
+
+.telemetry-counters-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.telemetry-stat-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.65rem 0.85rem;
+  text-align: center;
+}
+
+.telemetry-stat-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  letter-spacing: 0.05em;
+}
+
+.telemetry-stat-number {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin-top: 0.2rem;
+}
+
+.telemetry-stat-number.highlight {
+  color: var(--admin-accent);
+}
+
+.telemetry-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.telemetry-actions-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-dim);
+}
+
+.telemetry-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.telemetry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--admin-radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #E5E7EB;
+  transition: var(--admin-transition);
+  white-space: nowrap;
+}
+
+.telemetry-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.telemetry-btn.primary {
+  background: var(--admin-accent);
+  color: #000000;
+  border-color: var(--admin-accent);
+  font-weight: 800;
+  box-shadow: 0 2px 10px var(--admin-accent-glow);
+}
+
+.telemetry-btn.primary:hover {
+  background: #D4EC00;
+  border-color: #D4EC00;
+  color: #000000;
+}
+
+/* --------------------------------------------------------------------------
+   6. FINANCIAL & ATHLETE PERFORMANCE SECTION & CHART
+   -------------------------------------------------------------------------- */
+.admin-chart-card {
+  background: linear-gradient(180deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.chart-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+
+.chart-title-group h2 {
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.chart-title-group p {
+  font-size: 0.775rem;
+  color: var(--admin-text-muted);
+  margin: 0.2rem 0 0;
+}
+
+.chart-tabs {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.chart-tab-btn {
+  padding: 0.45rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--admin-text-muted);
+  border: none;
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.chart-tab-btn:hover {
+  color: #FFFFFF;
+}
+
+.chart-tab-btn.active {
+  background: var(--admin-accent);
+  color: #000000;
+  box-shadow: 0 2px 8px var(--admin-accent-glow);
+}
+
+.admin-chart-stage {
+  min-height: 220px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Polished Chart Empty State */
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.chart-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.chart-empty-state h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.chart-empty-state p {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+  max-width: 380px;
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   7. LOWER CONTENT SPLIT GRID (RECENT MEMBERS & EXPIRY)
+   -------------------------------------------------------------------------- */
+.admin-lower-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+  gap: 1.5rem;
+  width: 100%;
+  align-items: start;
+}
+
+.admin-panel-card {
+  background: linear-gradient(180deg, rgba(22, 22, 30, 0.95) 0%, rgba(16, 16, 22, 0.98) 100%);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 14, 18, 0.6);
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-action-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--admin-accent);
+  text-decoration: none;
+  transition: var(--admin-transition);
+}
+
+.panel-action-link:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   8. RECENT MEMBERS: DESKTOP TABLE & MOBILE STACKED CARDS
+   -------------------------------------------------------------------------- */
+.recent-members-table-wrap {
+  width: 100%;
+}
+
+.recent-members-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.recent-members-table thead tr th {
+  background: rgba(12, 12, 16, 0.8);
+  padding: 0.8rem 1.15rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.recent-members-table tbody tr td {
+  padding: 0.95rem 1.15rem;
+  font-size: 0.825rem;
+  color: #D1D5DB;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+.recent-members-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.recent-members-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.member-profile-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.member-avatar-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.member-name-block {
+  min-width: 0;
+}
+
+.member-name-text {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-size: 0.825rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-email-text {
+  font-size: 0.725rem;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-badge-cell {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.725rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plan-badge-cell.pro {
+  background: rgba(232, 255, 0, 0.1);
+  color: var(--admin-accent);
+  border: 1px solid rgba(232, 255, 0, 0.25);
+}
+
+.plan-badge-cell.elite {
+  background: rgba(168, 85, 247, 0.12);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.plan-badge-cell.starter {
+  background: rgba(255, 255, 255, 0.06);
+  color: #E5E7EB;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --------------------------------------------------------------------------
+   9. APPROACHING EXPIRY PANEL
+   -------------------------------------------------------------------------- */
+.expiry-stack-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.expiry-stack-item {
+  padding: 0.95rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: var(--admin-transition);
+}
+
+.expiry-stack-item:last-child {
+  border-bottom: none;
+}
+
+.expiry-stack-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.expiry-user-block {
+  min-width: 0;
+}
+
+.expiry-user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.expiry-user-meta {
+  font-size: 0.725rem;
+  color: var(--admin-text-muted);
+  margin-top: 0.15rem;
+}
+
+.expiry-right-block {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.days-left-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+}
+
+.days-left-pill.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.days-left-pill.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.expiry-manage-link {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--admin-accent);
+  text-decoration: none;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.expiry-manage-link:hover {
+  text-decoration: underline;
+}
+
+/* Polished Empty States */
+.panel-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.75rem 1.5rem;
+  gap: 0.65rem;
+}
+
+.panel-empty-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-dim);
+}
+
+.panel-empty-state h4 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.panel-empty-state p {
+  font-size: 0.78rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+.panel-empty-state .btn {
+  margin-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   10. TABLET BREAKPOINTS (768px - 1199px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1199px) {
+  .admin-primary-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .admin-secondary-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .admin-telemetry-panel {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .admin-lower-split {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .admin-command-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .hero-meta-strip {
+    justify-content: space-between;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. MOBILE BREAKPOINTS (< 768px)
+   - Zero horizontal scroll
+   - Transform table rows into stacked cards
+   - Clean spacing and typography
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .dashboard-shell .dashboard-body {
+    padding: 1rem 0.85rem 3rem;
+    gap: 1rem;
+  }
+
+  .admin-command-hero {
+    padding: 1rem 1.15rem;
+  }
+
+  .hero-meta-strip {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .hero-meta-divider {
+    display: none;
+  }
+
+  .admin-primary-kpis {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .primary-kpi-card {
+    min-height: auto;
+    padding: 1.15rem 1.25rem;
+  }
+
+  .kpi-main-number {
+    font-size: 2.2rem;
+  }
+
+  .admin-secondary-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .secondary-metric-card {
+    min-height: 85px;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .sec-val {
+    font-size: 1.35rem;
+  }
+
+  .telemetry-counters-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .telemetry-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .telemetry-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .chart-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .chart-tabs {
+    width: 100%;
+    display: flex;
+  }
+
+  .chart-tab-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* CRITICAL: TRANSFORM TABLE INTO STACKED MOBILE CARDS (RULE 12: NO HORIZONTAL SCROLL) */
+  .recent-members-table-wrap {
+    overflow: visible !important;
+  }
+
+  .recent-members-table,
+  .recent-members-table thead,
+  .recent-members-table tbody,
+  .recent-members-table th,
+  .recent-members-table td,
+  .recent-members-table tr {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .recent-members-table thead {
+    display: none; /* Hide standard headers on mobile */
+  }
+
+  .recent-members-table tbody tr {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--admin-radius-sm);
+    margin: 0.65rem 0.75rem;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .recent-members-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .recent-members-table tbody tr td {
+    padding: 0;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .recent-members-table tbody tr td:first-child {
+    justify-content: flex-start;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .recent-members-table tbody tr td:nth-child(2)::before {
+    content: 'Membership';
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--admin-text-dim);
+  }
+
+  .recent-members-table tbody tr td:nth-child(3)::before {
+    content: 'Joined';
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--admin-text-dim);
+  }
+
+  .recent-members-table tbody tr td:nth-child(4)::before {
+    content: 'Status';
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--admin-text-dim);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. ULTRA-COMPACT MOBILE (< 420px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .admin-secondary-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .telemetry-counters-strip {
+    grid-template-columns: 1fr;
+  }
+}

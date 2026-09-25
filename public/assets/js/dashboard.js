@@ -338,16 +338,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderAdminSVGChart = (viewType = 'revenue') => {
     if (!chartContainer) return;
     const data = adminChartData[viewType];
+    
+    // Check if data is completely empty or all zeros
+    const hasData = Array.isArray(data.values) && data.values.length > 0 && data.values.some(v => Number(v) > 0);
+    if (!hasData) {
+      const isRevenue = viewType === 'revenue';
+      chartContainer.innerHTML = `
+        <div class="chart-empty-state">
+          <div class="chart-empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              ${isRevenue 
+                ? '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+                : '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 14"/>'
+              }
+            </svg>
+          </div>
+          <h4>NO DATA RECORDED YET</h4>
+          <p>${isRevenue ? 'Revenue trends will appear here once payment transactions are recorded in the system.' : 'Check-in activity will appear here once members start checking in to the facility.'}</p>
+        </div>
+      `;
+      return;
+    }
+
     const width = 850;
     const height = 240;
     const padding = 45;
     const chartW = width - padding * 2;
     const chartH = height - padding * 2;
 
-    const numPoints = (data.values && data.values.length) ? data.values.length : 1;
+    const numPoints = data.values.length;
     const step = numPoints > 1 ? chartW / (numPoints - 1) : 0;
-    const maxVal = data.max > 0 ? data.max : 1;
-    const points = data.values.map((val, i) => {
+    const numericVals = data.values.map(v => Number(v) || 0);
+    const maxVal = Math.max(Number(data.max) || 1, Math.max(...numericVals), 1);
+    const points = numericVals.map((val, i) => {
       const x = padding + i * step;
       const y = height - padding - (val / maxVal) * chartH;
       return { x, y, val, label: data.labels[i] || '' };
@@ -361,25 +384,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
 
     chartContainer.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">
+      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="adminChartGlow" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="${data.color}" stop-opacity="0.25"/>
             <stop offset="100%" stop-color="${data.color}" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
-        <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="#292929" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${padding + chartH / 2}" x2="${width - padding}" y2="${padding + chartH / 2}" stroke="#292929" stroke-dasharray="4" />
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#292929" />
+        <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
+        <line x1="${padding}" y1="${padding + chartH / 2}" x2="${width - padding}" y2="${padding + chartH / 2}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
+        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.12)" />
 
         <path d="${areaD}" fill="url(#adminChartGlow)" />
-        <path d="${pathD}" fill="none" stroke="${data.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${pathD}" fill="none" stroke="${data.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 
         ${points.map(p => `
           <g class="chart-point-group">
-            <circle cx="${p.x}" cy="${p.y}" r="5" fill="${data.color}" stroke="#0B0B0B" stroke-width="2.5" />
-            <text x="${p.x}" y="${height - 14}" fill="#9A9A9A" font-size="12" font-weight="600" text-anchor="middle">${p.label}</text>
-            <text x="${p.x}" y="${p.y - 12}" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">${data.prefix}${p.val}${data.suffix}</text>
+            <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${data.color}" stroke="#0B0B0B" stroke-width="2" />
+            <text x="${p.x}" y="${height - 14}" fill="#9CA3AF" font-size="11" font-weight="600" text-anchor="middle">${p.label}</text>
+            <text x="${p.x}" y="${p.y - 10}" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">${data.prefix}${p.val}${data.suffix}</text>
           </g>
         `).join('')}
       </svg>
@@ -426,8 +449,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   switchBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
-      switchBtns.forEach(b => b.classList.remove('active'));
+      switchBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       e.currentTarget.classList.add('active');
+      e.currentTarget.setAttribute('aria-selected', 'true');
       const view = e.currentTarget.getAttribute('data-view');
       renderAdminSVGChart(view);
     });
