@@ -13,6 +13,7 @@ $pageSubtitle      = $pageSubtitle ?? 'Gym Operations, Member Metrics & Performa
 $extraHeaderAction = $extraHeaderAction ?? '';
 $expiries          = $expiries ?? [];
 ?>
+<link rel="stylesheet" href="/assets/css/admin-overhaul.css">
 
 <!-- Mobile Sidebar Backdrop Overlay -->
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
