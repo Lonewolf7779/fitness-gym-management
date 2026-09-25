@@ -561,3 +561,34 @@
 @media (max-width: 480px) {
   .trainer-exercise-grid { grid-template-columns: 1fr; }
 }
+
+/* Replace horizontal data-table scrolling with wrapped, fluid columns. */
+.dashboard-shell .table-glass-wrap {
+  width: 100%;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+.dashboard-shell .module-data-table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+.dashboard-shell .module-data-table th,
+.dashboard-shell .module-data-table td {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.dashboard-shell .module-data-table th {
+  font-size: .66rem;
+}
+.dashboard-shell .module-data-table td {
+  font-size: .78rem;
+}
+.dashboard-shell .module-action-bar {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.dashboard-shell .module-action-bar > * {
+  min-width: 0;
+}
