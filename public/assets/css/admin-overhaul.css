@@ -532,3 +532,32 @@
   .revenue-transaction { flex-direction: column; }
   .revenue-transaction-right { text-align: left; }
 }
+
+.trainer-exercise-library { margin-bottom: 1.25rem; }
+.trainer-exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: .7rem;
+}
+.trainer-exercise-card {
+  min-width: 0;
+  padding: .85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: rgba(255,255,255,.018);
+}
+.trainer-exercise-card strong,
+.trainer-exercise-card span,
+.trainer-exercise-card small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.trainer-exercise-card strong { font-size: .8rem; color: var(--color-text-main); }
+.trainer-exercise-card span { margin-top: .25rem; font-size: .7rem; color: var(--color-accent); }
+.trainer-exercise-card small { margin-top: .2rem; font-size: .66rem; color: var(--color-text-muted); }
+@media (max-width: 900px) {
+  .trainer-exercise-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 480px) {
+  .trainer-exercise-grid { grid-template-columns: 1fr; }
+}
