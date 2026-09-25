@@ -384,9 +384,15 @@ try {
             if (!empty($_POST['exercises']) && is_array($_POST['exercises'])) {
                 foreach ($_POST['exercises'] as $ex) {
                     if (!empty($ex['exercise_id'])) {
+                        $exerciseId = (int) $ex['exercise_id'];
+                        if ($role === 'trainer' && !$svc->isExerciseAssignedToTrainer($userId, $exerciseId)) {
+                            http_response_code(403);
+                            echo json_encode(['success' => false, 'message' => 'This exercise has not been assigned to you by an administrator.']);
+                            exit;
+                        }
                         $svc->addWorkoutExercise([
                             'plan_id'      => $planId,
-                            'exercise_id'  => (int) $ex['exercise_id'],
+                            'exercise_id'  => $exerciseId,
                             'sets'         => (int) ($ex['sets'] ?? 3),
                             'reps'         => (string) ($ex['reps'] ?? '10-12'),
                             'rest_seconds' => (int) ($ex['rest_seconds'] ?? 60),
@@ -401,6 +407,12 @@ try {
         case 'add_workout_exercise':
             if ($role !== 'admin' && $role !== 'trainer') { http_response_code(403); echo json_encode(['success' => false, 'message' => 'Forbidden.']); exit; }
             $planId = (int) ($_POST['plan_id'] ?? 0);
+            $exerciseId = (int) ($_POST['exercise_id'] ?? 0);
+            if ($role === 'trainer' && !$svc->isExerciseAssignedToTrainer($userId, $exerciseId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'This exercise has not been assigned to you by an administrator.']);
+                exit;
+            }
             if ($role === 'trainer' && !$svc->isTrainerAuthorizedForWorkout($userId, $planId)) {
                 http_response_code(403);
                 echo json_encode(['success' => false, 'message' => 'Forbidden. You are not authorized to modify this workout program.']);
