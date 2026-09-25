@@ -360,26 +360,9 @@ $csrf = generateCsrfToken();
     </div>
   </div>
 
-  <!-- =========================================================================
-       1. DIGITAL RECEIPT MODAL
-       ========================================================================= -->
-  <div class="modal-overlay" id="receipt-modal">
-    <div class="modal-card" style="max-width: 520px; background: transparent; border: none; box-shadow: none;">
-      <div class="receipt-paper" id="printable-receipt">
-        
-        <!-- Receipt Header -->
-        <div class="receipt-header-row">
-          <div>
-            <div class="receipt-brand-logo">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.5"><path d="M6.5 6.5h11M6.5 17.5h11M4 10h16M4 14h16M2 6v12M22 6v12"/></svg>
-              <span>IRONCORE</span> FITNESS
-            </div>
-            <div style="font-size: 0.75rem; color: #8E8E9F; margin-top: 0.2rem;"><?= e($gymSettings['address'] ?? 'Cyber City, High-Tech Zone') ?></div>
-          </div>
-          <div class="receipt-meta-block">
-            <div style="font-size: 0.7rem; text-transform: uppercase; color: #8E8E9F; font-weight: 700;">Tax Invoice</div>
-            <div class="receipt-txn-badge" id="rcpt-txn-id">#TXN_IRN_001</div>
-            <div id="rcpt-date" style="margin-top: 0.25rem; font-size: 0.75rem;">Aug 24, 2026</div>
+            <div style="font-size: 0.7rem; text-transform: uppercase; color: #8E8E9F; font-weight: 700;">Payment Receipt</div>
+            <div class="receipt-txn-badge" id="rcpt-txn-id">No transaction selected</div>
+            <div id="rcpt-date" style="margin-top: 0.25rem; font-size: 0.75rem;">Select a transaction</div>
           </div>
         </div>
 
@@ -387,13 +370,13 @@ $csrf = generateCsrfToken();
         <div class="receipt-details-grid">
           <div class="receipt-kv">
             <div class="lbl">Athlete / Customer</div>
-            <div class="val" id="rcpt-name">Alex Rivera</div>
-            <div style="font-size: 0.75rem; color: #8E8E9F;" id="rcpt-email">alex@gmail.com</div>
+            <div class="val" id="rcpt-name">No transaction selected</div>
+            <div style="font-size: 0.75rem; color: #8E8E9F;" id="rcpt-email">Not available</div>
           </div>
           <div class="receipt-kv">
             <div class="lbl">Payment Channel</div>
-            <div class="val" id="rcpt-method">UPI / QR CODE</div>
-            <div style="font-size: 0.75rem; color: #34D399; font-weight: 700;" id="rcpt-status">STATUS: PAID</div>
+            <div class="val" id="rcpt-method">Not selected</div>
+            <div style="font-size: 0.75rem; color: #34D399; font-weight: 700;" id="rcpt-status">STATUS: —</div>
           </div>
         </div>
 
@@ -408,11 +391,11 @@ $csrf = generateCsrfToken();
             </thead>
             <tbody>
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-                <td style="padding: 0.75rem 0; color: #FFF; font-weight: 600;" id="rcpt-item-title">PRO MEMBERSHIP (30 Days)</td>
-                <td style="text-align: right; padding: 0.75rem 0; color: #FFF; font-weight: 700; font-family: monospace;" id="rcpt-item-amount"><?= $currSymbol ?>4,999.00</td>
+                <td style="padding: 0.75rem 0; color: #FFF; font-weight: 600;" id="rcpt-item-title">Select a transaction</td>
+                <td style="text-align: right; padding: 0.75rem 0; color: #FFF; font-weight: 700; font-family: monospace;" id="rcpt-item-amount"><?= $currSymbol ?>0.00</td>
               </tr>
               <tr style="font-size: 0.775rem; color: #8E8E9F;">
-                <td style="padding: 0.4rem 0;">Gym Service Tax (0% - Included)</td>
+                <td style="padding: 0.4rem 0;">Payment details are populated from the selected record.</td>
                 <td style="text-align: right; padding: 0.4rem 0;"><?= $currSymbol ?>0.00</td>
               </tr>
             </tbody>
@@ -422,24 +405,7 @@ $csrf = generateCsrfToken();
         <!-- Total Box -->
         <div class="receipt-total-box">
           <span class="total-lbl">Total Paid</span>
-          <span class="total-amount" id="rcpt-total-amount"><?= $currSymbol ?>4,999.00</span>
-        </div>
-
-        <div style="text-align: center; font-size: 0.725rem; color: #6B7280; margin-bottom: 1.5rem;">
-          Thank you for training with IRONCORE. Push your limits today.
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-          <button type="button" class="btn btn-secondary" id="close-receipt-btn" style="flex: 1; justify-content: center;">Close</button>
-          <button type="button" class="btn btn-primary" onclick="window.print()" style="flex: 1; justify-content: center;">Print Receipt</button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================================
+          <span class="total-amount" id="rcpt-total-amount"><?= $currSymbol ?>4,999.00</span>  <!-- =========================================================================
        2. RECORD PAYMENT MODAL
        ========================================================================= -->
   <div class="modal-overlay" id="add-payment-modal">
