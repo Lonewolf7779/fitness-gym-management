@@ -375,11 +375,11 @@ $csrf = generateCsrfToken();
           <div class="profile-hero-avatar" id="modal-avatar">AR</div>
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.25rem;">
-              <h2 id="modal-name" style="font-size: 1.25rem; font-weight: 800; color: #FFF; margin: 0;">Alex Rivera</h2>
+              <h2 id="modal-name" style="font-size: 1.25rem; font-weight: 800; color: #FFF; margin: 0;">No member selected</h2>
               <span id="modal-status-pill" class="status-pill active"><span class="status-dot-sm"></span> Active</span>
             </div>
-            <div id="modal-email" style="font-size: 0.825rem; color: #9CA3AF; margin-bottom: 0.2rem;">alex@gmail.com</div>
-            <div id="modal-phone" style="font-size: 0.825rem; color: #38BDF8; font-family: monospace;">+91 98765 43210</div>
+            <div id="modal-email" style="font-size: 0.825rem; color: #9CA3AF; margin-bottom: 0.2rem;">Not available</div>
+            <div id="modal-phone" style="font-size: 0.825rem; color: #38BDF8; font-family: monospace;">Not available</div>
           </div>
         </div>
 
@@ -387,15 +387,15 @@ $csrf = generateCsrfToken();
         <div class="profile-stat-strip">
           <div class="profile-strip-card">
             <div class="strip-lbl">Active Plan</div>
-            <div class="strip-val" id="modal-plan" style="color: #FF4D4D; font-size: 0.95rem;">PRO PLAN</div>
+            <div class="strip-val" id="modal-plan" style="color: #FF4D4D; font-size: 0.95rem;">Not assigned</div>
           </div>
           <div class="profile-strip-card">
             <div class="strip-lbl">Days Left</div>
-            <div class="strip-val" id="modal-days-left" style="color: #34D399;">28 Days</div>
+            <div class="strip-val" id="modal-days-left" style="color: #34D399;">Not available</div>
           </div>
           <div class="profile-strip-card">
             <div class="strip-lbl">Total Check-ins</div>
-            <div class="strip-val" id="modal-checkins" style="color: #38BDF8;">14 Visits</div>
+            <div class="strip-val" id="modal-checkins" style="color: #38BDF8;">0 Visits</div>
           </div>
         </div>
 
@@ -403,23 +403,23 @@ $csrf = generateCsrfToken();
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(10,10,14,0.5); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-size: 0.825rem;">
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Assigned Coach</span>
-            <div id="modal-trainer" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Marcus Vance</div>
+            <div id="modal-trainer" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not assigned</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Workout Plan</span>
-            <div id="modal-workout" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Hypertrophy Focus</div>
+            <div id="modal-workout" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not assigned</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Member Since</span>
-            <div id="modal-joined" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Aug 12, 2026</div>
+            <div id="modal-joined" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not available</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Plan Expiry Date</span>
-            <div id="modal-expiry" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Sep 28, 2026</div>
+            <div id="modal-expiry" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Not available</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Last Check-In</span>
-            <div id="modal-last-checkin" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Today 08:30 AM</div>
+            <div id="modal-last-checkin" style="color: #FFF; font-weight: 700; margin-top: 0.2rem;">Never</div>
           </div>
           <div>
             <span style="color: #8E8E9F; text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">Emergency Contact</span>
