@@ -20,6 +20,7 @@ $svc = new GymManagementService();
 $stats = $svc->dashboardStats();
 $recentMembers = $svc->recentMembers(5);
 $expiries = $svc->approachingExpiries(7);
+$overview = $svc->adminOverviewStats();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -94,6 +95,54 @@ $expiries = $svc->approachingExpiries(7);
             <div class="kpi-foot">
               <span>Current Billing Cycle</span>
             </div>
+          </div>
+        </section>
+
+        <!-- LIVE OPERATIONS SNAPSHOT -->
+        <section class="admin-overview-grid">
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">TRAINER ROSTER</span>
+            <strong><?= (int)$overview['active_trainers'] ?> / <?= (int)$overview['total_trainers'] ?></strong>
+            <small>active / total trainers</small>
+          </article>
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">ACTIVE MEMBERSHIPS</span>
+            <strong><?= (int)$overview['active_subscriptions'] ?></strong>
+            <small>currently active subscriptions</small>
+          </article>
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">ON FLOOR NOW</span>
+            <strong><?= (int)$overview['currently_in_gym'] ?></strong>
+            <small><?= (int)$overview['today_checkins'] ?> check-ins today</small>
+          </article>
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">WORKOUT PROGRAMS</span>
+            <strong><?= (int)$overview['workout_programs'] ?></strong>
+            <small>created training programs</small>
+          </article>
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">EXERCISE CATALOG</span>
+            <strong><?= (int)$overview['exercise_catalog'] ?></strong>
+            <small>available reference exercises</small>
+          </article>
+          <article class="admin-overview-card">
+            <span class="admin-overview-label">EXPIRING SOON</span>
+            <strong><?= (int)$overview['expiring_7d'] ?></strong>
+            <small>subscriptions in next 7 days</small>
+          </article>
+        </section>
+
+        <section class="admin-action-panel">
+          <div>
+            <span class="section-tag">LIVE ADMIN TELEMETRY</span>
+            <h2>Nothing is fabricated here.</h2>
+            <p>When your database is empty, these numbers stay at zero. Add members, plans, payments, attendance and workouts from the admin tools and the dashboard will reflect them automatically.</p>
+          </div>
+          <div class="admin-action-links">
+            <a href="/admin/members.php" class="btn btn-secondary">Manage Members</a>
+            <a href="/admin/trainers.php" class="btn btn-secondary">Manage Trainers</a>
+            <a href="/admin/workouts.php" class="btn btn-primary">Build Workout</a>
+            <a href="/admin/revenue.php" class="btn btn-secondary">Open Revenue</a>
           </div>
         </section>
 
