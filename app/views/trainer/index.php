@@ -301,7 +301,7 @@ $todaySchedule = $trainerData['today_schedule'];
       e.preventDefault();
       const fd = new FormData(workoutForm);
       try {
-        const res = await fetch('/api.php?action=create_workout', { method: 'POST', body: fd });
+        const res = await fetch('/api.php?action=create_workout_plan', { method: 'POST', body: fd });
         const json = await res.json();
         alert(json.message);
         if (json.success) {
