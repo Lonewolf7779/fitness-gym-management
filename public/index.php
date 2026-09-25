@@ -6,6 +6,29 @@
 
 require_once __DIR__ . '/../app/config/config.php';
 require_once __DIR__ . '/../app/helpers/security.php';
+require_once __DIR__ . '/../app/services/GymManagementService.php';
+
+$publicStats = [
+    'active_members' => 0,
+    'trainer_count' => 0,
+    'active_pct' => 0,
+    'monthly_revenue' => '0.00',
+    'today_attendance' => 0
+];
+
+try {
+    $publicService = new GymManagementService();
+    $dashboardStats = $publicService->dashboardStats();
+    $publicStats['active_members'] = (int) ($dashboardStats['active_members'] ?? 0);
+    $publicStats['trainer_count'] = count($publicService->trainers('', 'active'));
+    $publicStats['active_pct'] = (float) ($dashboardStats['active_pct'] ?? 0);
+    $publicStats['monthly_revenue'] = (string) ($dashboardStats['monthly_revenue'] ?? '0.00');
+    $publicStats['today_attendance'] = (int) ($dashboardStats['today_attendance'] ?? 0);
+} catch (Throwable $e) {
+    if (APP_DEBUG) {
+        error_log('Landing page live metrics unavailable: ' . $e->getMessage());
+    }
+}
 
 $pageTitle = "IRONCORE | Train. Track. Transform. Gym Management Platform";
 $metaDesc  = "Complete Fitness & Gym Management System. Manage members, trainers, attendance, workouts, payments, and progress tracking seamlessly.";
@@ -43,15 +66,15 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
 
       <div class="hero-stats-row">
         <div class="hero-stat-item">
-          <span class="hero-stat-value" data-counter data-target="642">0</span>
+          <span class="hero-stat-value" data-counter data-target="<?= $publicStats['active_members'] ?>">0</span>
           <span class="hero-stat-label">Active Members</span>
         </div>
         <div class="hero-stat-item">
-          <span class="hero-stat-value" data-counter data-target="38">0</span>
+          <span class="hero-stat-value" data-counter data-target="<?= $publicStats['trainer_count'] ?>">0</span>
           <span class="hero-stat-label">Pro Trainers</span>
         </div>
         <div class="hero-stat-item">
-          <span class="hero-stat-value" data-counter data-target="99.4" data-suffix="%">0%</span>
+          <span class="hero-stat-value" data-counter data-target="<?= $publicStats['active_pct'] ?>" data-suffix="%">0%</span>
           <span class="hero-stat-label">Check-in Accuracy</span>
         </div>
       </div>
@@ -242,8 +265,8 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
             <span class="metric-label">Active Members</span>
             <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           </div>
-          <div class="metric-value" data-counter data-target="642">0</div>
-          <div class="metric-trend">+14% vs last month</div>
+          <div class="metric-value" data-counter data-target="<?= $publicStats['active_members'] ?>">0</div>
+          <div class="metric-trend">Live database count</div>
         </div>
 
         <div class="metric-card">
@@ -251,8 +274,8 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
             <span class="metric-label">Trainers</span>
             <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
           </div>
-          <div class="metric-value" data-counter data-target="38">0</div>
-          <div class="metric-trend" style="color: var(--color-accent);">100% Certified</div>
+          <div class="metric-value" data-counter data-target="<?= $publicStats['trainer_count'] ?>">0</div>
+          <div class="metric-trend" style="color: var(--color-accent);">Active trainers</div>
         </div>
 
         <div class="metric-card">
@@ -260,8 +283,8 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
             <span class="metric-label">Monthly Revenue</span>
             <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </div>
-          <div class="metric-value">₹<span data-counter data-target="2.84" data-decimals="2">0.00</span>L</div>
-          <div class="metric-trend">+18.5% growth</div>
+          <div class="metric-value">₹<?= e($publicStats['monthly_revenue']) ?></div>
+          <div class="metric-trend">Current month</div>
         </div>
 
         <div class="metric-card">
@@ -269,8 +292,8 @@ require_once __DIR__ . '/../app/views/layouts/header.php';
             <span class="metric-label">Today's Check-ins</span>
             <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           </div>
-          <div class="metric-value" data-counter data-target="183">0</div>
-          <div class="metric-trend">Peak hours: 6 PM - 9 PM</div>
+          <div class="metric-value" data-counter data-target="<?= $publicStats['today_attendance'] ?>">0</div>
+          <div class="metric-trend">Today</div>
         </div>
       </div>
 
