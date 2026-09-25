@@ -781,3 +781,18 @@
 @media (prefers-reduced-motion: reduce) {
   .quote-display { transition: none; }
 }
+
+.empty-public-data {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: grid;
+  gap: .7rem;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,.018);
+}
+.empty-public-data strong { color: var(--color-text-main); font-size: 1.05rem; }
+.empty-public-data span { color: var(--color-text-muted); font-size: .85rem; line-height: 1.55; max-width: 560px; }
